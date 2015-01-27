@@ -1,29 +1,36 @@
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
+#include <GLFW/glfw3.h>
 
-void displayMe(void)
+int main(void)
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBegin(GL_POLYGON);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.5, 0.0, 0.0);
-    glVertex3f(0.5, 0.5, 0.0);
-    glVertex3f(0.0, 0.5, 0.0);
-    glEnd();
-    glFlush();
-}
-
-int main(int argc, char** argv)
-{
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE);
-    glutInitWindowSize(300, 300);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Hello world :D");
-    glutDisplayFunc(displayMe);
-    glutMainLoop();
+    GLFWwindow* window;
+    
+    /* Initialize the library */
+    if (!glfwInit())
+        return -1;
+    
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
+    
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+    
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {
+        /* Render here */
+        
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+        
+        /* Poll for and process events */
+        glfwPollEvents();
+    }
+    
+    glfwTerminate();
     return 0;
 }

@@ -14,11 +14,11 @@
 		<string>https://github.com/RiiQQe/Modelleringsprojekt.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Modelleringsprojekt/Modelleringsprojekt.xcodeproj</string>
+	<string>Modelleringsprojekt.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>15883A147FC02590FF0C2733571DFA14C1F91CC7</key>
-		<string>../../..</string>
+		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/RiiQQe/Modelleringsprojekt.git</string>
