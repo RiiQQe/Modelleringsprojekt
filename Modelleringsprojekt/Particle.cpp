@@ -32,7 +32,7 @@ void Particle::EvolveParticle()
 		vel[0] = -vel[0];
 	}
 	if (pos[1] < 0 || pos[1] > 512) {
-		vel[1] = -vel[1] * 0.7;
+		vel[1] = -vel[1];// * 0.7;
 		pos[1] = pos[1] < 0 ? 0 : pos[1];
 	}
 
