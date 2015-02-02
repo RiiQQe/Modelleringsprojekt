@@ -12,6 +12,8 @@
 	<dict>
 		<key>15883A147FC02590FF0C2733571DFA14C1F91CC7</key>
 		<string>https://github.com/RiiQQe/Modelleringsprojekt.git</string>
+		<key>FB79B001454A9C00C7D13A394BAD57C7460E6486</key>
+		<string>https://github.com/krlgrgn/OpenGL-Particles.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Modelleringsprojekt.xcodeproj</string>
@@ -19,6 +21,8 @@
 	<dict>
 		<key>15883A147FC02590FF0C2733571DFA14C1F91CC7</key>
 		<string>../..</string>
+		<key>FB79B001454A9C00C7D13A394BAD57C7460E6486</key>
+		<string>../../../OpenGL-Particles</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/RiiQQe/Modelleringsprojekt.git</string>
@@ -35,6 +39,14 @@
 			<string>15883A147FC02590FF0C2733571DFA14C1F91CC7</string>
 			<key>IDESourceControlWCCName</key>
 			<string>Modelleringsprojekt</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>FB79B001454A9C00C7D13A394BAD57C7460E6486</string>
+			<key>IDESourceControlWCCName</key>
+			<string>OpenGL-Particles</string>
 		</dict>
 	</array>
 </dict>
