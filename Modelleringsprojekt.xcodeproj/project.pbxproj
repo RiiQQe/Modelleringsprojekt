@@ -90,10 +90,10 @@
 		953CFBAC1A7687B000FBC979 /* Modelleringsprojekt */ = {
 			isa = PBXGroup;
 			children = (
-				1E66A23B1A78D2C9009B9388 /* Box.cpp */,
 				1E66A23C1A78D2C9009B9388 /* Box.h */,
-				1E66A23F1A78D2C9009B9388 /* Particle.cpp */,
 				1E66A2401A78D2C9009B9388 /* Particle.h */,
+				1E66A23B1A78D2C9009B9388 /* Box.cpp */,
+				1E66A23F1A78D2C9009B9388 /* Particle.cpp */,
 				953CFBAD1A7687B000FBC979 /* main.cpp */,
 			);
 			path = Modelleringsprojekt;

@@ -2,19 +2,16 @@
 #include <GL/glew.h>
 
 #include <iostream>
-#include <GLUT/glut.h>
 #include "Particle.h"
 #include "Box.h"
 #include <GLFW/glfw3.h>
 #include <thread>
 
 
-
-// Horizontal position of the box.
 Particle particles[500];
-Box myBox = Box();
+Box box = Box();
 
-// Create the particles
+// Create all the particles
 void CreateParticles()
 {
     
@@ -25,32 +22,6 @@ void CreateParticles()
     
 }
 
-/*
- Allows for user input to control the particles.
- */
-static void special (int key, int x, int y)
-{
-    switch (key)
-    {
-        case GLUT_KEY_DOWN:
-            for(int i = 0; i <= 500; i++)
-            {
-                particles[i].SetYPos((float)particles[i].GetYPos()*1.01f);
-            }
-            break;
-
-            //case GLUT_KEY_UP:      particles[i].SetXPos((float)particles[i].GetXPos()+0.01f);        break;
-            //case GLUT_KEY_LEFT:      zpos -= 5;        break;
-            //case GLUT_KEY_RIGHT:      boxX += 5;        break;
-            //case GLUT_KEY_F1:	rotAngle += 5;		break;
-            
-        default: break;
-    }
-    
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
 void display()
 {
     
@@ -59,8 +30,6 @@ void display()
         particles[i].DrawObjects();
         
     }
-    
-   // myBox.DrawBox();
     
 }
 
@@ -110,6 +79,8 @@ int main(int argc, char *argv[])
         display();
         idle();
         
+        box.DrawBox();
+        
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
         glfwSwapBuffers(window);
@@ -125,26 +96,29 @@ int main(int argc, char *argv[])
     
     return EXIT_SUCCESS;
     
-    /*
-    
-    glutInitWindowSize(512,512);
-    glutInitWindowPosition(100,100);
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-    glutCreateWindow("OpenGL1");
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();	
-    gluOrtho2D(0.0, 512.0, 0.0, 512.0);
-
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutIdleFunc(idle);
-    glutSpecialFunc(special);
-    glutMainLoop();
-    
-    return EXIT_SUCCESS;*/
-    
 }
+
+
+
+
+/*
+ 
+ glutInitWindowSize(512,512);
+ glutInitWindowPosition(100,100);
+ glutInit(&argc, argv);
+ glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+ glutCreateWindow("OpenGL1");
+ 
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ gluOrtho2D(0.0, 512.0, 0.0, 512.0);
+ 
+ glutDisplayFunc(display);
+ glutReshapeFunc(reshape);
+ glutIdleFunc(idle);
+ glutSpecialFunc(special);
+ glutMainLoop();
+ 
+ return EXIT_SUCCESS;*/
 
 
