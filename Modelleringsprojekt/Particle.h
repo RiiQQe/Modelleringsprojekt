@@ -1,17 +1,19 @@
+#include <glm/glm.hpp>
+
 
 class Particle
 {
     private:
-		float xpos,ypos,zpos;                 // position of the particle
-		float xspeed,yspeed,zspeed;           // speed of the particle
+    	glm::vec2 pos;
+    	glm::vec2 vel;
+    	float gravity, mass, density;
 	
     public:
         void CreateParticle();
         void EvolveParticle();
         void DrawObjects();
-    	float GetXPos();
-        float GetYPos();
-    	void SetXPos(float xPos);
-	    void SetYPos(float yPos);
-
+    
+    	glm::vec2 getPos();
+    	void setPos(float xPos, float yPos);
+    	void setPressure(float value);
 };
