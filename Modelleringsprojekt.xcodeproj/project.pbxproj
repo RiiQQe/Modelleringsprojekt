@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1E66A23A1A78D2B0009B9388 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E66A2391A78D2B0009B9388 /* GLUT.framework */; };
-		1E66A2411A78D2C9009B9388 /* Box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E66A23B1A78D2C9009B9388 /* Box.cpp */; };
-		1E66A2431A78D2C9009B9388 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E66A23F1A78D2C9009B9388 /* Particle.cpp */; };
+		1EA83E981A7F68A1002BC1B1 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA83E971A7F68A1002BC1B1 /* Particle.cpp */; };
+		1EA83E9A1A7F68B8002BC1B1 /* Box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA83E991A7F68B8002BC1B1 /* Box.cpp */; };
 		1ED472F51A7780DF0065D12B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472F41A7780DF0065D12B /* Cocoa.framework */; };
 		1ED472F71A7780FB0065D12B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472F61A7780FB0065D12B /* CoreVideo.framework */; };
 		1ED472FB1A7785950065D12B /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472FA1A7785950065D12B /* IOKit.framework */; };
@@ -37,6 +37,8 @@
 		1E66A23C1A78D2C9009B9388 /* Box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Box.h; path = "../../OpenGL-Particles/Box.h"; sourceTree = "<group>"; };
 		1E66A23F1A78D2C9009B9388 /* Particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Particle.cpp; path = "../../OpenGL-Particles/Particle.cpp"; sourceTree = "<group>"; };
 		1E66A2401A78D2C9009B9388 /* Particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Particle.h; path = "../../OpenGL-Particles/Particle.h"; sourceTree = "<group>"; };
+		1EA83E971A7F68A1002BC1B1 /* Particle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Particle.cpp; path = Modelleringsprojekt/Particle.cpp; sourceTree = "<group>"; };
+		1EA83E991A7F68B8002BC1B1 /* Box.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Box.cpp; path = Modelleringsprojekt/Box.cpp; sourceTree = "<group>"; };
 		1ED472F41A7780DF0065D12B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		1ED472F61A7780FB0065D12B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		1ED472F81A7784ED0065D12B /* libsgct.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsgct.a; path = ../../../usr/local/lib/libsgct.a; sourceTree = "<group>"; };
@@ -67,6 +69,8 @@
 		953CFBA11A7687B000FBC979 = {
 			isa = PBXGroup;
 			children = (
+				1EA83E991A7F68B8002BC1B1 /* Box.cpp */,
+				1EA83E971A7F68A1002BC1B1 /* Particle.cpp */,
 				1E66A2391A78D2B0009B9388 /* GLUT.framework */,
 				1ED472FC1A7787570065D12B /* libglfw3.3.0.dylib */,
 				1ED472FA1A7785950065D12B /* IOKit.framework */,
@@ -155,9 +159,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1EA83E9A1A7F68B8002BC1B1 /* Box.cpp in Sources */,
+				1EA83E981A7F68A1002BC1B1 /* Particle.cpp in Sources */,
 				953CFBAE1A7687B000FBC979 /* main.cpp in Sources */,
-				1E66A2431A78D2C9009B9388 /* Particle.cpp in Sources */,
-				1E66A2411A78D2C9009B9388 /* Box.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
