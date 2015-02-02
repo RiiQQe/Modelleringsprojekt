@@ -7,17 +7,20 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
+const int NUM_PARTICLES = 500;
 
-Particle particles[500];
+Particle particles[NUM_PARTICLES];
 Box box = Box();
 
 // Create all the particles
 void CreateParticles()
 {
     
-    for(int i = 0; i <= 500; i++)
+    for(int i = 0; i <= NUM_PARTICLES; i++)
     {
         particles[i].CreateParticle();
+		if (i == 0) 
+			particles[i].setSpecial();
     }
     
 }
@@ -25,8 +28,33 @@ void CreateParticles()
 void display()
 {
     
-    for(int i = 0; i <= 500; i++)
+    for(int i = 0; i <= NUM_PARTICLES; i++)
     {
+		if (i == 0) {
+			std::cout << "(" << particles[i].getCell().x << ", " << particles[i].getCell().y << ")" << std::endl;
+			glm::vec2 toDraw = particles[i].getCell();
+			glBegin(GL_TRIANGLES);
+				glColor3f(0.3f, 0.3f, 0.3f);
+				glVertex2f(toDraw.x*32.f - 32.f, toDraw.y*32.f - 32.f);
+				glVertex2f(toDraw.x*32.f + 64.f, toDraw.y*32.f - 32.f);
+				glVertex2f(toDraw.x*32.f + 64.f, toDraw.y*32.f + 64.f);
+
+				glVertex2f(toDraw.x*32.f - 32.f, toDraw.y*32.f - 32.f);
+				glVertex2f(toDraw.x*32.f + 64.f, toDraw.y*32.f + 64.f);
+				glVertex2f(toDraw.x*32.f - 32.f, toDraw.y*32.f + 64.f);	
+
+
+				glColor3f(0.5f, 0.5f, 0.5f);
+				glVertex2f(toDraw.x*32.f, toDraw.y*32.f);
+				glVertex2f(toDraw.x*32.f + 32.f, toDraw.y*32.f);
+				glVertex2f(toDraw.x*32.f + 32.f, toDraw.y*32.f + 32.f);
+
+				glVertex2f(toDraw.x*32.f, toDraw.y*32.f);
+				glVertex2f(toDraw.x*32.f + 32.f, toDraw.y*32.f + 32.f);
+				glVertex2f(toDraw.x*32.f, toDraw.y*32.f + 32.f);	
+			glEnd();
+		}
+
         particles[i].DrawObjects();
         
     }
@@ -40,7 +68,7 @@ void reshape_window(GLFWwindow* window, int width, int height)
 
 void idle()
 {
-    for (int i = 0; i < 500; i++)
+    for (int i = 0; i < NUM_PARTICLES; i++)
     {
         particles[i].EvolveParticle();
     }
@@ -98,27 +126,5 @@ int main(int argc, char *argv[])
     
 }
 
-
-
-
-/*
- 
- glutInitWindowSize(512,512);
- glutInitWindowPosition(100,100);
- glutInit(&argc, argv);
- glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
- glutCreateWindow("OpenGL1");
- 
- glMatrixMode(GL_PROJECTION);
- glLoadIdentity();
- gluOrtho2D(0.0, 512.0, 0.0, 512.0);
- 
- glutDisplayFunc(display);
- glutReshapeFunc(reshape);
- glutIdleFunc(idle);
- glutSpecialFunc(special);
- glutMainLoop();
- 
- return EXIT_SUCCESS;*/
 
 

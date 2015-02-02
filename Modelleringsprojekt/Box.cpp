@@ -34,8 +34,20 @@ void Box::DrawBox()
 	glBegin(GL_LINES);
 		
     // Defines each line
-    glVertex2f(10.0f, 500.0f);
-    glVertex2f(10.0f, 10.0f);
+
+	// Define grid by doing fancy iterations.
+	glColor3f(0.2f, 0.2f, 0.2f);
+
+	for (int i = 1; i < 512 / 32; i++) {
+		glVertex2f(32.f * i, 0);
+		glVertex2f(32.f * i, 512);
+
+		glVertex2f(0, 32.f * i);
+		glVertex2f(512, 32.f * i);
+	}
+/*
+    glVertex2f(0.0f, 64.0f);
+    glVertex2f(512.0f, 64.0f);
     
     glVertex2f(10.0f, 10.0f);
     glVertex2f(502.0f, 10.0f);
@@ -45,7 +57,8 @@ void Box::DrawBox()
     
     glVertex2f(502.0f, 502.0f);
     glVertex2f(10.0f, 500.0f);
-	
+	*/
+
     glEnd();
 	
 	glPopMatrix();

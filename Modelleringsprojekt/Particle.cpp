@@ -3,16 +3,20 @@
 #include <stdlib.h>
 #include <GLUT/glut.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
+using namespace glm;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
 {
-    xpos= 100 + (rand() % (int)(400 - 99));
-	ypos= 256.0;
-	zpos= 0.5;
-	xspeed = 2-(int)rand() % 5 ;
-	yspeed = 2-(int)rand() % 5  ;
-	zspeed = 2-(int)rand() % 5  ;
+	pos = vec3(rand() % 512, rand() % 512, 0.5);
+	vel = vec3(2 - (int)rand() % 5, 2 - (int)rand() % 5, 2 - (int)rand() % 5 );
+
+	mass = 1.0f;
+	gravity = 9.82f;
+	radius = 3.0f;
+	special = false;
 }
 	
 
@@ -21,55 +25,55 @@ void Particle::CreateParticle()
 
 void Particle::EvolveParticle()
 {
-    if(xpos > 10 && xpos < 500 && ypos > 10 && ypos < 500){
-        
-        //std::cout << (int)rand() % 5 << "   ";
-    
-		xpos+= 2 - (int)rand()  % 5 ;
-		ypos+= 2 - (int)rand()  % 5 ;
-        //ypos -= 9.82*glfwGetTime();;
-		//yspeed+= 2 - (int)rand()  % 5 ;
-        
-    }
+	vel[1] -= gravity * 0.01f;
+	pos[1] += vel[1];
 
-    
+	if (pos[0] <  0 || pos[0] > 512) {
+		vel[0] = -vel[0];
+	}
+	if (pos[1] < 0 || pos[1] > 512) {
+		vel[1] = -vel[1] * 0.7;
+		pos[1] = pos[1] < 0 ? 0 : pos[1];
+	}
+
+	pos[0] += vel[0];
 }
 
 //Draw all the particles
 void Particle::DrawObjects()
 {
 
-    glColor3f(1,1,1);
+    !special ? glColor3f(1,0,0) :  glColor3f(1,1,1);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0,1.0); glVertex3f(xpos+3, ypos+3,zpos);     // top    right
-    glTexCoord2f(0.0,1.0); glVertex3f(xpos-3, ypos+3,zpos);     // top    left
-    glTexCoord2f(0.0,1.0); glVertex3f(xpos+3, ypos-3,zpos);     // bottom right
-    glTexCoord2f(0.0,1.0); glVertex3f(xpos-3, ypos-3,zpos);     // bottom left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]+3,pos[2]);     // top    right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]+3,pos[2]);     // top    left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]-3,pos[2]);     // bottom right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]-3,pos[2]);     // bottom left
     
     glEnd();
 	
 }
 
-
-float Particle::GetXPos()
-{
-	return xpos;
-}
-
-
-float Particle::GetYPos()
-{
-    return ypos;
-}
+glm::vec3 Particle::getPos() {
+	return pos;
+}	
 
 
 void Particle::SetXPos(float xPos)
 {
-	xpos = xPos;
+	pos[0] = xPos;
 }
 
 
 void Particle::SetYPos(float yPos)
 {
-	xpos = yPos;
+	pos[1] = yPos;
+}
+
+glm::vec2 Particle::getCell() {
+	return glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
+}
+
+void Particle::setSpecial() {
+	special = true;
 }
