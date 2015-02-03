@@ -10,13 +10,14 @@ using namespace glm;
 // Constructor for a particle.
 void Particle::CreateParticle()
 {
-	pos = vec3(rand() % 512, rand() % 512, 0.5);
+	pos = vec2(rand() % 512, rand() % 512);
 	vel = vec3(2 - (int)rand() % 5, 2 - (int)rand() % 5, 2 - (int)rand() % 5 );
 
 	mass = 1.0f;
 	gravity = 9.82f;
 	radius = 3.0f;
 	special = false;
+    current_gridcell = vec2(0,0);
 }
 	
 
@@ -39,22 +40,30 @@ void Particle::EvolveParticle()
 	pos[0] += vel[0];
 }
 
+
+
+void Particle::setCurrentGridCell(){
+
+    current_gridcell = glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
+    
+}
+
 //Draw all the particles
 void Particle::DrawObjects()
 {
 
     !special ? glColor3f(1,0,0) :  glColor3f(1,1,1);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]+3,pos[2]);     // top    right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]+3,pos[2]);     // top    left
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]-3,pos[2]);     // bottom right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]-3,pos[2]);     // bottom left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]+3,0.5);     // top    right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]+3,0.5);     // top    left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]-3,0.5);     // bottom right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]-3,0.5);     // bottom left
     
     glEnd();
 	
 }
 
-glm::vec3 Particle::getPos() {
+glm::vec2 Particle::getPos() {
 	return pos;
 }	
 
