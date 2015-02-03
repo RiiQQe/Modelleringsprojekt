@@ -82,18 +82,24 @@ void display()
 
     }
 
-	int currIndexToLookAt = particles[0].getCellIndex();
+	//int currIndexToLookAt = particles[0].getCellIndex();
+	int currIndexToLookAt;
 
 	for (int k = 0; k <= NUM_PARTICLES; ++k) {
-		if (currIndexToLookAt == particles[k].getCellIndex() && k != 0)
-		{
 
-			glBegin(GL_LINES);
-			glColor3f(1, 1, 0);
-				glVertex2f(particles[0].getPos().x, particles[0].getPos().y);
-				glVertex2f(particles[k].getPos().x, particles[k].getPos().y);
-			glEnd();
+		currIndexToLookAt = particles[k].getCellIndex();
 
+		for (int l = 0; l <= NUM_PARTICLES; ++l) {
+		
+            if (currIndexToLookAt == particles[l].getCellIndex() && k != l && glm::sqrt(glm::pow(particles[l].getPos().x - particles[k].getPos().x, 2) + glm::pow(particles[l].getPos().y - particles[k].getPos().y, 2)) < 64)
+			{
+
+				glBegin(GL_LINES);
+				glColor3f(1, 1, 0);
+					glVertex2f(particles[l].getPos().x, particles[l].getPos().y);
+					glVertex2f(particles[k].getPos().x, particles[k].getPos().y);
+				glEnd();
+			}
 			/*
 			glBegin(GL_TRIANGLES);
 
