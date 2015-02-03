@@ -51,7 +51,7 @@ void display()
 
 //		cells[_index + 1].addParticle(particles[i]);
 
-
+		/*
 		if (i == 0) {
 			//std::cout << "(" << particles[i].getCell().x << ", " << particles[i].getCell().y << ")" << std::endl;
 			glm::vec2 toDraw = particles[i].getCell();
@@ -76,7 +76,7 @@ void display()
 				glVertex2f(toDraw.x*32.f + 32.f, toDraw.y*32.f + 32.f);
 				glVertex2f(toDraw.x*32.f, toDraw.y*32.f + 32.f);	
 			glEnd();
-		}
+		}*/
 
         particles[i].DrawObjects();
 
@@ -87,6 +87,14 @@ void display()
 	for (int k = 0; k <= NUM_PARTICLES; ++k) {
 		if (currIndexToLookAt == particles[k].getCellIndex() && k != 0)
 		{
+
+			glBegin(GL_LINES);
+			glColor3f(1, 1, 0);
+				glVertex2f(particles[0].getPos().x, particles[0].getPos().y);
+				glVertex2f(particles[k].getPos().x, particles[k].getPos().y);
+			glEnd();
+
+			/*
 			glBegin(GL_TRIANGLES);
 
 				glColor3f(1, 1, 0);
@@ -104,9 +112,8 @@ void display()
 				glVertex2f(particles[k].getCell().x * 32.f, particles[k].getCell().y * 32.f);
 				glVertex2f(particles[k].getCell().x * 32.f + 32.f, particles[k].getCell().y * 32.f + 32.f);
 				glVertex2f(particles[k].getCell().x * 32.f, particles[k].getCell().y * 32.f + 32.f);
-			glEnd();
-
-			break;
+			glEnd();*/
+			//break;
 		}
 	}
 }
@@ -157,7 +164,7 @@ int main(int argc, char *argv[])
         display();
         idle();
         
-        box.DrawBox();
+//        box.DrawBox();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
