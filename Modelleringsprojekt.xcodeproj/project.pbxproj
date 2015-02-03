@@ -16,6 +16,7 @@
 		95B17A751A7F6CF900A0D807 /* libglfw3.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 95B17A741A7F6CF900A0D807 /* libglfw3.3.0.dylib */; };
 		95B17A761A7F6E0B00A0D807 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95B17A6D1A7F6B8E00A0D807 /* Particle.cpp */; };
 		95B17A771A7F717700A0D807 /* Box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95B17A6F1A7F6BB100A0D807 /* Box.cpp */; };
+		95B17A7C1A80CB1A00A0D807 /* Cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95B17A7A1A80CB1A00A0D807 /* Cell.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,6 +45,8 @@
 		95B17A701A7F6BB100A0D807 /* Box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box.h; sourceTree = "<group>"; };
 		95B17A711A7F6BB100A0D807 /* Particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
 		95B17A741A7F6CF900A0D807 /* libglfw3.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw3.3.0.dylib; path = Modelleringsprojekt/libglfw3.3.0.dylib; sourceTree = "<group>"; };
+		95B17A7A1A80CB1A00A0D807 /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cell.cpp; sourceTree = "<group>"; };
+		95B17A7B1A80CB1A00A0D807 /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cell.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +93,8 @@
 			children = (
 				95B17A6F1A7F6BB100A0D807 /* Box.cpp */,
 				95B17A701A7F6BB100A0D807 /* Box.h */,
+				95B17A7A1A80CB1A00A0D807 /* Cell.cpp */,
+				95B17A7B1A80CB1A00A0D807 /* Cell.h */,
 				95B17A711A7F6BB100A0D807 /* Particle.h */,
 				95B17A6D1A7F6B8E00A0D807 /* Particle.cpp */,
 				953CFBAD1A7687B000FBC979 /* main.cpp */,
@@ -154,6 +159,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				95B17A771A7F717700A0D807 /* Box.cpp in Sources */,
+				95B17A7C1A80CB1A00A0D807 /* Cell.cpp in Sources */,
 				95B17A761A7F6E0B00A0D807 /* Particle.cpp in Sources */,
 				953CFBAE1A7687B000FBC979 /* main.cpp in Sources */,
 			);

@@ -1,5 +1,8 @@
 #include <glm/glm.hpp>
 
+#ifndef _Particle_H_
+#define _Particle_H_
+
 class Particle
 {
     private:
@@ -19,3 +22,5 @@ class Particle
 		
 		void setSpecial();
 };
+
+#endif
