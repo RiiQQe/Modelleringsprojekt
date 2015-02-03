@@ -40,9 +40,7 @@ void Particle::EvolveParticle()
 }
 
 //Draw all the particles
-void Particle::DrawObjects()
-{
-
+void Particle::DrawObjects() {
     !special ? glColor3f(1,0,0) :  glColor3f(1,1,1);
     glBegin(GL_TRIANGLE_STRIP);
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]+3,pos[2]);     // top    right
@@ -51,24 +49,11 @@ void Particle::DrawObjects()
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]-3,pos[2]);     // bottom left
     
     glEnd();
-	
 }
 
 glm::vec3 Particle::getPos() {
 	return pos;
 }	
-
-
-void Particle::SetXPos(float xPos)
-{
-	pos[0] = xPos;
-}
-
-
-void Particle::SetYPos(float yPos)
-{
-	pos[1] = yPos;
-}
 
 glm::vec2 Particle::getCell() {
 	return glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
@@ -76,4 +61,13 @@ glm::vec2 Particle::getCell() {
 
 void Particle::setSpecial() {
 	special = true;
+}
+
+void Particle::setCellIndex() {
+	glm::vec2 cell = getCell();
+	cellIndex = (int)cell.x % 16 + (int)cell.y * 16;
+}
+
+int Particle::getCellIndex() {
+	return cellIndex;
 }

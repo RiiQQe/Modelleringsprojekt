@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
-const int NUM_PARTICLES = 10;
+const int NUM_PARTICLES = 100;
 const int GRID_WIDTH = 16;
 const int GRID_HEIGHT = 16;
 
@@ -29,31 +29,33 @@ void CreateParticles()
 			particles[i].setSpecial();
     }
     
-	for (int j = 1; j <= GRID_WIDTH * GRID_HEIGHT; j++) {
+/*	for (int j = 1; j <= GRID_WIDTH * GRID_HEIGHT; j++) {
 		cells[j].CreateCell(j);
-	}
+	}*/
 }
 
 void display()
 {
-    for (int j = 1; j <= GRID_WIDTH * GRID_HEIGHT; j++) {
+    /*for (int j = 0; j <= GRID_WIDTH * GRID_HEIGHT; j++) {
 		cells[j].clearParticles();
-	}
+	}*/
 
     for(int i = 0; i <= NUM_PARTICLES; i++)
     {
-	
+		particles[i].setCellIndex();
 		// We want to set the neightbours of each cell. How? 
 		// Solution for now - push every particle into corresponding cell - beta style;
 
-		glm::vec2 currCell = particles[i].getCell();
-		int _index = (int) currCell.x % 16 + (int) (currCell.y * 16);
+	//	glm::vec2 currCell = particles[i].getCell();
+	//	int _index = (int) currCell.x % 16 + (int) (currCell.y * 16);
 
-		cells[_index + 1].addParticle(particles[i]);
+//		cells[_index + 1].addParticle(particles[i]);
+
 
 		if (i == 0) {
 			//std::cout << "(" << particles[i].getCell().x << ", " << particles[i].getCell().y << ")" << std::endl;
 			glm::vec2 toDraw = particles[i].getCell();
+
 			glBegin(GL_TRIANGLES);
 				glColor3f(0.3f, 0.3f, 0.3f);
 				glVertex2f(toDraw.x*32.f - 32.f, toDraw.y*32.f - 32.f);
@@ -77,25 +79,35 @@ void display()
 		}
 
         particles[i].DrawObjects();
+
     }
-	
-	glm::vec2 outputCell = particles[0].getCell();
-	int ind = (int) outputCell.x % 16 + (int) (outputCell.y * 16);
-//	cells[ind].displayParticles();
 
-	if (cells[ind].hasNeighbours()) {
-		glBegin(GL_TRIANGLES);
-			glColor3f(0.8f, 0.2f, 0.2f);
-			glVertex2f(outputCell.x*32.f, outputCell.y*32.f);
-			glVertex2f(outputCell.x*32.f + 32.f, outputCell.y*32.f);
-			glVertex2f(outputCell.x*32.f + 32.f, outputCell.y*32.f + 32.f);
+	int currIndexToLookAt = particles[0].getCellIndex();
 
-			glVertex2f(outputCell.x*32.f, outputCell.y*32.f);
-			glVertex2f(outputCell.x*32.f + 32.f, outputCell.y*32.f + 32.f);
-			glVertex2f(outputCell.x*32.f, outputCell.y*32.f + 32.f);	
-		glEnd();
-	
-        particles[0].DrawObjects();
+	for (int k = 0; k <= NUM_PARTICLES; ++k) {
+		if (currIndexToLookAt == particles[k].getCellIndex() && k != 0)
+		{
+			glBegin(GL_TRIANGLES);
+
+				glColor3f(1, 1, 0);
+				glVertex2f(particles[k].getCell().x*32.f - 32.f, particles[k].getCell().y*32.f - 32.f);
+				glVertex2f(particles[k].getCell().x*32.f + 64.f, particles[k].getCell().y*32.f - 32.f);
+				glVertex2f(particles[k].getCell().x*32.f + 64.f, particles[k].getCell().y*32.f + 64.f);
+				glVertex2f(particles[k].getCell().x*32.f - 32.f, particles[k].getCell().y*32.f - 32.f);
+				glVertex2f(particles[k].getCell().x*32.f + 64.f, particles[k].getCell().y*32.f + 64.f);
+				glVertex2f(particles[k].getCell().x*32.f - 32.f, particles[k].getCell().y*32.f + 64.f);	
+
+				glColor3f(1.f, 1.f, 1);
+				glVertex2f(particles[k].getCell().x * 32.f, particles[k].getCell().y * 32.f);
+				glVertex2f(particles[k].getCell().x * 32.f + 32.f, particles[k].getCell().y * 32.f + 32.f);
+				glVertex2f(particles[k].getCell().x * 32.f + 32.f, particles[k].getCell().y * 32.f);
+				glVertex2f(particles[k].getCell().x * 32.f, particles[k].getCell().y * 32.f);
+				glVertex2f(particles[k].getCell().x * 32.f + 32.f, particles[k].getCell().y * 32.f + 32.f);
+				glVertex2f(particles[k].getCell().x * 32.f, particles[k].getCell().y * 32.f + 32.f);
+			glEnd();
+
+			break;
+		}
 	}
 }
 

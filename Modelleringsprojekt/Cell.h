@@ -6,7 +6,8 @@ using namespace std;
 class Cell {
 	private: 
 		int index;
-		vector<Particle> particles;
+		int currMax;
+		Particle *particles[500];
 
 	public:
 		void CreateCell(int _index);

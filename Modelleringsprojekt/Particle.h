@@ -10,17 +10,17 @@ class Particle
 		glm::vec3 vel;
 		float mass, gravity, radius;
 		bool special;
+		int cellIndex;
 	
     public:
         void CreateParticle();
         void EvolveParticle();
         void DrawObjects();
         glm::vec3 getPos();
-    	void SetXPos(float xPos);
-	    void SetYPos(float yPos);
 		glm::vec2 getCell();
-		
 		void setSpecial();
+		void setCellIndex();
+		int getCellIndex();	
 };
 
 #endif
