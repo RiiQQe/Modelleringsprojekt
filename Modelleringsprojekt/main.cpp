@@ -91,7 +91,7 @@ void display()
 
 		for (int l = 0; l <= NUM_PARTICLES; ++l) {
 		
-            if (currIndexToLookAt == particles[l].getCellIndex() && k != l && glm::sqrt(glm::pow(particles[l].getPos().x - particles[k].getPos().x, 2) + glm::pow(particles[l].getPos().y - particles[k].getPos().y, 2)) < 64)
+            if (currIndexToLookAt == particles[l].getCellIndex() && k != l && glm::sqrt(glm::pow(particles[l].getPos().x - particles[k].getPos().x, .2f) + glm::pow(particles[l].getPos().y - particles[k].getPos().y, .2f)) < 64)
 			{
 
 				glBegin(GL_LINES);
