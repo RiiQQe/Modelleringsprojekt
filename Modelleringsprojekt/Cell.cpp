@@ -5,50 +5,116 @@ using namespace std;
 
 // Constructor for creation of cell
 void Cell::CreateCell(int _index) {
-
 	index = _index;
-	currMax = 0;
-
+	
+	setNeighbours();
 //	cout << "Cell creation: index: " << index << endl;
 //	cout << "contains: " << currMax << " items. WHoah!" << endl;
 }
 
 // Function to add particle to this list
-void Cell::addParticle(Particle _particle) {
-	particles[currMax] = &_particle;
-	currMax++;
+void Cell::addParticle(Particle &_particle) {
+	particles.push_back(_particle);
 }
 
 // Return particles currently within this cell
-vector<Particle> Cell::getParticles() {
-	vector<Particle> p;
-	for (int i = 0; i < currMax; ++i) {
-		p.push_back(*particles[i]);
-	}
-
-	return p;
+const vector<Particle> &Cell::getParticles() const {
+	return particles;
 }
 
 // Clear the particles list
 void Cell::clearParticles() {
-	if (currMax != 0) {
-		for (int i = 0; i < currMax; ++i) {
-//			delete particles[i];
-			particles[i] = nullptr;
-		}
+	particles.clear();
+}
+
+// Return the neighbours
+const std::vector<int> &Cell::getNeighbours() const {
+	return neighbours;
+}
+
+// Set the neighbours
+void Cell::setNeighbours() {
+	// set neighbours
+
+	neighbours.push_back(index);
 	
-		currMax = 0;
+	switch (index % 16) {
+		case 0: 
+			if (index == 0) {
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index + 16);
+				neighbours.push_back(index + 16 + 1);
+			}
+			else if (index == 256 - 16) {
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index - 16);
+				neighbours.push_back(index - 16 + 1);
+			}
+			else {
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index + 16);
+				neighbours.push_back(index - 16);
+				neighbours.push_back(index + 16 + 1);
+				neighbours.push_back(index - 16 + 1); 
+			}
+			break;
+		case 15: 
+			if (index == 15) {
+				neighbours.push_back(index - 1);
+				neighbours.push_back(index + 16);
+				neighbours.push_back(index + 16 - 1);
+			}
+			else if (index == 255) {
+				neighbours.push_back(index - 1);
+				neighbours.push_back(index - 16);
+				neighbours.push_back(index - 16 - 1);
+			}
+			else {
+				neighbours.push_back(index - 1);
+				neighbours.push_back(index + 16);
+				neighbours.push_back(index - 16);
+				neighbours.push_back(index + 16 - 1);
+				neighbours.push_back(index - 16 - 1); 
+			}
+			break;
+		default:
+			if (index < 16) {
+				neighbours.push_back(index - 1);
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index + 16 - 1);
+				neighbours.push_back(index + 16);
+				neighbours.push_back(index + 16 + 1);
+			}
+			else if (index > 239) {
+				neighbours.push_back(index - 1);
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index - 16 - 1);
+				neighbours.push_back(index - 16);
+				neighbours.push_back(index - 16 + 1);
+			}
+			else {
+				neighbours.push_back(index - 16 - 1);
+				neighbours.push_back(index - 16);
+				neighbours.push_back(index - 16 + 1);
+				neighbours.push_back(index - 1);
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index + 16 - 1);
+				neighbours.push_back(index + 16);
+				neighbours.push_back(index + 16 + 1);
+			}
+			break;
 	}
+
+	std::cout << "Setting the neighbours of cell: " << index << std::endl;
+	std::cout << "Neighbours are: "; 
+
+	for (std::vector<int>::iterator it = neighbours.begin(); it != neighbours.end(); ++it) {
+		std::cout << *it << ", ";
+	}
+	std::cout << std::endl;
 }
 
-void Cell::displayParticles() {
-	/*
-	for (int i = 0; i < currMax; ++i) {
-		std::cout << particles[i] << ", ";
-	}
-	*/
-}
-
-bool Cell::hasNeighbours() {
-	return currMax > 1;
+// Return this cell's index;
+const int &Cell::getIndex() const{
+	return index;
 }

@@ -13,14 +13,15 @@ class Particle
 		int cellIndex;
 	
     public:
+		static int count;
+
         void CreateParticle();
         void EvolveParticle();
         void DrawObjects();
-        glm::vec3 getPos();
-		glm::vec2 getCell();
-		void setSpecial();
-		void setCellIndex();
-		int getCellIndex();	
+        const glm::vec3 &getPos() const;
+		int getCellIndex();
+        void addToVel(glm::vec2 v);
+        glm::vec2 getVel();
 };
 
 #endif
