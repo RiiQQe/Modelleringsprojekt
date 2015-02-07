@@ -1,22 +1,21 @@
-#include <vector>
+#include <list>
 #include "Particle.h"
 
 using namespace std;
 
-class Cell {
-	private: 
-		vector<Particle> particles;
-		vector<int> neighbours;
-		int index;
-
+class Cell{
 	public:
 		void CreateCell(int _index);
-		void addParticle(Particle &_particle);
-        const vector<Particle> &getParticles() const;
-		void clearParticles();
-		const vector<int> &getNeighbours() const;
-		void setNeighbours();
-		const int &getIndex() const;
+		void AddParticleToCell(Particle _particle);
+		void setNeighbours(int _index);
+		void write();
 
-		void displayParticles();
+	private:
+		int index;
+		int currMax;
+
+		list<int> neighbours;
+		list<Particle> cellParticles;
+	
+
 };
