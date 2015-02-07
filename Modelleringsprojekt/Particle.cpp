@@ -10,13 +10,20 @@ using namespace glm;
 // Constructor for a particle.
 void Particle::CreateParticle()
 {
-	pos = vec2(rand() % 512, rand() % 512);
-	vel = vec3(2 - (int)rand() % 5, 2 - (int)rand() % 5, 2 - (int)rand() % 5 );
+	pos = vec2(0, 0 ) ;
+	vel = vec2(0);
 
 	mass = 1.0f;
 	gravity = 9.82f;
 	radius = 3.0f;
 	special = false;
+    pressure = 0;
+    density = 0;
+    
+    viscousity_force = glm::vec2(0);
+    pressure_force = glm::vec2(0);
+    gravity_force = glm::vec2(0);
+    
     current_gridcell = vec2(0,0);
 }
 	
@@ -26,6 +33,8 @@ void Particle::CreateParticle()
 
 void Particle::EvolveParticle()
 {
+    
+    /*
 	vel[1] -= gravity * 0.01f;
 	pos[1] += vel[1];
 
@@ -37,9 +46,71 @@ void Particle::EvolveParticle()
 		pos[1] = pos[1] < 0 ? 0 : pos[1];
 	}
 
-	pos[0] += vel[0];
+	pos[0] += vel[0];*/
+    
+    if(pos.x <= 1){
+    	
+        pos.x = 1;
+        vel.x = -0.7*vel.x;
+    }
+    
+    else if(pos.x >= 512){
+        pos.x = 512;
+        vel.x = -0.7*vel.x;
+    	
+    }
+    
+    if(pos.y <= 1){
+    	
+        pos.y = 1;
+        vel.y = -0.7*vel.y;
+    	
+    }
+    
+    else if(pos.y >= 512){
+    	
+        pos.y = 512;
+        vel.y = -0.7*vel.y;
+    
+    }
+    
 }
 
+void Particle::setPressureForce(glm::vec2 f){
+
+    pressure_force = f;
+}
+
+void Particle::setViscousityForce(glm::vec2 f){
+	
+    viscousity_force = f;
+
+}
+
+void Particle::setGravityForce(glm::vec2 f){
+
+    gravity_force = f;
+	
+}
+
+
+glm::vec2 Particle::getGravityForce(){
+	
+    return gravity_force;
+	
+}
+
+glm::vec2 Particle::getViscousityForce(){
+    
+    return viscousity_force;
+    
+}
+
+glm::vec2 Particle::getPressureForce(){
+    
+    return pressure_force;
+    
+}
 
 
 void Particle::setCurrentGridCell(){
@@ -52,12 +123,12 @@ void Particle::setCurrentGridCell(){
 void Particle::DrawObjects()
 {
 
-    !special ? glColor3f(1,0,0) :  glColor3f(1,1,1);
+    !special ? glColor3f(0.2,0.2,1) :  glColor3f(1,1,1);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]+3,0.5);     // top    right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]+3,0.5);     // top    left
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]-3,0.5);     // bottom right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]-3,0.5);     // bottom left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+1, pos[1]+1,0.5);     // top    right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-1, pos[1]+1,0.5);     // top    left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+1, pos[1]-1,0.5);     // bottom right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-1, pos[1]-1,0.5);     // bottom left
     
     glEnd();
 	
@@ -67,17 +138,25 @@ glm::vec2 Particle::getPos() {
 	return pos;
 }	
 
+void Particle::setVelocity(glm::vec2 v){
 
-void Particle::SetXPos(float xPos)
-{
-	pos[0] = xPos;
+    vel = v;
+
+}
+
+void Particle::setPos(glm::vec2 p){
+
+    pos = p;
+    
 }
 
 
-void Particle::SetYPos(float yPos)
-{
-	pos[1] = yPos;
+glm::vec2 Particle::getVelocity(){
+
+    return vel;
+
 }
+
 
 glm::vec2 Particle::getCell() {
 	return glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
@@ -86,3 +165,22 @@ glm::vec2 Particle::getCell() {
 void Particle::setSpecial() {
 	special = true;
 }
+
+void Particle::setPressure(float p){
+    pressure = p;
+}
+
+void Particle::setDensity(float d){
+    density = d;
+}
+
+float Particle::getDensity(){
+    return density;
+}
+
+float Particle::getPressure(){
+    return pressure;
+}
+
+
+
