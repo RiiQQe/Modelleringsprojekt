@@ -18,20 +18,20 @@ class Cell {
 		void CreateCell(int _index);
 		void addCellParticle(Particle &_particle);
 
-		const list <Particle> getCellParticles() const;
-		//list <Particle> getNeighbours() const;
+		const vector <Particle> &getCellParticles() const;
+		vector <Particle> getNeighbours() const;
 		void clearCellParticles();
 
 		void setNeighbours(int index);
-		const list <int> getNeighbourIndexes() const;
+		const vector <int> &getNeighbourIndexes() const;
 		
 
 		void displayParticles();
 		bool hasNeighbours();
 private:
 	
-		list <int> neighbours;
-		list <Particle> cellParticles;
+		vector <int> neighbours;
+		vector <Particle> cellParticles;
 
 
 

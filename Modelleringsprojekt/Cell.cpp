@@ -8,16 +8,17 @@ void Cell::addCellParticle(Particle &_particle){
 	cellParticles.push_back(_particle);
 }
 
-const list <int> Cell::getNeighbourIndexes() const{
+const vector <int> &Cell::getNeighbourIndexes() const{
 	return neighbours;
 }
 
 
-const list <Particle> Cell::getCellParticles() const{
+const vector <Particle> &Cell::getCellParticles() const{
 	return cellParticles;
 }
 
 void Cell::setNeighbours(int i){
+	neighbours.push_back(i);
 	int x = i % GRID_WIDTH;		//Get right x 
 	int y = (int)(i / GRID_HEIGHT); //Get right y
 	cout << "Y " << y << " X " << x << endl;

@@ -41,7 +41,7 @@ void display()
     
 	
 	int cellInd = 0;
-	for (int i = 0; i <= NUM_PARTICLES; i++)
+	for (int i = 0; i < NUM_PARTICLES; i++)
 	{
 		particles[i].EvolveParticle();
 		particles[i].DrawObjects();
@@ -49,23 +49,25 @@ void display()
 		cells[cellInd].addCellParticle(particles[i]);
 
 	}
+	
+	for (int k = 0; k < GRID_WIDTH * GRID_HEIGHT; k++) {
 
-	for (int k = 0; k < GRID_WIDTH*GRID_HEIGHT; k++) {
+		vector <int> cell_neighbours = cells[k].getNeighbourIndexes();
+		vector <Particle> cell_particles = cells[k].getCellParticles();
+		for (int i = 0; i < cell_particles.size(); i++){
 
-		list <Particle> cell_particles = cells[k].getCellParticles();
-		list <int> cell_neighbours = cells[k].getNeighbourIndexes();
-		for (list<Particle>::iterator p_iterator = cell_particles.begin(); p_iterator != cell_particles.end(); p_iterator++){
-			/*(p_iterator)->EvolveParticle();
-			(p_iterator)->DrawObjects();*/
-			for (list<int>::iterator n_iterator = cell_neighbours.begin(); n_iterator != cell_neighbours.end(); n_iterator++) {
+			for (vector<int>::iterator n_iterator = cell_neighbours.begin(); n_iterator != cell_neighbours.end(); n_iterator++) {
 				//cout << "Neighbours index " << *n_iterator << endl;
-				list <Particle> neighbours = cells[*n_iterator].getCellParticles();
-				for (list<Particle>::iterator p_iterator2 = neighbours.begin(); p_iterator2 != neighbours.end(); p_iterator2++){
-					glBegin(GL_LINES);
-					glColor3f(1, 1, 0);
-					glVertex2f((*p_iterator).getPos().x, (*p_iterator).getPos().y);
-					glVertex2f((*p_iterator2).getPos().x, (*p_iterator2).getPos().y);
-					glEnd();
+
+				vector <Particle> neighbours = cells[*n_iterator].getCellParticles();
+				for (vector<Particle>::iterator p_iterator2 = neighbours.begin(); p_iterator2 != neighbours.end(); p_iterator2++){
+					if (cell_particles[k].getPos() != (*p_iterator2).getPos()){
+						glBegin(GL_LINES);
+						glColor3f(1, 1, 0);
+						glVertex2f(cell_particles[k].getPos().x, cell_particles[k].getPos().y);
+						glVertex2f((*p_iterator2).getPos().x, (*p_iterator2).getPos().y);
+						glEnd();
+					}
 				}
 			}
 		}
