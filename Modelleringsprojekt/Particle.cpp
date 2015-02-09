@@ -11,7 +11,7 @@ using namespace glm;
 void Particle::CreateParticle()
 {
 	pos = vec3(rand() % 512, rand() % 512, 0.5);
-	vel = vec3(2 - (int)rand() % 5, 2 - (int)rand() % 5, 2 - (int)rand() % 5 );
+	vel = vec3(2 - (int)rand() % 5, 2 - (int)rand() % 5, 0);
 
 	mass = 1.0f;
 	gravity = 9.82f;
@@ -27,12 +27,14 @@ void Particle::EvolveParticle(){
 	pos[0] += vel[0];
 	pos[1] += vel[1];
 
-	if (pos[0] < 0 || pos[0] > 512) {
-		pos[0] = pos[0] / 512 < 0.5 ? 0 : 512;
+	if (pos[0] < 0 || pos[0] > 511) {
+		pos[0] = pos[0] / 511 < 0.5 ? 0 : 511;
+        vel[0] = -vel[0];
 	}
 
-	if (pos[1] < 0 || pos[1] > 512) {
-		pos[1] = pos[1] / 512 < 0.5 ? 0 : 512;
+	if (pos[1] < 0 || pos[1] > 511) {
+		pos[1] = pos[1] / 511 < 0.5 ? 0 : 511;
+        vel[1] = -vel[1];
 	}
 }
 

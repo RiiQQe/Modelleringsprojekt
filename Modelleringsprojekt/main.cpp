@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
-const int NUM_PARTICLES = 100;
+const int NUM_PARTICLES = 1000;
 const int GRID_WIDTH = 16;
 const int GRID_HEIGHT = 16;
 
@@ -33,20 +33,59 @@ void CreateParticles()
 
 void display()
 {
+    
+    // Clear all particles in cells
     for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
-		//std::cout << j << ": contains " << cells[j].getParticles().size() << " particles." << std::endl;
+        
 		cells[j].clearParticles();
+        
 	}
-
+    
+    
+    // Push every particle into corresponding cell
     for(int i = 0; i < NUM_PARTICLES; i++) {
-		//particles[i].setCellIndex();
-		// We want to set the neightbours of each cell. How? 
-		// Solution for now - push every particle into corresponding cell - beta style;
-
+        
 		cells[particles[i].getCellIndex()].addParticle(particles[i]);
-
-        particles[i].DrawObjects();
+        
 	}
+    
+    
+    
+    for(int i = 0; i < NUM_PARTICLES; i++){
+
+        int cellIndex = particles[i].getCellIndex();
+        
+        vector<int> current_cells = cells[cellIndex].getNeighbours();
+        
+        for(int j = 0; j < current_cells.size(); j++){
+            
+            // Loop through all neighbouring particles
+            for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
+                
+                Particle n = cells[current_cells.at(j)].getParticles().at(k);
+                
+                glBegin(GL_LINES);
+                glColor3f(1.f, 1.f, 0.f);
+                
+                glVertex2f(particles[i].getPos().x, particles[i].getPos().y);
+                glVertex2f(n.getPos().x, n.getPos().y);
+                
+                glEnd();
+        
+        	}
+            
+        
+        }
+        
+    }
+    
+    for(int i = 0; i < NUM_PARTICLES; i++){
+    
+    	particles[i].DrawObjects();
+    
+    }
+     
+    
 }
 
 void reshape_window(GLFWwindow* window, int width, int height)

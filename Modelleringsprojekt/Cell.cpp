@@ -18,7 +18,7 @@ void Cell::addParticle(Particle &_particle) {
 }
 
 // Return particles currently within this cell
-const vector<Particle> &Cell::getParticles() const {
+const vector<Particle> Cell::getParticles() const {
 	return particles;
 }
 
