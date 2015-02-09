@@ -5,11 +5,11 @@ using namespace std;
 
 // Constructor for creation of cell
 void Cell::CreateCell(int _index) {
+	// Let each cell know it's own index in the big picture
 	index = _index;
 	
+	// At first execution, find my neighbours and save them
 	setNeighbours();
-//	cout << "Cell creation: index: " << index << endl;
-//	cout << "contains: " << currMax << " items. WHoah!" << endl;
 }
 
 // Function to add particle to this list
@@ -34,73 +34,71 @@ const std::vector<int> &Cell::getNeighbours() const {
 
 // Set the neighbours
 void Cell::setNeighbours() {
-	// set neighbours
-
 	neighbours.push_back(index);
 	
-	switch (index % 16) {
+	switch (index % W) {
 		case 0: 
 			if (index == 0) {
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + 16);
-				neighbours.push_back(index + 16 + 1);
+				neighbours.push_back(index + W);
+				neighbours.push_back(index + W + 1);
 			}
-			else if (index == 256 - 16) {
+			else if (index == H * ( W - 1)) {
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index - 16);
-				neighbours.push_back(index - 16 + 1);
+				neighbours.push_back(index - W);
+				neighbours.push_back(index - W + 1);
 			}
 			else {
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + 16);
-				neighbours.push_back(index - 16);
-				neighbours.push_back(index + 16 + 1);
-				neighbours.push_back(index - 16 + 1); 
+				neighbours.push_back(index + W);
+				neighbours.push_back(index - W);
+				neighbours.push_back(index + W + 1);
+				neighbours.push_back(index - W + 1); 
 			}
 			break;
-		case 15: 
-			if (index == 15) {
+		case (W - 1):
+			if (index == W - 1) {
 				neighbours.push_back(index - 1);
-				neighbours.push_back(index + 16);
-				neighbours.push_back(index + 16 - 1);
+				neighbours.push_back(index + W);
+				neighbours.push_back(index + W - 1);
 			}
-			else if (index == 255) {
+			else if (index == W * H - 1) {
 				neighbours.push_back(index - 1);
-				neighbours.push_back(index - 16);
-				neighbours.push_back(index - 16 - 1);
+				neighbours.push_back(index - W);
+				neighbours.push_back(index - W - 1);
 			}
 			else {
 				neighbours.push_back(index - 1);
-				neighbours.push_back(index + 16);
-				neighbours.push_back(index - 16);
-				neighbours.push_back(index + 16 - 1);
-				neighbours.push_back(index - 16 - 1); 
+				neighbours.push_back(index + W);
+				neighbours.push_back(index - W);
+				neighbours.push_back(index + W - 1);
+				neighbours.push_back(index - W - 1); 
 			}
 			break;
 		default:
-			if (index < 16) {
+			if (index < W) {
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + 16 - 1);
-				neighbours.push_back(index + 16);
-				neighbours.push_back(index + 16 + 1);
+				neighbours.push_back(index + W - 1);
+				neighbours.push_back(index + W);
+				neighbours.push_back(index + W + 1);
 			}
-			else if (index > 239) {
+			else if (index > H * (W - 1) - 1) {
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index - 16 - 1);
-				neighbours.push_back(index - 16);
-				neighbours.push_back(index - 16 + 1);
+				neighbours.push_back(index - W - 1);
+				neighbours.push_back(index - W);
+				neighbours.push_back(index - W + 1);
 			}
 			else {
-				neighbours.push_back(index - 16 - 1);
-				neighbours.push_back(index - 16);
-				neighbours.push_back(index - 16 + 1);
+				neighbours.push_back(index - W - 1);
+				neighbours.push_back(index - W);
+				neighbours.push_back(index - W + 1);
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + 16 - 1);
-				neighbours.push_back(index + 16);
-				neighbours.push_back(index + 16 + 1);
+				neighbours.push_back(index + W - 1);
+				neighbours.push_back(index + W);
+				neighbours.push_back(index + W + 1);
 			}
 			break;
 	}

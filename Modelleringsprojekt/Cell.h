@@ -9,6 +9,11 @@ class Cell {
 		vector<int> neighbours;
 		int index;
 
+		enum GRID {
+			W = 16,
+			H = 16
+		};
+
 	public:
 		void CreateCell(int _index);
 		void addParticle(Particle &_particle);

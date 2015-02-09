@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
-const int NUM_PARTICLES = 1000;
+const int NUM_PARTICLES = 100;
 const int GRID_WIDTH = 16;
 const int GRID_HEIGHT = 16;
 
