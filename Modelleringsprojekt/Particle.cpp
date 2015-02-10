@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 using namespace glm;
-const float dt = 1.f;
+const float dt = 0.5f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()

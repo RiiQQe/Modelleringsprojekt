@@ -7,6 +7,7 @@
 #include "Cell.h"
 #include <GLFW/glfw3.h>
 #include <thread>
+#include <sstream>
 
 const int NUM_PARTICLES = 500;
 const int GRID_WIDTH = 512;
@@ -21,6 +22,34 @@ Particle particles[NUM_PARTICLES];
 Box box = Box();
 
 Cell cells[GRID_WIDTH * GRID_HEIGHT];
+
+// FPS specific vars
+double lastTime;
+int frames = 0;
+
+// References and pointer needed globally
+GLFWwindow* window;
+
+// Neat way of displaying FPS
+void handleFps() {
+    frames++;
+    double currentTime = glfwGetTime() - lastTime;
+    double fps = (double) frames / currentTime;
+    
+    if (currentTime > 1.0) {
+        lastTime = glfwGetTime();
+        frames = 0;
+        
+        std::ostringstream stream;
+        stream << fps;
+        std::string fpsString = "Betafluid 0.0.2 | FPS: " + stream.str();
+        
+        // Convert the title to a c_str and set it
+        const char* pszConstString = fpsString.c_str();
+        
+        glfwSetWindowTitle(window, pszConstString);
+    }
+}
 
 
 // Create all the particles
@@ -43,7 +72,7 @@ void CreateParticles()
         
         j++;
         
-        particles[i].setPos(glm::vec3(10 + j*6, 400 - k*6, 0.5));
+        particles[i].setPos(glm::vec3(10 + j*6, k*6, 0.5));
         
     }
     
@@ -52,7 +81,7 @@ void CreateParticles()
     }
 }
 
-void calculateDensity(){
+void calculateDensityAndPressure(){
 
     for(int i = 0; i < NUM_PARTICLES; i++){
         
@@ -60,20 +89,15 @@ void calculateDensity(){
        
         int cellIndex = particles[i].getCellIndex();
         int limit = 0;
-        //std::cout << cellIndex;
-        
+
         vector<int> current_cells = cells[cellIndex].getNeighbours();
-        
-      //  std::cout << "SIZE" << current_cells.size() << std::endl;
-        
-        //std::cout << current_cells.size();
     
         for(int j = 0; j < current_cells.size(); j++){
             
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
-                if (++limit == 60)
+                if (++limit > 80)
                     break;
                 
                 Particle *n = cells[current_cells.at(j)].getParticles().at(k);
@@ -97,27 +121,18 @@ void calculateDensity(){
         }
         
         //std::cout << "DENSITY SUM: " << density_sum << std::endl;
-        if(density_sum != 0)
+        if(density_sum != 0){
             particles[i].setDensity(density_sum);
-        else
+            particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
+        }
+        else{
             particles[i].setDensity(998.f);
+            particles[i].setPressure(STIFFNESS*(998.f - 998.f));
+        }
         
     }
 
-
 }
-
-void calculatePressure(){
-    
-    for(int i = 0; i < NUM_PARTICLES; i++){
-        
-        //std::cout << "PRESSURE " << particles[i].getDensity();
-        particles[i].setPressure(STIFFNESS*(particles[i].getDensity() - 1000.f));
-        
-    }
-    
-}
-
 
 void calculateForces(){
     
@@ -148,7 +163,7 @@ void calculateForces(){
                     continue;
                 }
                 
-                if (++limit == 60)
+                if (++limit > 80)
                     break;
                 
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
@@ -183,30 +198,10 @@ void calculateForces(){
 
 }
 
-void display()
-{
+void calculateAcceleration(){
     
     // Clear all particles in cells
     for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
-        
-		cells[j].clearParticles();
-        
-	}
-    
-    // Push every particle into corresponding cell
-    for(int i = 0; i < NUM_PARTICLES; i++) {
-        
-		cells[particles[i].getCellIndex()].addParticle(particles[i]);
-        
-        //std::cout << "index:" << particles[i].getCellIndex() << std::endl;
-	}
-    
-    
-    calculateDensity();
-    calculatePressure();
-    
-    // Clear all particles in cells
-   /* for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
         
         cells[j].clearParticles();
         
@@ -217,25 +212,22 @@ void display()
         
         cells[particles[i].getCellIndex()].addParticle(particles[i]);
         
-        //std::cout << "index:" << particles[i].getCellIndex() << std::endl;
     }
-    */
     
-
+    calculateDensityAndPressure();
     calculateForces();
-    
-    for (int i = 0; i < NUM_PARTICLES; i++)
-    {
-        particles[i].EvolveParticle();
-    }
+
+}
+
+void display()
+{
+    handleFps();
     
     for(int i = 0; i < NUM_PARTICLES; i++){
     
     	particles[i].DrawObjects();
     
     }
-    
-    
     
 }
 
@@ -245,11 +237,11 @@ void reshape_window(GLFWwindow* window, int width, int height)
 }
 
 void idle()
-{/*
+{
     for (int i = 0; i < NUM_PARTICLES; i++)
     {
         particles[i].EvolveParticle();
-    }*/
+    }
     
 }
 
@@ -261,7 +253,7 @@ int main(int argc, char *argv[])
     
     glfwInit();
     
-    GLFWwindow* window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
+    window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     
@@ -281,6 +273,7 @@ int main(int argc, char *argv[])
         glLoadIdentity();
         glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
         
+        calculateAcceleration();
         display();
         idle();
         
