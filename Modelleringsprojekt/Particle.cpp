@@ -1,12 +1,11 @@
 #include <iostream>
 #include "Particle.h"
 #include <stdlib.h>
-#include <GLUT/glut.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
 using namespace glm;
-const float dt = 0.5f;
+const float dt = 1.f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
