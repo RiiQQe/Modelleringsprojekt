@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Particle.h"
 #include <stdlib.h>
-#include <GLUT/glut.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -13,11 +12,9 @@ void Particle::CreateParticle()
 {
 	pos = vec3(0, 0, 0);
 	vel = vec3(0, 0, 0);
-
+    
 	mass = 1.0f;
 	gravity = 9.82f;
-	radius = 3.0f;
-	special = false;
     pressure = 0;
     density = 0;
     
@@ -54,7 +51,6 @@ void Particle::EvolveParticle()
         vel.y = -vel.y;
         pos.y = 1;
         
-        
     }
     
     else if(pos.y > 512){
@@ -68,7 +64,7 @@ void Particle::EvolveParticle()
 
 //Draw all the particles
 void Particle::DrawObjects() {
-    !special ? glColor3f(0.2,0.2,1) :  glColor3f(1,1,1);
+    glColor3f(0.2,0.2,1);
     glBegin(GL_TRIANGLE_STRIP);
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]+2,0.5);     // top    right
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]+2,0.5);     // top    left
@@ -79,8 +75,16 @@ void Particle::DrawObjects() {
 }
 
 const glm::vec3 Particle::getPos() const {
+    
 	return pos;
-}	
+    
+}
+
+const glm::vec3 Particle::getVelocity(){
+    
+    return vel;
+    
+}
 
 int Particle::getCellIndex() {
 	glm::vec2 cell = glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
@@ -88,16 +92,6 @@ int Particle::getCellIndex() {
 	
 	return _cellIndex;
 }
-
-void Particle::addToVel(glm::vec2 v) {
-    vel.x += v.x;
-    vel.y += v.y;
-}
-
-glm::vec2 Particle::getVel() {
-    return glm::vec2(vel.x, vel.y);
-}
-
 
 void Particle::setPos(glm::vec3 p){
     pos = p;
@@ -119,23 +113,6 @@ float Particle::getPressure(){
     return pressure;
 }
 
-glm::vec3 Particle::getGravityForce(){
-    
-    return gravity_force;
-    
-}
-
-glm::vec3 Particle::getViscousityForce(){
-    
-    return viscousity_force;
-    
-}
-
-glm::vec3 Particle::getPressureForce(){
-    
-    return pressure_force;
-    
-}
 
 void Particle::setPressureForce(glm::vec3 f){
     
@@ -153,10 +130,3 @@ void Particle::setGravityForce(glm::vec3 f){
     gravity_force = f;
     
 }
-
-glm::vec3 Particle::getVelocity(){
-    
-    return vel;
-    
-}
-
