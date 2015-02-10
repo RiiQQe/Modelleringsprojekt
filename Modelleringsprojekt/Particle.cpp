@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Particle.h"
 #include <stdlib.h>
-#include <GLUT/glut.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
