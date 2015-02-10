@@ -5,7 +5,7 @@ using namespace std;
 
 // Function to add particle to this list
 void Cell::addCellParticle(Particle &_particle){
-	cellParticles.push_back(_particle);
+	cellParticles.push_back(&_particle);
 }
 
 const vector <int> &Cell::getNeighbourIndexes() const{
@@ -13,7 +13,7 @@ const vector <int> &Cell::getNeighbourIndexes() const{
 }
 
 
-const vector <Particle> &Cell::getCellParticles() const{
+vector <Particle*> Cell::getCellParticles(){
 	return cellParticles;
 }
 
@@ -21,7 +21,7 @@ void Cell::setNeighbours(int i){
 	neighbours.push_back(i);
 	int x = i % GRID_WIDTH;		//Get right x 
 	int y = (int)(i / GRID_HEIGHT); //Get right y
-	cout << "Y " << y << " X " << x << endl;
+	//cout << "Y " << y << " X " << x << endl;
 	switch (x){
 		//Vänster sida
 		case 0:
