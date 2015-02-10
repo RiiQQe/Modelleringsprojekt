@@ -1,0 +1,17 @@
+﻿Build started 2015-02-10 11:25:33.
+     1>Project "C:\Users\Micke\Desktop\skola\TNM085\Modelleringsprojekt\Modelleringsprojekt\TestRickard\TestRickard\TestRickard.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\opengl-wrappers\glfw\include" /I"C:\opengl-wrappers\glew\include" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\main.cpp
+         main.cpp
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(95): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(98): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(115): error C2065: 'M_PI' : undeclared identifier
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(151): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(154): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(176): error C2065: 'M_PI' : undeclared identifier
+     1>c:\users\micke\desktop\skola\tnm085\modelleringsprojekt\modelleringsprojekt\main.cpp(180): error C2065: 'M_PI' : undeclared identifier
+     1>Done Building Project "C:\Users\Micke\Desktop\skola\TNM085\Modelleringsprojekt\Modelleringsprojekt\TestRickard\TestRickard\TestRickard.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.65
