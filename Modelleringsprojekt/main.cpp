@@ -8,9 +8,9 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
-const int NUM_PARTICLES = 100;
-const int GRID_WIDTH = 16;
-const int GRID_HEIGHT = 16;
+const int NUM_PARTICLES = 500;
+const int GRID_WIDTH = 512;
+const int GRID_HEIGHT = 512;
 
 const float VISCOUSITY = 2.5f;
 const float PARTICLE_MASS = .14f;
@@ -43,7 +43,7 @@ void CreateParticles()
         
         j++;
         
-        particles[i].setPos(glm::vec3(10 + j*0.2, 400 - k*0.2, 0.5));
+        particles[i].setPos(glm::vec3(10 + j*6, 400 - k*6, 0.5));
         
     }
     
@@ -59,6 +59,7 @@ void calculateDensity(){
         float density_sum = 0;
        
         int cellIndex = particles[i].getCellIndex();
+        int limit = 0;
         //std::cout << cellIndex;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
@@ -72,9 +73,13 @@ void calculateDensity(){
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
-                Particle n = cells[current_cells.at(j)].getParticles().at(k);
+                if (++limit == 60)
+                    break;
                 
-                glm::vec3 diffvec = particles[i].getPos() - n.getPos();
+                Particle *n = cells[current_cells.at(j)].getParticles().at(k);
+                
+                glm::vec3 diffvec = particles[i].getPos() - n->getPos();
+                
                 diffvec/=512.f;
                 
                 float abs_diffvec = glm::length(diffvec);
@@ -94,8 +99,11 @@ void calculateDensity(){
         //std::cout << "DENSITY SUM: " << density_sum << std::endl;
         if(density_sum != 0)
             particles[i].setDensity(density_sum);
+        else
+            particles[i].setDensity(998.f);
         
     }
+
 
 }
 
@@ -120,22 +128,30 @@ void calculateForces(){
         glm::vec3 viscousity = glm::vec3(0);
         
         int cellIndex = particles[i].getCellIndex();
+        int limit = 0;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
         
-        //std::cout << "SIZE" << current_cells.size() << std::endl;
-        
+        //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
             
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
-                Particle n = cells[current_cells.at(j)].getParticles().at(k);
+                Particle *n = cells[current_cells.at(j)].getParticles().at(k);
                 
-                if(n.getPos() == particles[i].getPos())
+                //std::cout << "PARTICLE POS : " << particles[i].getPos().y << std::endl;
+                //std::cout << "NEIGHBOUR POS : " << n.getPos().y << std::endl;
+                
+                if(n->getPos() == particles[i].getPos()){
+                   // std::cout << "LDALDLASD";
                     continue;
+                }
                 
-                glm::vec3 diffvec = particles[i].getPos() - n.getPos();
+                if (++limit == 60)
+                    break;
+                
+                glm::vec3 diffvec = particles[i].getPos() - n->getPos();
                 diffvec/=512.f;
                 
                 float abs_diffvec = glm::length(diffvec);
@@ -148,9 +164,9 @@ void calculateForces(){
                     
                     float visc_gradient = (45/(M_PI * glm::pow(h, 6.0)))*(h - abs_diffvec);
                     
-                    pressure +=  PARTICLE_MASS * ((particles[i].getPressure() + n.getPressure()) / (2 * n.getDensity())) * W_pressure_gradient;
+                    pressure +=  PARTICLE_MASS * ((particles[i].getPressure() + n->getPressure()) / (2 * n->getDensity())) * W_pressure_gradient;
                     
-                    viscousity += VISCOUSITY * PARTICLE_MASS * ((n.getVelocity() - particles[i].getVelocity()) / (n.getDensity())) * visc_gradient;
+                    viscousity += VISCOUSITY * PARTICLE_MASS * ((n->getVelocity() - particles[i].getVelocity()) / (n->getDensity())) * visc_gradient;
                     
                     
                 }
@@ -183,12 +199,29 @@ void display()
 		cells[particles[i].getCellIndex()].addParticle(particles[i]);
         
         //std::cout << "index:" << particles[i].getCellIndex() << std::endl;
-        
 	}
     
     
     calculateDensity();
     calculatePressure();
+    
+    // Clear all particles in cells
+   /* for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
+        
+        cells[j].clearParticles();
+        
+    }
+    
+    // Push every particle into corresponding cell
+    for(int i = 0; i < NUM_PARTICLES; i++) {
+        
+        cells[particles[i].getCellIndex()].addParticle(particles[i]);
+        
+        //std::cout << "index:" << particles[i].getCellIndex() << std::endl;
+    }
+    */
+    
+
     calculateForces();
     
     for (int i = 0; i < NUM_PARTICLES; i++)
@@ -201,7 +234,8 @@ void display()
     	particles[i].DrawObjects();
     
     }
-     
+    
+    
     
 }
 

@@ -14,11 +14,11 @@ void Cell::CreateCell(int _index) {
 
 // Function to add particle to this list
 void Cell::addParticle(Particle &_particle) {
-	particles.push_back(_particle);
+	particles.push_back(&_particle);
 }
 
 // Return particles currently within this cell
-const vector<Particle> Cell::getParticles() const {
+vector<Particle*> Cell::getParticles() {
 	return particles;
 }
 
@@ -103,13 +103,13 @@ void Cell::setNeighbours() {
 			break;
 	}
 
-	std::cout << "Setting the neighbours of cell: " << index << std::endl;
+	/*std::cout << "Setting the neighbours of cell: " << index << std::endl;
 	std::cout << "Neighbours are: "; 
 
 	for (std::vector<int>::iterator it = neighbours.begin(); it != neighbours.end(); ++it) {
 		std::cout << *it << ", ";
 	}
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 }
 
 // Return this cell's index;

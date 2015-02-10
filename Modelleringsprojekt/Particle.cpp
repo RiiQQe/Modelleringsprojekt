@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 using namespace glm;
-const float dt = 0.001;
+const float dt = 1.f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
@@ -30,54 +30,23 @@ void Particle::CreateParticle()
 //This method changes the vertical and horizontal poition of the particle
 void Particle::EvolveParticle()
 {
-    //std::cout <<" VISC :" << gravity_force.y << std::endl;
     
-    //s = v0 + at^2 /2
-    double newPosX = pos[0] + 0.1*vel[0] + 0.1*0.1*((gravity_force.x + pressure_force.x + viscousity_force.x) / density)/2;
-    double newPosY = pos[1] + 0.1*vel[1] + 0.1*0.1*((gravity_force.y + pressure_force.y + viscousity_force.y ) / density)/2;
-    
-    //v = s / t
-    double newVelX = (newPosX - pos[0])/0.1;
-    double newVelY = (newPosY - pos[1])/0.1;
-    
-    // vel[0] = vel[0] + 0.01*((gravity_force.x + pressure_force.x + viscousity_force.x) / density);
-    //vel[1] = vel[1] + 0.01*((gravity_force.y + pressure_force.y + viscousity_force.y ) / density);
-    
-    pos[0] = newPosX;
-    pos[1] = newPosY;
-    
-    vel[0] = newVelX;
-    vel[1] = newVelY;
-    
-    
-    
-    /*
-     vel[1] -= gravity * 0.01f;
-     pos[1] += vel[1];
-     
-     if (pos[0] <  0 || pos[0] > 512) {
-     vel[0] = -vel[0];
-     }
-     if (pos[1] < 0 || pos[1] > 512) {
-     vel[1] = -vel[1] * 0.7;
-     pos[1] = pos[1] < 0 ? 0 : pos[1];
-     }
-     
-     pos[0] += vel[0];*/
+    glm::vec3 newPos = pos + dt*vel + dt*dt*((gravity_force + pressure_force + viscousity_force)/density)/2.f;
+    glm::vec3 newVel = (newPos - pos) / dt;
+
+    pos = newPos;
+    vel = newVel;
     
     if(pos.x < 1){
         
         vel.x = -vel.x;
         pos.x = 1;
-        
     }
     
     else if(pos.x > 512){
         
         vel.x = -vel.x;
         pos.x = 512;
-        
-        
     }
     
     if(pos.y < 1){
@@ -92,7 +61,6 @@ void Particle::EvolveParticle()
         
         vel.y = -vel.y;
         pos.y = 512;
-        
         
     }
     
