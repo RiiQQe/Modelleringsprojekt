@@ -1,4 +1,5 @@
 #define GLEW_STATIC
+#define _USE_MATH_DEFINES
 #include <GL/glew.h>
 
 #include <iostream>
@@ -9,9 +10,10 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 500;
+const int NUM_PARTICLES = 1000;
 const int GRID_WIDTH = 512;
 const int GRID_HEIGHT = 512;
+const int KERNEL_LIMIT = 20;
 
 const float VISCOUSITY = 2.5f;
 const float PARTICLE_MASS = .14f;
@@ -86,19 +88,21 @@ void calculateDensityAndPressure(){
     for(int i = 0; i < NUM_PARTICLES; i++){
         
         float density_sum = 0;
-       
+		bool limitBool = false;
         int cellIndex = particles[i].getCellIndex();
         int limit = 0;
 
         vector<int> current_cells = cells[cellIndex].getNeighbours();
     
         for(int j = 0; j < current_cells.size(); j++){
-            
+			if (limitBool) break;
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
-                if (++limit > 80)
+				if (++limit > KERNEL_LIMIT){ 
+					limitBool = true; // This means that there is many surrounding particles
                     break;
+				}
                 
                 Particle *n = cells[current_cells.at(j)].getParticles().at(k);
                 
@@ -107,13 +111,11 @@ void calculateDensityAndPressure(){
                 diffvec/=512.f;
                 
                 float abs_diffvec = glm::length(diffvec);
-
-                //std::cout << "ABS DIFFVEC: " << abs_diffvec << std::endl;
                 
                 if(abs_diffvec < h){
                		
                     density_sum += PARTICLE_MASS * (315 / (64*M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)),3.0);
-                    
+					//cout << "Density: " << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
                 }
                 
             }
@@ -122,8 +124,11 @@ void calculateDensityAndPressure(){
         
         //std::cout << "DENSITY SUM: " << density_sum << std::endl;
         if(density_sum != 0){
+			if (limitBool){
+				density_sum = 111000.f;
+			}
             particles[i].setDensity(density_sum);
-            particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
+			particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
         }
         else{
             particles[i].setDensity(998.f);
@@ -144,12 +149,15 @@ void calculateForces(){
         
         int cellIndex = particles[i].getCellIndex();
         int limit = 0;
+		bool limitBool = false;
+
+		float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
         
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
-            
+			if (limitBool) break;
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
@@ -159,12 +167,13 @@ void calculateForces(){
                 //std::cout << "NEIGHBOUR POS : " << n.getPos().y << std::endl;
                 
                 if(n->getPos() == particles[i].getPos()){
-                   // std::cout << "LDALDLASD";
                     continue;
                 }
                 
-                if (++limit > 80)
+				if (++limit > KERNEL_LIMIT){
+					limitBool = true;
                     break;
+				}
                 
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
                 diffvec/=512.f;
@@ -179,11 +188,10 @@ void calculateForces(){
                     
                     float visc_gradient = (45/(M_PI * glm::pow(h, 6.0)))*(h - abs_diffvec);
                     
-                    pressure +=  PARTICLE_MASS * ((particles[i].getPressure() + n->getPressure()) / (2 * n->getDensity())) * W_pressure_gradient;
+                    pressure +=  -PARTICLE_MASS * ((particles[i].getPressure() + n->getPressure()) / (2 * n->getDensity())) * W_pressure_gradient;
                     
                     viscousity += VISCOUSITY * PARTICLE_MASS * ((n->getVelocity() - particles[i].getVelocity()) / (n->getDensity())) * visc_gradient;
-                    
-                    
+                
                 }
                 
             }
