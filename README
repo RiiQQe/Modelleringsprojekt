@@ -1,1 +1,4 @@
-First entry, just testing to see if pushing works as intended!
+BetaFluid - Version 0.0.3. 
+This is a now working 2D fluid simulation using Smoothed Particle Hydrodynamics for course Modelling and Simulation (TNM085) at Linköpings University, coded and calculated by Oskar Ankarberg, Rickard Lindstedt, Max Jonsson, Michael Novén and Michael Sjöström.
+
+
