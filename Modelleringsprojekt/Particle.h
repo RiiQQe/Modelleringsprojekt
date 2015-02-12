@@ -9,7 +9,7 @@ class Particle
 		glm::vec3 pos;
 		glm::vec3 vel;
 		glm::vec3 pressure_force, gravity_force, viscosity_force;
-		float mass, gravity, radius, pressure, density;
+		float mass,gravity, radius, pressure, density;
 		int cellIndex;
 	
     public:
@@ -26,9 +26,11 @@ class Particle
 		const float getPressure() const;
 
 		void addPressureForce(glm::vec3 f);
+		void addViscosityForce(glm::vec3 f);
 
 		void resetValues();
 
+		const glm::vec3 getVelocity() const;
 
 		void setSpecial();
 		void setCellIndex();

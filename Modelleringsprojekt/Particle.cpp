@@ -9,20 +9,31 @@
 #include <glm/glm.hpp>
 
 using namespace glm;
-float STEP = 0;
+int STEP = 0;
+float X = 0;
 const float dt = 0.1f;
+const float VISCOSITY =3.5;
+const float PARTICLE_MASS = 0.002;
+const float p_size = 4.f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
 {
+	if (STEP % 100 == 0)
+		X = X + 5;
+	pos = vec3(40.f + STEP , 200.f + X, 0.5f);
+	if (STEP > 100)
+		STEP = 0;
+	else
+		STEP = STEP + 9.f;
+	
 
-	pos = vec3(fmod(200.f + rand(), 100), 200.f + STEP, 0.5f);
-	STEP = STEP + 0.5f;
 	vel = vec3(0.f, 0.f, 0.f);
 	//vel = vec3(2 - (int)rand() % 5, 2 - (int)rand() % 5, 2 - (int)rand() % 5 );
 
 	gravity_force = glm::vec3(0.0f, -9.82f, 0.0f);
 	pressure_force = glm::vec3(0.f, 0.f, 0.f);
+	viscosity_force = glm::vec3(0.f, 0.f, 0.f);
 	density = 0.f;
 	pressure = 0.f;
 
@@ -47,7 +58,10 @@ void Particle::addPressure(float &p){
 const float Particle::getPressure() const{
 	return pressure;
 }
-
+const glm::vec3 Particle::getVelocity() const
+{
+	return vel;
+}
 //void updateForce(){
 //	glm::vec2 r_vec = p.getPos() - n.getPos()
 //	float h = 25;
@@ -60,22 +74,32 @@ void Particle::addPressureForce(glm::vec3 f){
 	//gravity_force.y = density * gravity_force.y;
 }
 
+void Particle::addViscosityForce(glm::vec3 f){
+	viscosity_force = viscosity_force + f;
+}
 //Evolves the particle parameters over time.
 //This method changes the vertical and horizontal poition of the particle
 
 void Particle::EvolveParticle()
 {
-	glm::vec3 acc = dt*(pressure_force + gravity_force*density)/density;
+	/*viscosity_force *= VISCOSITY * PARTICLE_MASS;
+	pressure_force *= -PARTICLE_MASS;*/
+	glm::vec3 acc = (pressure_force + gravity_force*density + viscosity_force)/density;
 	//cout << "FORCE x " << acc.x << " Force y " << pressure_force.y << endl;
 	//vel[0] = vel[0] + 1000*force.x; //  0.0000000000000001f*force.x;
 	//vel[1] = vel[1] ; // 0.0000000000000001f*force.y;
 	//cout << " FORCE Y " << vel[1] << endl;
 	// Move the particle
-	vel = vel + acc;
-	pos[0] += vel[0];
-	pos[1] += vel[1];
+	//vel = vel + acc;
 
-	
+	glm::vec3 newPos = pos + vel * dt + acc * dt * dt / 2.f;
+	/*pos[0] += vel[0];
+	pos[1] += vel[1];*/
+
+	glm::vec3 newVel = (newPos - pos) / dt;
+
+	pos = newPos;
+	vel = newVel;
 
 	if (pos[0] < 1 || pos[0] > 511) {
 		pos[0] =  pos[0] < 1.f ? 1.f : 511.f;
@@ -84,7 +108,7 @@ void Particle::EvolveParticle()
 
 	if (pos[1] < 1 || pos[1] > 511) {
 		pos[1] = pos[1] < 1.f ? 1.f : 511.f;
-		vel[1] = -vel[1];
+		vel[1] = -vel[1]*0.5f;
 	}
 
 	
@@ -95,10 +119,10 @@ void Particle::EvolveParticle()
 void Particle::DrawObjects() {
 	glColor3f(0, 0, 1);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]+3,pos[2]);     // top    right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]+3,pos[2]);     // top    left
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+3, pos[1]-3,pos[2]);     // bottom right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-3, pos[1]-3,pos[2]);     // bottom 
+	glTexCoord2f(0.0, 1.0); glVertex3f(pos[0] + p_size, pos[1] + p_size, pos[2]);     // top    right
+	glTexCoord2f(0.0, 1.0); glVertex3f(pos[0] - p_size, pos[1] + p_size, pos[2]);     // top    left
+	glTexCoord2f(0.0, 1.0); glVertex3f(pos[0] + p_size, pos[1] - p_size, pos[2]);     // bottom right
+	glTexCoord2f(0.0, 1.0); glVertex3f(pos[0] - p_size, pos[1] - p_size, pos[2]);     // bottom 
     glEnd();
 }
 

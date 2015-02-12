@@ -10,12 +10,12 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
-const int NUM_PARTICLES = 500;
+const int NUM_PARTICLES = 300;
 const float density_0 = 998.0f;
 const float K = 3.0f;
 const float H = 0.045f;
-//const int GRID_WIDTH = 20;
-//const int GRID_HEIGHT = 20;
+const int neighbour_limit = 100;
+const float PARTICLE_MASS = 0.02;
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -42,6 +42,15 @@ void Init()
    
 }
 
+float WviscosityLaplacian(double radiusSquared) {
+
+	static double coefficient = 45.0 / (M_PI*pow(H, 6));
+
+	double radius = sqrt(radiusSquared);
+
+	return coefficient * (H - radius);
+}
+
 void calculateAcceleration(){
 	for (int k = 0; k < NUM_PARTICLES; k++)
 	{
@@ -51,21 +60,28 @@ void calculateAcceleration(){
 		//GRADIENT
 		float density_p = p.getDensity();
 		float pressure_p = p.getPressure();
+		glm::vec3 velocity_p = p.getVelocity();
 		for (int i = 0; i < cell_neighbours.size(); i++){
 			vector <Particle*> neighbours = cells[i].getCellParticles();
-			for (int j = 0; j < neighbours.size(); j++) {
+			int n_limit = neighbours.size() < neighbour_limit ? neighbours.size() : neighbour_limit;
+			for (int j = 0; j < n_limit; j++) {
 				Particle *n = neighbours[j];
 				float r = glm::length(particles[k].getPos() - n->getPos()) / 512.f;
-				if (r < H){
+				if (r < H*H){
 					glm::vec3 r_vec = p.getPos() - n->getPos() / 512.f;
 					float density_n = n->getDensity();
 					float pressure_n = n->getPressure();
+					glm::vec3 velocity_n = n->getVelocity();
 					float w_scal = -(1890.f / (64.f* (float)M_PI * pow(H, 9.0f)))*pow((pow(H, 2.0f) - pow(r, 2.0f)), 2.0f);
 					glm::vec3 W_grad = glm::vec3(r_vec.x * w_scal, r_vec.y * w_scal, r_vec.z * w_scal);
 					//cout << "pressure_p    " << pressure_p << " pressure_n    " << pressure_n << endl;
 					glm::vec3 A_pressure = (pressure_p + pressure_n) / (2.0f * density_p*density_n) * W_grad;
-					//cout << "FORCE X   " << A_pressure.x << endl;
+					glm::vec3 A_viscocity = (velocity_p - velocity_n) / (density_p * density_n) * WviscosityLaplacian(glm::length(r_vec));
+
 					p.addPressureForce(A_pressure);
+					p.addViscosityForce(A_viscocity);
+					//cout << "FORCE X   " << A_pressure.x << endl;
+					
 
 
 
@@ -74,6 +90,7 @@ void calculateAcceleration(){
 			}
 
 		}
+
 	}
 
 }
@@ -88,11 +105,11 @@ void updateParticleParam(){
 		for (int i = 0; i < cell_neighbours.size(); i++){
 
 			vector <Particle*> neighbours = cells[cell_neighbours[i]].getCellParticles();
-			
-			for (int j = 0; j < neighbours.size(); j++) {
+			int n_limit = neighbours.size() < neighbour_limit ? neighbours.size() : neighbour_limit;
+			for (int j = 0; j < n_limit; j++) {
 				Particle *n = neighbours[j];
 				float r = glm::length(particles[k].getPos() - n->getPos()) / 512.f;
-				if (r < H){
+				if (r <= H*H){
 					float W = (315.f / (64.f * (float)(M_PI)*pow(H, 9.0f)))* pow((pow(H, 2.0f) - pow(r, 2.0f)), 3.0f);
 					sum_density += W;
 
@@ -115,6 +132,7 @@ void updateParticleParam(){
 		}else 
 		{
 			sum_density = 500.f;
+			p.addDensity(sum_density);
 		}
 		float P = K*(sum_density - density_0);
 		p.addPressure(P);
@@ -198,7 +216,7 @@ int main(int argc, char *argv[])
         display();
         //idle();
         
-        //box.DrawBox();
+        box.DrawBox();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);

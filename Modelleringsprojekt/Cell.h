@@ -3,8 +3,8 @@
 #include "Particle.h"
 
 using namespace std;
-const int GRID_WIDTH = 100;
-const int GRID_HEIGHT = 100;
+const int GRID_WIDTH = 20;
+const int GRID_HEIGHT = 20;
 
 class Cell {
 
