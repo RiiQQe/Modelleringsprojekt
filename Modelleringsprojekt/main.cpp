@@ -10,9 +10,8 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 1000;
-const int GRID_WIDTH = 512;
-const int GRID_HEIGHT = 512;
+const int NUM_PARTICLES = 400;
+
 const int KERNEL_LIMIT = 20;
 
 const float VISCOUSITY = 2.5f;
@@ -23,7 +22,7 @@ const float STIFFNESS = 3.f;
 Particle particles[NUM_PARTICLES];
 Box box = Box();
 
-Cell cells[GRID_WIDTH * GRID_HEIGHT];
+Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT];
 
 // FPS specific vars
 double lastTime;
@@ -78,7 +77,7 @@ void CreateParticles()
         
     }
     
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
+    for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT; j++) {
         cells[j].CreateCell(j);
     }
 }
@@ -182,7 +181,7 @@ void calculateForces(){
 
                 if(abs_diffvec < h){
                     
-                    float W_const_pressure = 45/(M_PI * glm::pow(h, 6.0)) * glm::pow(h - abs_diffvec, 3.0) / abs_diffvec;
+                    float W_const_pressure = 45.0f/(M_PI * glm::pow(h, 6.0)) * glm::pow(h - abs_diffvec, 3.0) / abs_diffvec;
                     
                     glm::vec3 W_pressure_gradient = glm::vec3(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, 0);
                     
@@ -209,7 +208,7 @@ void calculateForces(){
 void calculateAcceleration(){
     
     // Clear all particles in cells
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
+    for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT; j++) {
         
         cells[j].clearParticles();
         

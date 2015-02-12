@@ -9,10 +9,7 @@ class Cell {
 		vector<int> neighbours;
 		int index;
 
-		enum GRID {
-			W = 512,
-			H = 512
-		};
+		
 
 	public:
 		void CreateCell(int _index);
@@ -25,4 +22,9 @@ class Cell {
 		const int &getIndex() const;
 
 		void displayParticles();
+
+		
+		static const int GRID_WIDTH = 100;
+		static const int GRID_HEIGHT = 100;
+		 
 };
