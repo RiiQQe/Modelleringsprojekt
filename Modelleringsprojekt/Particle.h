@@ -21,8 +21,8 @@ class Particle
         void DrawObjects();
         const glm::vec3 getPos() const;
 		int getCellIndex();
-        void addToVel(glm::vec2 v);
-        glm::vec2 getVel();
+        void addToVel(glm::vec3 v);
+        glm::vec3 getVel();
     
     	void setPos(glm::vec3 p);
     

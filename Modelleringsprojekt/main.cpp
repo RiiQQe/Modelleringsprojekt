@@ -1,5 +1,10 @@
 #define GLEW_STATIC
 #define _USE_MATH_DEFINES
+#define GLFW_KEY_W
+#define GLFW_KEY_A
+#define GLFW_KEY_S
+#define GLFW_KEY_D
+
 #include <GL/glew.h>
 
 #include <iostream>
@@ -10,9 +15,10 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 1000;
-const int GRID_WIDTH = 512;
-const int GRID_HEIGHT = 512;
+const int NUM_PARTICLES = 27;
+const int GRID_WIDTH = 16; //KOLLA I Particle.cpp i funktionen getCellIndex()!!!
+const int GRID_HEIGHT = 16;
+const int GRID_LENGTH = 16;
 const int KERNEL_LIMIT = 20;
 
 const float VISCOUSITY = 2.5f;
@@ -21,13 +27,15 @@ const double h = 0.032f;
 const float STIFFNESS = 3.f;
 
 Particle particles[NUM_PARTICLES];
-Box box = Box();
 
 Cell cells[GRID_WIDTH * GRID_HEIGHT];
 
 // FPS specific vars
 double lastTime;
 int frames = 0;
+
+// Rotating vars
+double newTime, currTime = 0, deltaTime = 0, phi = 0, theta = 0;
 
 // References and pointer needed globally
 GLFWwindow* window;
@@ -62,11 +70,14 @@ void CreateParticles()
         
     }
     
-    int k = 0, j = 0;
+    int k = 0, j = 0, z = 0 ;
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        if(i % 10 == 0)
+		if (i % 9 == 0)
+			z++;
+
+        if(i % 3 == 0)
             k++;
         
         if(i % 10 == 0)
@@ -74,11 +85,10 @@ void CreateParticles()
         
         j++;
         
-        particles[i].setPos(glm::vec3(10 + j*6, k*6, 0.5));
-        
+        particles[i].setPos(glm::vec3(j*6, k*6, -z*6));   
     }
     
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
+    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; j++) {
         cells[j].CreateCell(j);
     }
 }
@@ -162,10 +172,7 @@ void calculateForces(){
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
                 Particle *n = cells[current_cells.at(j)].getParticles().at(k);
-                
-                //std::cout << "PARTICLE POS : " << particles[i].getPos().y << std::endl;
-                //std::cout << "NEIGHBOUR POS : " << n.getPos().y << std::endl;
-                
+
                 if(n->getPos() == particles[i].getPos()){
                     continue;
                 }
@@ -253,49 +260,120 @@ void idle()
     
 }
 
+void handleCamera(){
+
+	glMatrixMode(GL_MODELVIEW);
+	newTime = glfwGetTime();
+	deltaTime = newTime - currTime;
+	currTime = newTime;
+
+	if (glfwGetKey(window, GLFW_KEY_D)) {
+		phi -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
+		phi = fmod(phi, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
+		if (phi < 0.0) phi += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
+		glRotatef(phi, 0, 1, 0);
+	}
+	if (glfwGetKey(window, GLFW_KEY_A))
+	{
+		phi += deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
+		phi = fmod(phi, M_PI*2.0);
+		glRotatef(phi, 0, 1, 0);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_S)) {
+		theta -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
+		theta = fmod(theta, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
+		if (theta < 0.0) theta += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
+		glRotatef(theta, 1, 0, 0);
+	}
+	if (glfwGetKey(window, GLFW_KEY_W))
+	{
+		theta += deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
+		theta = fmod(theta, M_PI*2.0);
+		glRotatef(theta, 1, 0, 0);
+	}
+
+
+	if (glfwGetKey(window, GLFW_KEY_RIGHT)){
+		glTranslatef(10.f,0.0f,0.0f);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT)){
+		glTranslatef(-10.f, 0.0f, 0.0f);
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN)){
+		glTranslatef(0.f, -10.0f, 0.0f);
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP)){
+		glTranslatef(0.f, 10.0f, 0.0f);
+	}
+
+}
+
+void drawPlane(){
+
+
+	glPushMatrix();
+	glBegin(GL_POLYGON);
+
+	glColor3f(1.0f, 0.0f, 0.0f);  
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(512.0f, 0.0f, 0.0f);
+	glVertex3f(512.0f, 0.0f, 512.0f);
+	glVertex3f(0.0f, 0.0f, 512.0f);
+	
+	glEnd();
+	glPopMatrix();
+}
+
 
 int main(int argc, char *argv[])
 {
     
     CreateParticles();
-    
-    glfwInit();
-    
+
+	glfwInit();
+
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-    
-    
+
     while(!glfwWindowShouldClose(window)){
-        
+
         float ratio;
         int width, height;
        
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float) height;
         
-        glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
+		//glClearDepth(1.0f);
+		        
         glMatrixMode(GL_PROJECTION);
+
         glLoadIdentity();
-        glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
-        
-        calculateAcceleration();
+
+		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512.0);
+
+
+		/*ROTATION*/
+		handleCamera();
+
+		/*RITA UT PLANET*/
+		drawPlane();
+			
+		calculateAcceleration();
         display();
         idle();
         
-        // box.DrawBox();
-        
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
-        glfwSwapBuffers(window);
+		glfwSwapBuffers(window);
         
         //Poll for and process events
         glfwPollEvents();
-        
-    }
-    
+
+	}
     
     glfwDestroyWindow(window);
     glfwTerminate();

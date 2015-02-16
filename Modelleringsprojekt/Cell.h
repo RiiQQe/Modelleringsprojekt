@@ -10,8 +10,9 @@ class Cell {
 		int index;
 
 		enum GRID {
-			W = 512,
-			H = 512
+			W = 16,
+			H = 16,
+			L = 16
 		};
 
 	public:

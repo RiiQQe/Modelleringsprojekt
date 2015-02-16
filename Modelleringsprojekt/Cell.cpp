@@ -7,7 +7,7 @@ using namespace std;
 void Cell::CreateCell(int _index) {
 	// Let each cell know it's own index in the big picture
 	index = _index;
-	
+
 	// At first execution, find my neighbours and save them
 	setNeighbours();
 }
@@ -34,8 +34,35 @@ const std::vector<int> &Cell::getNeighbours() const {
 
 // Set the neighbours
 void Cell::setNeighbours() {
-	neighbours.push_back(index);
 	
+	neighbours.push_back(index);
+
+	switch (index % W){
+		case 0:
+			if (index == 0){
+				neighbours.push_back(index + 1);
+				neighbours.push_back(index + W);
+				neighbours.push_back(index + W + 1);
+				neighbours.push_back(index + 2*W);
+				neighbours.push_back(index + 2*W + 1);
+				neighbours.push_back(index + 2*W*H);
+				neighbours.push_back(index + 2*W*H + 1);
+
+			}
+
+
+
+
+
+
+	default:
+		break;
+	}
+
+
+
+
+
 	switch (index % W) {
 		case 0: 
 			if (index == 0) {
