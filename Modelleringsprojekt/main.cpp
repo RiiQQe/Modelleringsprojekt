@@ -10,15 +10,16 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 1000;
-const int GRID_WIDTH = 512;
-const int GRID_HEIGHT = 512;
+const int NUM_PARTICLES = 500;
+const int GRID_WIDTH = 32;
+const int GRID_HEIGHT = 32;
 const int KERNEL_LIMIT = 20;
 
-const float VISCOUSITY = 2.5f;
-const float PARTICLE_MASS = .14f;
-const double h = 0.032f;
-const float STIFFNESS = 3.f;
+const float VISCOUSITY = 500*2.5f;
+const float PARTICLE_MASS = 500*.14f;
+const double h = 16.f;
+const float STIFFNESS = 500*3.f;
+const float GRAVITY_CONST = 50000*9.82f;
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -66,15 +67,16 @@ void CreateParticles()
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        if(i % 10 == 0)
+        //Y-led
+        if(i % 40 == 0)
             k++;
         
-        if(i % 10 == 0)
+        if(i % 40 == 0)
             j=0;
         
         j++;
         
-        particles[i].setPos(glm::vec3(10 + j*6, k*6, 0.5));
+        particles[i].setPos(glm::vec3(20+j*16/2 - 8, 19*16 + k*16/2 - 8, 0.5));
         
     }
     
@@ -95,25 +97,30 @@ void calculateDensityAndPressure(){
         vector<int> current_cells = cells[cellIndex].getNeighbours();
     
         for(int j = 0; j < current_cells.size(); j++){
-			if (limitBool) break;
+			
+            //if (limitBool) break;
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
-				if (++limit > KERNEL_LIMIT){ 
+				/*if (++limit > KERNEL_LIMIT){
 					limitBool = true; // This means that there is many surrounding particles
                     break;
-				}
+				}*/
+                
+               	//cells[current_cells.at]
                 
                 Particle *n = cells[current_cells.at(j)].getParticles().at(k);
                 
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
+            
+                //diffvec/=500.f;
                 
-                diffvec/=512.f;
+            	float abs_diffvec = glm::length(diffvec);
                 
-                float abs_diffvec = glm::length(diffvec);
+                //std::cout << "ABS DIFFVEC " <<  abs_diffvec << std::endl;
                 
                 if(abs_diffvec < h){
-               		
+                
                     density_sum += PARTICLE_MASS * (315 / (64*M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)),3.0);
 					//cout << "Density: " << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
                 }
@@ -123,17 +130,17 @@ void calculateDensityAndPressure(){
         }
         
         //std::cout << "DENSITY SUM: " << density_sum << std::endl;
-        if(density_sum != 0){
-			if (limitBool){
-				density_sum = 111000.f;
-			}
+        //if(density_sum != 0){
+			//if (limitBool){
+			//	density_sum = 111000.f;
+			//}
             particles[i].setDensity(density_sum);
 			particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
-        }
-        else{
-            particles[i].setDensity(998.f);
-            particles[i].setPressure(STIFFNESS*(998.f - 998.f));
-        }
+        //}
+        //else{
+            //particles[i].setDensity(998.f);
+            //particles[i].setPressure(STIFFNESS*(998.f - 998.f));
+        //}
         
     }
 
@@ -143,21 +150,20 @@ void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        glm::vec3 gravity = glm::vec3(0, -9.82f*particles[i].getDensity(), 0);
+        glm::vec3 gravity = glm::vec3(0, -GRAVITY_CONST*particles[i].getDensity(), 0);
         glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
         int cellIndex = particles[i].getCellIndex();
         int limit = 0;
 		bool limitBool = false;
-
-		float prevVisc = 0.0f, prevPress = 0.0f;
+		//float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
         
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
-			if (limitBool) break;
+			//if (limitBool) break;
             // Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
                 
@@ -166,17 +172,18 @@ void calculateForces(){
                 //std::cout << "PARTICLE POS : " << particles[i].getPos().y << std::endl;
                 //std::cout << "NEIGHBOUR POS : " << n.getPos().y << std::endl;
                 
+                // Skip comparison of the same particle
                 if(n->getPos() == particles[i].getPos()){
                     continue;
                 }
                 
-				if (++limit > KERNEL_LIMIT){
-					limitBool = true;
-                    break;
-				}
+				//if (++limit > KERNEL_LIMIT){
+				//	limitBool = true;
+                  //  break;
+				//}
                 
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
-                diffvec/=512.f;
+                //diffvec/=500.f;
                 
                 float abs_diffvec = glm::length(diffvec);
 
@@ -285,7 +292,7 @@ int main(int argc, char *argv[])
         display();
         idle();
         
-        // box.DrawBox();
+        box.DrawBox();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
