@@ -88,7 +88,7 @@ void CreateParticles()
         particles[i].setPos(glm::vec3(j*6, k*6, -z*6));   
     }
     
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; j++) {
+    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT /** GRID_LENGTH*/; j++) {
         cells[j].CreateCell(j);
     }
 }
