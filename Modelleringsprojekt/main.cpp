@@ -13,13 +13,13 @@
 const int NUM_PARTICLES = 500;
 const int GRID_WIDTH = 32;
 const int GRID_HEIGHT = 32;
-const int KERNEL_LIMIT = 40;
+const int KERNEL_LIMIT = 60;
 
-const float VISCOUSITY = 500*2.5f;
+const float VISCOUSITY = 500*1.5f;
 const float PARTICLE_MASS = 500*.14f;
 const double h = 16.f;
 const float STIFFNESS = 500*3.f;
-const float GRAVITY_CONST = 50000*9.82f;
+const float GRAVITY_CONST = 80000*9.82f;
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -45,7 +45,7 @@ void handleFps() {
         
         std::ostringstream stream;
         stream << fps;
-        std::string fpsString = "Betafluid 0.0.2 | FPS: " + stream.str();
+        std::string fpsString = "Betafluid 0.0.4 | FPS: " + stream.str();
         
         // Convert the title to a c_str and set it
         const char* pszConstString = fpsString.c_str();
@@ -90,6 +90,8 @@ void init()
 //Trying to reduce calculation by removing random number of neighbours up to the limit of the kernel
 void reduceNeighbours(vector<Particle*>& theNeighbours){
     
+    //std::cout << theNeighbours.size() << std::endl;;
+    
     //Temp
     vector<Particle*> mapped_neighbours;
     
@@ -118,7 +120,7 @@ void calculateDensityAndPressure(){
             vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
             
             // Too many neighbours...
-            if(cells[current_cells.at(j)].getParticles().size() > KERNEL_LIMIT)
+            if(neighbours.size() > KERNEL_LIMIT)
                 reduceNeighbours(neighbours);
             
             for(int k = 0; k < neighbours.size(); k++){

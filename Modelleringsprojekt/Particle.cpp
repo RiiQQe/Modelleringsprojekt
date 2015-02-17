@@ -75,7 +75,7 @@ void Particle::DrawObjects() {
     
     glColor3f(0.2,0.2,1);
     
-    glBegin(GL_LINE_LOOP);
+    glBegin(GL_TRIANGLE_FAN);
     for(int ii = 0; ii < 15; ii++)
     {
         float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
