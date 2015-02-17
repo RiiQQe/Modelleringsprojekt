@@ -18,7 +18,7 @@
 const int NUM_PARTICLES = 27;
 const int GRID_WIDTH = 16; //KOLLA I Particle.cpp i funktionen getCellIndex()!!!
 const int GRID_HEIGHT = 16;
-const int GRID_LENGTH = 16;
+//const int GRID_LENGTH = 16;
 const int KERNEL_LIMIT = 20;
 
 const float VISCOUSITY = 2.5f;
@@ -85,7 +85,7 @@ void CreateParticles()
         
         j++;
         
-        particles[i].setPos(glm::vec3(j*6, k*6, -z*6));   
+        particles[i].setPos(glm::vec3(j*6, k*6, z*6));   
     }
     
     for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT /** GRID_LENGTH*/; j++) {
@@ -309,6 +309,28 @@ void handleCamera(){
 
 }
 
+void drawAxes(){
+
+    glPushMatrix();
+    glBegin(GL_LINES);
+    
+    glColor3f(1.f, 1.f, 1.f);
+    
+    glVertex3f(0.f,0.f,0.f);
+    glVertex3f(512.f,0.f,0.f);
+    
+    glVertex3f(0.f,0.f,0.f);
+    glVertex3f(0.f,512.f,0.f);
+    
+    glVertex3f(0.f,0.f,0.f);
+    glVertex3f(0.f, 0.f, 512.f);
+    
+    glEnd();
+    glPopMatrix();
+
+
+}
+
 void drawPlane(){
 
 
@@ -353,13 +375,13 @@ int main(int argc, char *argv[])
 
         glLoadIdentity();
 
-		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512.0);
-
+		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512);
 
 		/*ROTATION*/
 		handleCamera();
 
 		/*RITA UT PLANET*/
+        drawAxes();
 		drawPlane();
 			
 		calculateAcceleration();
