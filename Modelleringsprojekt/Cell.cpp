@@ -36,69 +36,69 @@ const std::vector<int> &Cell::getNeighbours() const {
 void Cell::setNeighbours() {
 	neighbours.push_back(index);
 	
-	switch (index % W) {
+	switch (index %GRID_WIDTH) {
 		case 0: 
 			if (index == 0) {
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W + 1);
+				neighbours.push_back(index + GRID_WIDTH);
+				neighbours.push_back(index + GRID_WIDTH + 1);
 			}
-			else if (index == H * ( W - 1)) {
+			else if (index == GRID_HEIGHT * ( GRID_WIDTH - 1)) {
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W + 1);
+				neighbours.push_back(index - GRID_WIDTH);
+				neighbours.push_back(index - GRID_WIDTH + 1);
 			}
 			else {
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index + W + 1);
-				neighbours.push_back(index - W + 1); 
+				neighbours.push_back(index + GRID_WIDTH);
+				neighbours.push_back(index - GRID_WIDTH);
+				neighbours.push_back(index + GRID_WIDTH + 1);
+				neighbours.push_back(index - GRID_WIDTH + 1); 
 			}
 			break;
-		case (W - 1):
-			if (index == W - 1) {
+		case (GRID_WIDTH - 1):
+			if (index == GRID_WIDTH - 1) {
 				neighbours.push_back(index - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W - 1);
+				neighbours.push_back(index + GRID_WIDTH);
+				neighbours.push_back(index + GRID_WIDTH - 1);
 			}
-			else if (index == W * H - 1) {
+			else if (index == GRID_WIDTH * GRID_HEIGHT - 1) {
 				neighbours.push_back(index - 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W - 1);
+				neighbours.push_back(index - GRID_WIDTH);
+				neighbours.push_back(index - GRID_WIDTH - 1);
 			}
 			else {
 				neighbours.push_back(index - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index + W - 1);
-				neighbours.push_back(index - W - 1); 
+				neighbours.push_back(index + GRID_WIDTH);
+				neighbours.push_back(index - GRID_WIDTH);
+				neighbours.push_back(index + GRID_WIDTH - 1);
+				neighbours.push_back(index - GRID_WIDTH - 1); 
 			}
 			break;
 		default:
-			if (index < W) {
+			if (index < GRID_WIDTH) {
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W + 1);
+				neighbours.push_back(index + GRID_WIDTH - 1);
+				neighbours.push_back(index + GRID_WIDTH);
+				neighbours.push_back(index + GRID_WIDTH + 1);
 			}
-			else if (index > H * (W - 1) - 1) {
+			else if (index > GRID_HEIGHT * (GRID_WIDTH- 1) - 1) {
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index - W - 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W + 1);
+				neighbours.push_back(index - GRID_WIDTH - 1);
+				neighbours.push_back(index - GRID_WIDTH);
+				neighbours.push_back(index - GRID_WIDTH + 1);
 			}
 			else {
-				neighbours.push_back(index - W - 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W + 1);
+				neighbours.push_back(index - GRID_WIDTH - 1);
+				neighbours.push_back(index - GRID_WIDTH);
+				neighbours.push_back(index - GRID_WIDTH + 1);
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W + 1);
+				neighbours.push_back(index + GRID_WIDTH - 1);
+				neighbours.push_back(index + GRID_WIDTH);
+				neighbours.push_back(index + GRID_WIDTH + 1);
 			}
 			break;
 	}

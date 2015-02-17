@@ -14,6 +14,7 @@ class Cell {
 			H = 32
 		};
 
+
 	public:
 		void CreateCell(int _index);
 		void addParticle(Particle &_particle);
@@ -25,4 +26,8 @@ class Cell {
 		const int &getIndex() const;
 
 		void displayParticles();
+		
+		static const int GRID_WIDTH = 32;
+		static const int GRID_HEIGHT = 32;
+		 
 };
