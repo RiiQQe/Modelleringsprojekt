@@ -13,7 +13,7 @@
 const int NUM_PARTICLES = 500;
 const int GRID_WIDTH = 32;
 const int GRID_HEIGHT = 32;
-const int KERNEL_LIMIT = 20;
+const int KERNEL_LIMIT = 40;
 
 const float VISCOUSITY = 500*2.5f;
 const float PARTICLE_MASS = 500*.14f;
@@ -56,13 +56,14 @@ void handleFps() {
 
 
 // Create all the particles
-void CreateParticles()
+void init()
 {
     for(int i = 0; i < NUM_PARTICLES; i++) {
         particles[i].CreateParticle();
         
     }
     
+    // Set positions
     int k = 0, j = 0;
     
     for(int i = 0; i < NUM_PARTICLES; i++){
@@ -71,6 +72,7 @@ void CreateParticles()
         if(i % 40 == 0)
             k++;
         
+        //X
         if(i % 40 == 0)
             j=0;
         
@@ -85,62 +87,64 @@ void CreateParticles()
     }
 }
 
+//Trying to reduce calculation by removing random number of neighbours up to the limit of the kernel
+void reduceNeighbours(vector<Particle*>& theNeighbours){
+    
+    //Temp
+    vector<Particle*> mapped_neighbours;
+    
+    for(int i = 0; i < KERNEL_LIMIT; i++){
+        int random = rand() % theNeighbours.size();
+        mapped_neighbours.push_back(theNeighbours.at(random));
+        theNeighbours.erase(theNeighbours.begin() + random);
+    }
+    
+    theNeighbours = mapped_neighbours;
+    //std::cout << "tokmånga partiklar";
+}
+
 void calculateDensityAndPressure(){
 
     for(int i = 0; i < NUM_PARTICLES; i++){
         
         float density_sum = 0;
-		bool limitBool = false;
         int cellIndex = particles[i].getCellIndex();
-        int limit = 0;
-
+        
         vector<int> current_cells = cells[cellIndex].getNeighbours();
     
         for(int j = 0; j < current_cells.size(); j++){
 			
-            //if (limitBool) break;
             // Loop through all neighbouring particles
-            for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
+            vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
+            
+            // Too many neighbours...
+            if(cells[current_cells.at(j)].getParticles().size() > KERNEL_LIMIT)
+                reduceNeighbours(neighbours);
+            
+            for(int k = 0; k < neighbours.size(); k++){
                 
-				/*if (++limit > KERNEL_LIMIT){
-					limitBool = true; // This means that there is many surrounding particles
-                    break;
-				}*/
+                vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
                 
-               	//cells[current_cells.at]
-                
-                Particle *n = cells[current_cells.at(j)].getParticles().at(k);
-                
+                Particle *n = neighbours.at(k);
+            
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
             
-                //diffvec/=500.f;
-                
-            	float abs_diffvec = glm::length(diffvec);
-                
+                float abs_diffvec = glm::length(diffvec);
+            
                 //std::cout << "ABS DIFFVEC " <<  abs_diffvec << std::endl;
-                
+            
                 if(abs_diffvec < h){
-                
+            
                     density_sum += PARTICLE_MASS * (315 / (64*M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)),3.0);
-					//cout << "Density: " << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
+                    //cout << "Density: " << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
                 }
                 
             }
             
         }
         
-        //std::cout << "DENSITY SUM: " << density_sum << std::endl;
-        //if(density_sum != 0){
-			//if (limitBool){
-			//	density_sum = 111000.f;
-			//}
-            particles[i].setDensity(density_sum);
-			particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
-        //}
-        //else{
-            //particles[i].setDensity(998.f);
-            //particles[i].setPressure(STIFFNESS*(998.f - 998.f));
-        //}
+        particles[i].setDensity(density_sum);
+        particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
         
     }
 
@@ -155,36 +159,33 @@ void calculateForces(){
         glm::vec3 viscousity = glm::vec3(0);
         
         int cellIndex = particles[i].getCellIndex();
-        int limit = 0;
-		bool limitBool = false;
+        //int limit = 0;
+		//bool limitBool = false;
 		//float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
         
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
-			//if (limitBool) break;
+            
             // Loop through all neighbouring particles
-            for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
+            vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
+            
+            // Too many neighbours
+            if(neighbours.size() > KERNEL_LIMIT)
+                reduceNeighbours(neighbours);
+            
+            for(int k = 0; k < neighbours.size(); k++){
                 
-                Particle *n = cells[current_cells.at(j)].getParticles().at(k);
-                
-                //std::cout << "PARTICLE POS : " << particles[i].getPos().y << std::endl;
-                //std::cout << "NEIGHBOUR POS : " << n.getPos().y << std::endl;
+                Particle *n = neighbours.at(k);
                 
                 // Skip comparison of the same particle
                 if(n->getPos() == particles[i].getPos()){
                     continue;
                 }
                 
-				//if (++limit > KERNEL_LIMIT){
-				//	limitBool = true;
-                  //  break;
-				//}
-                
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
-                //diffvec/=500.f;
-                
+
                 float abs_diffvec = glm::length(diffvec);
 
                 if(abs_diffvec < h){
@@ -264,7 +265,7 @@ void idle()
 int main(int argc, char *argv[])
 {
     
-    CreateParticles();
+    init();
     
     glfwInit();
     
