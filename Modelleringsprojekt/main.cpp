@@ -10,13 +10,13 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 500;
-const int KERNEL_LIMIT = 60;
+const int NUM_PARTICLES = 800;
+const int KERNEL_LIMIT = 35;
 
-const float VISCOUSITY = 500*1.5f;
+const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.14f;
 const double h = 16.f;
-const float STIFFNESS = 500*3.f;
+const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
 
 Particle particles[NUM_PARTICLES];
@@ -76,7 +76,7 @@ void init()
         
         j++;
         
-        particles[i].setPos(glm::vec3(20+j*16/2 - 8, 19*16 + k*16/2 - 8, 0.5));
+        particles[i].setPos(glm::vec3(20+j*h/2 - 8, 19*16 + k*h/2 - 8, 0.5));
         
     }
     
@@ -123,8 +123,6 @@ void calculateDensityAndPressure(){
             
             for(int k = 0; k < neighbours.size(); k++){
                 
-                vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
-                
                 Particle *n = neighbours.at(k);
             
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
@@ -143,8 +141,10 @@ void calculateDensityAndPressure(){
             
         }
         
+
         particles[i].setDensity(density_sum);
         particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
+        
         
     }
 
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
         display();
         idle();
         
-        box.DrawBox();
+        //box.DrawBox();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
