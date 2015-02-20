@@ -15,10 +15,14 @@
 #include <thread>
 #include <sstream>
 
+//Problemet verkar ligga 255-> ~
+
 const int NUM_PARTICLES = 27;
-const int GRID_WIDTH = 16; //KOLLA I Particle.cpp i funktionen getCellIndex()!!!
-const int GRID_HEIGHT = 16;
-//const int GRID_LENGTH = 16;
+
+const int GRID_WIDTH = 4; //KOLLA I Particle.cpp i funktionen getCellIndex()!!!
+const int GRID_HEIGHT = 4;
+const int GRID_LENGTH = 4;
+
 const int KERNEL_LIMIT = 20;
 
 const float VISCOUSITY = 2.5f;
@@ -28,7 +32,7 @@ const float STIFFNESS = 3.f;
 
 Particle particles[NUM_PARTICLES];
 
-Cell cells[GRID_WIDTH * GRID_HEIGHT];
+Cell cells[GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH];
 
 // FPS specific vars
 double lastTime;
@@ -88,52 +92,68 @@ void CreateParticles()
         particles[i].setPos(glm::vec3(j*6, k*6, -z*6));
     }
     
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT /** GRID_LENGTH*/; j++) {
+    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; j++) {
         cells[j].CreateCell(j);
     }
 }
 
 void calculateDensityAndPressure(){
 
+
+	for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; i++){
+		//cout << "Grannar för cell nr " << i << endl;
+		vector<int> neighbors = cells[i].getNeighbours();
+		int count = neighbors.size();
+		for (int k = 0; k < count; k++){
+		//	if (neighbors.at(k) >= 0)
+		//		cout << "detta ska vara cellindex: " << neighbors.at(k) << endl;
+		//	else
+		//		cout << neighbors.at(k) << " //////////////////////////////////////////////////////////////////////////////////////////////////////////////" << endl;
+		//
+		}
+	}
+
+		//cout << "GRATTIS DIN FAGGOT" << endl;
     for(int i = 0; i < NUM_PARTICLES; i++){
         
         float density_sum = 0;
 		bool limitBool = false;
         int cellIndex = particles[i].getCellIndex();
         int limit = 0;
-
+		
         vector<int> current_cells = cells[cellIndex].getNeighbours();
-    
+		//cout << "cellIndex = " << cellIndex << endl;
+		//cout << "current_cells.size() = " << current_cells.size() << endl;
         for(int j = 0; j < current_cells.size(); j++){
 			if (limitBool) break;
-            // Loop through all neighbouring particles
+
+
+			//Denna funkar ej, for-loopen kraschar
+			//cout << "current_cells.at(j) = " << current_cells.at(j) << endl;
+
+			// Loop through all neighbouring particles
             for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
-                
+				
 				if (++limit > KERNEL_LIMIT){ 
 					limitBool = true; // This means that there is many surrounding particles
                     break;
 				}
                 
                 Particle *n = cells[current_cells.at(j)].getParticles().at(k);
-                
+				
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
-                
-                diffvec/=512.f;
-                
+				
+				diffvec/=512.f;
+
                 float abs_diffvec = glm::length(diffvec);
-                
+				
                 if(abs_diffvec < h){
-               		
                     density_sum += PARTICLE_MASS * (315 / (64*M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)),3.0);
-					//cout << "Density: " << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
-                }
-                
+					//cout << "Density: " << endl;// << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
+				}
             }
-            
-        }
-        
-        //std::cout << "DENSITY SUM: " << density_sum << std::endl;
-        if(density_sum != 0){
+		}
+		if(density_sum != 0){
 			if (limitBool){
 				density_sum = 111000.f;
 			}
@@ -164,6 +184,8 @@ void calculateForces(){
 		float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
+
+
         
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
@@ -207,10 +229,8 @@ void calculateForces(){
         
         particles[i].setViscousityForce(viscousity);
         particles[i].setPressureForce(pressure);
-        particles[i].setGravityForce(gravity);
-        
+        particles[i].setGravityForce(gravity);   
     }
-
 }
 
 void calculateAcceleration(){

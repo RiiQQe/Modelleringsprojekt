@@ -7,12 +7,14 @@ class Cell {
 	private: 
 		vector<Particle *> particles;
 		vector<int> neighbours;
+		vector<int> checker;
 		int index;
+		int x = 0;
 
 		enum GRID {
-			W = 16,
-			H = 16,
-			L = 16
+			W = 4,
+			H = 4,
+			L = 4
 		};
 
 	public:
