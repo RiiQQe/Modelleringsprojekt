@@ -40,14 +40,14 @@ void Cell::setNeighbours() {
 	int x = index % W;
 	int y = (int)((index / W)) % H;
 	int z = floor(index / (H * W));
-
-	if (index == 16 || index == 32)
-		cout << "index= "<< index << "x = " << x << "y = " << y << "z = " << z << endl;
-
+	if (index == 16 ||index == 17 ||index == 18)
+		cout << index << " Index % W " << y << endl;
 
 	switch (index % W) {
 	case 0: //Left side
 		if (index == 0) { //Top left front (3*3*3) (0)
+			if (index == 16 || index == 17)
+				cout << "Inne i (0) " << endl;
 			neighbours.push_back(1);					// 1
 			neighbours.push_back(W);					// 3
 			neighbours.push_back(W + 1);				// 4
@@ -57,6 +57,8 @@ void Cell::setNeighbours() {
 			neighbours.push_back(W*H + W + 1);			// 13
 		}
 		else if (index == H * (W - 1)) { // Down left front (6)
+			if (index == 16 || index == 17)
+				cout << "Inne i (6) " << endl;
 			neighbours.push_back(index + 1);			// 7
 			neighbours.push_back(index - W);			// 3
 			neighbours.push_back(index - W + 1);		// 4
@@ -66,6 +68,8 @@ void Cell::setNeighbours() {
 			neighbours.push_back(index + W*H - W + 1);  // 13
 		}
 		else if(index == L * H * (W - 1)) { // Top left back (18)
+			if (index == 16 || index == 17)
+				cout << "Inne i (18) " << endl;
 			neighbours.push_back(index + 1);			// 19
 			neighbours.push_back(index + W);			// 21
 			neighbours.push_back(index + W + 1);		// 22 
@@ -75,6 +79,8 @@ void Cell::setNeighbours() {
 			neighbours.push_back(index - W*H + W + 1);	// 13
 		}
 		else if(index == H * L * W - W){// Down left back (24)
+			if (index == 16 || index == 17)
+				cout << "Inne i (24) " << endl;
 			neighbours.push_back(index + 1);			// 25
 			neighbours.push_back(index - W);			// 21
 			neighbours.push_back(index - W + 1);		// 22
@@ -85,7 +91,9 @@ void Cell::setNeighbours() {
 		}
 		else{				//4*4*4			
 			
-			if (y == 0 &&  z < H && z > 0){	// (28)
+			if (y == H &&  z < H && z > 0){	// (28)
+				if (index == 16 || index == 17)
+					cout << index  << "Inne i (28) " << "y: " << y << endl;
 				neighbours.push_back(index + 1);		// 29
 				neighbours.push_back(index - W);		// 24
 				neighbours.push_back(index - W + 1);	// 25
@@ -99,7 +107,7 @@ void Cell::setNeighbours() {
 				neighbours.push_back(index - W*H - W + 1); //9
 			}
 
-			else if (y == H && z < H && z > 0){//(16)
+			else if (y == 0 && z < H && z > 0){//(16)
 				cout << "HEEEJEJJEJEJSAKDAKSLDLASKDALSKDJALSKDJALSKJDLAKSJDKLÄASD" << endl;
 				neighbours.push_back(index + 1);		//17
 				neighbours.push_back(index + W);		//20
@@ -114,6 +122,8 @@ void Cell::setNeighbours() {
 				neighbours.push_back(index - W*H + W + 1); //5
 			}
 			else if (z == 0 && y > 0 && y < H){// (4)
+				if (index == 16 || index == 17)
+					cout << "Inne i (4) " << endl;
 				neighbours.push_back(index + 1);		//5
 				neighbours.push_back(index + W);		//8
 				neighbours.push_back(index + W + 1);	//9
@@ -128,6 +138,8 @@ void Cell::setNeighbours() {
 			}
 
 			else if (z == L && x == 0 && y < H && y > 0){ // (52)
+				if (index == 16 || index == 17)
+					cout << "Inne i (52) " << endl;
 				neighbours.push_back(index + 1);			//53
 				neighbours.push_back(index + W);			//56
 				neighbours.push_back(index + W + 1);		//57
@@ -142,6 +154,8 @@ void Cell::setNeighbours() {
 			}
 
 			else if (y != 0 && y != H && z != 0 && z != L){ // (20) 
+				if (index == 16 || index == 17)
+					cout << "Inne i (20) " << endl;
 				neighbours.push_back(index + 1);				// 21 
 				neighbours.push_back(index + W);				// 24
 				neighbours.push_back(index + W + 1);			// 25
@@ -202,6 +216,7 @@ void Cell::setNeighbours() {
 		else{ // (4*4*4)
 
 			if (y == 0 && z < L && z > 0){					// (31)
+				if (index == )
 				neighbours.push_back(index - 1);			//30
 				neighbours.push_back(index - W);			//27
 				neighbours.push_back(index - W - 1);		//26
@@ -327,7 +342,9 @@ void Cell::setNeighbours() {
 			neighbours.push_back(index + W*H - W + 1);			//42
 
 		}
-		else if (y == 0 && x > 0 && x < W && z > 0 && z < L){	//(17) Topplatta
+		else if (y == 0 && x < W && z > 0 && z < L){	//(17) Topplatta
+			cout << "Fuuuuucccck : " << index << endl;
+
 			neighbours.push_back(index - 1);					//16
 			neighbours.push_back(index + 1);					//18
 			neighbours.push_back(index + W);					//21
@@ -453,7 +470,7 @@ void Cell::setNeighbours() {
 			neighbours.push_back(index - W*H + W - 1);			//36
 			neighbours.push_back(index + W*H + W + 1);			//38
 		}
-		if (z == 0 && y == H && x > 0 && x < W){			//(1)
+		else if (z == 0 && y == H && x > 0 && x < W){			//(1)
 			neighbours.push_back(index - 1);					//0
 			neighbours.push_back(index + 1);					//2
 

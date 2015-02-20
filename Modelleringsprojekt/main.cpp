@@ -15,7 +15,8 @@
 #include <thread>
 #include <sstream>
 
-//Problemet verkar ligga 255-> ~
+
+//Nu ligger det i 16 -> 19
 
 const int NUM_PARTICLES = 27;
 
@@ -100,18 +101,18 @@ void CreateParticles()
 void calculateDensityAndPressure(){
 
 
-	for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; i++){
-		//cout << "Grannar för cell nr " << i << endl;
-		vector<int> neighbors = cells[i].getNeighbours();
-		int count = neighbors.size();
-		for (int k = 0; k < count; k++){
-		//	if (neighbors.at(k) >= 0)
-		//		cout << "detta ska vara cellindex: " << neighbors.at(k) << endl;
-		//	else
-		//		cout << neighbors.at(k) << " //////////////////////////////////////////////////////////////////////////////////////////////////////////////" << endl;
-		//
-		}
-	}
+	//for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; i++){
+	//	//cout << "Grannar för cell nr " << i << endl;
+	//	vector<int> neighbors = cells[i].getNeighbours();
+	//	int count = neighbors.size();
+	//	cout << " Skulle tippa på att de är här felet ligger " << i << endl;
+	//	for (int k = 0; k < count; k++){
+	//		
+	//		if (neighbors.at(k) < 0)
+	//			cout << neighbors.at(k) << " //////////////////////////////////////////////////////////////////////////////////////////////////////////////" << endl;
+	//	
+	//	}
+	//}
 
 		//cout << "GRATTIS DIN FAGGOT" << endl;
     for(int i = 0; i < NUM_PARTICLES; i++){
