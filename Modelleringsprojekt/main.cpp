@@ -105,16 +105,21 @@ void calculateDensityAndPressure(){
 	//	//cout << "Grannar för cell nr " << i << endl;
 	//	vector<int> neighbors = cells[i].getNeighbours();
 	//	int count = neighbors.size();
-	//	cout << " Skulle tippa på att de är här felet ligger " << i << endl;
-	//	for (int k = 0; k < count; k++){
-	//		
-	//		if (neighbors.at(k) < 0)
-	//			cout << neighbors.at(k) << " //////////////////////////////////////////////////////////////////////////////////////////////////////////////" << endl;
 	//	
+	//	if (i == 19){
+	//		int c = 0;
+	//		cout << " Pos: " << i << endl;
+	//		cout << " Grannar: " << endl;
+
+	//		for (int k = 0; k < count; k++){
+	//			c++;
+	//			cout << neighbors.at(k) << endl; 
+	//		}
+
+	//		cout << "Antal grannar: " << c - 1 << endl;
 	//	}
 	//}
 
-		//cout << "GRATTIS DIN FAGGOT" << endl;
     for(int i = 0; i < NUM_PARTICLES; i++){
         
         float density_sum = 0;
