@@ -12,10 +12,11 @@ class Cell {
 		int x = 0;
 
 		enum GRID {
-			W = 4,
-			H = 4,
-			L = 4
+			W = 32,
+			H = 32,
+			L = 32
 		};
+
 
 	public:
 		void CreateCell(int _index);
@@ -28,4 +29,9 @@ class Cell {
 		const int &getIndex() const;
 
 		void displayParticles();
+		
+		static const int GRID_WIDTH = 32;
+		static const int GRID_HEIGHT = 32;
+		static const int GRID_LENGTH = 32;
+		 
 };

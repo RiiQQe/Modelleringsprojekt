@@ -5,19 +5,16 @@
 #include <glm/glm.hpp>
 
 using namespace glm;
-const float dt = 1.f;
+//const float dt = 1.f;
 bool first = true;
+const float dt = 0.0004f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
 {
 	pos = vec3(0, 0, 0);
 	vel = vec3(0, 0, 0);
-	
-	mass = 1.0f;
-	gravity = 9.82f;
-	radius = 3.0f;
-	special = false;
+
     pressure = 0;
     density = 0;
     
@@ -36,23 +33,28 @@ void Particle::EvolveParticle()
     pos = newPos;
     vel = newVel;
     
-    if(pos.x < 1){
-        vel.x = -vel.x;
+    if(pos.x < 1){        
+        vel.x = -0.8*vel.x;
         pos.x = 1;
     }
     
     else if(pos.x > 512){
-        vel.x = -vel.x;
+
+        vel.x = -0.8*vel.x;
         pos.x = 512;
     }
     
     if(pos.y < 1){
-        vel.y = -vel.y;
+        
+        vel.y = -0.8*vel.y;
         pos.y = 1;
+        
     }
     
+    
     else if(pos.y > 512){
-        vel.y = -vel.y;
+        
+        vel.y = -0.8*vel.y;
         pos.y = 512;
     }
 
@@ -61,6 +63,7 @@ void Particle::EvolveParticle()
 
 //Draw all the particles
 void Particle::DrawObjects() {
+
     //!special ? glColor3f(0.2,0.2,1) :  glColor3f(1,1,1);
     //glBegin(GL_TRIANGLE_STRIP);
 	glPushMatrix();
@@ -108,31 +111,53 @@ void Particle::DrawObjects() {
 	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
 	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
 
+
+   
+    /*
+    glBegin(GL_TRIANGLE_STRIP);
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]+2,0.5);     // top    right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]+2,0.5);     // top    left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]-2,0.5);     // bottom right
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]-2,0.5);     // bottom left*/
+    
+    glColor3f(0.2,0.2,1);
+    
+    glBegin(GL_TRIANGLE_FAN);
+    for(int ii = 0; ii < 15; ii++)
+    {
+        float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
+        
+        float x = 16/3 * cosf(theta);//calculate the x component
+        float y = 16/3 * sinf(theta);//calculate the y component
+        
+        glVertex2f(x + pos[0], y + pos[1]);//output vertex
+    }
+    
+
     glEnd();
 	glPopMatrix();
 }
 
 const glm::vec3 Particle::getPos() const {
+    
 	return pos;
-}	
+    
+}
+
+const glm::vec3 Particle::getVelocity(){
+    
+    return vel;
+    
+}
 
 int Particle::getCellIndex() {
 	glm::vec3 cell = glm::vec3(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)), glm::floor(pos[2] / 512.f * (512 / 32)));
-	int _cellIndex = (int)cell.x % 16 + (int)cell.y * 16;
+    int _cellIndex = (int)cell.x % 32 + (int)cell.y * 32;
 	
+   // std::cout << _cellIndex;
+    
 	return _cellIndex;
 }
-
-void Particle::addToVel(glm::vec3 v) {
-    vel.x += v.x;
-    vel.y += v.y;
-	vel.z += v.z;
-}
-
-glm::vec3 Particle::getVel() {
-    return glm::vec3(vel.x, vel.y, vel.z);
-}
-
 
 void Particle::setPos(glm::vec3 p){
     pos = p;
@@ -154,23 +179,6 @@ float Particle::getPressure(){
     return pressure;
 }
 
-glm::vec3 Particle::getGravityForce(){
-    
-    return gravity_force;
-    
-}
-
-glm::vec3 Particle::getViscousityForce(){
-    
-    return viscousity_force;
-    
-}
-
-glm::vec3 Particle::getPressureForce(){
-    
-    return pressure_force;
-    
-}
 
 void Particle::setPressureForce(glm::vec3 f){
     
@@ -188,10 +196,3 @@ void Particle::setGravityForce(glm::vec3 f){
     gravity_force = f;
     
 }
-
-glm::vec3 Particle::getVelocity(){
-    
-    return vel;
-    
-}
-

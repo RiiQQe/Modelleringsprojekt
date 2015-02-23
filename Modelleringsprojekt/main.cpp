@@ -16,24 +16,21 @@
 #include <sstream>
 
 
-//Nu ligger det i 16 -> 19
 
-const int NUM_PARTICLES = 27;
+const int NUM_PARTICLES = 800;
+const int KERNEL_LIMIT = 35;
 
-const int GRID_WIDTH = 4; //KOLLA I Particle.cpp i funktionen getCellIndex()!!!
-const int GRID_HEIGHT = 4;
-const int GRID_LENGTH = 4;
-
-const int KERNEL_LIMIT = 20;
-
-const float VISCOUSITY = 2.5f;
-const float PARTICLE_MASS = .14f;
-const double h = 0.032f;
-const float STIFFNESS = 3.f;
+const float VISCOUSITY = 500*5.f;
+const float PARTICLE_MASS = 500*.14f;
+const double h = 16.f;
+const float STIFFNESS = 500*5.f;
+const float GRAVITY_CONST = 80000*9.82f;
 
 Particle particles[NUM_PARTICLES];
 
-Cell cells[GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH];
+
+Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH];
+
 
 // FPS specific vars
 double lastTime;
@@ -57,7 +54,7 @@ void handleFps() {
         
         std::ostringstream stream;
         stream << fps;
-        std::string fpsString = "Betafluid 0.0.2 | FPS: " + stream.str();
+        std::string fpsString = "Betafluid 0.0.4 | FPS: " + stream.str();
         
         // Convert the title to a c_str and set it
         const char* pszConstString = fpsString.c_str();
@@ -68,34 +65,53 @@ void handleFps() {
 
 
 // Create all the particles
-void CreateParticles()
+void init()
 {
     for(int i = 0; i < NUM_PARTICLES; i++) {
         particles[i].CreateParticle();
         
     }
     
+
     int k = 0, j = 0, z = 0 ;
     
     for(int i = 0; i < NUM_PARTICLES; i++){
-        
-		if (i % 9 == 0)
-			z++;
-
-        if(i % 3 == 0)
+                
+        //Y-led
+        if(i % 40 == 0)
             k++;
         
-        if(i % 10 == 0)
+        //X
+        if(i % 40 == 0)
             j=0;
         
         j++;
         
+
         particles[i].setPos(glm::vec3(j*6, k*6, -z*6));
     }
-    
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; j++) {
+
+    for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
         cells[j].CreateCell(j);
     }
+}
+
+//Trying to reduce calculation by removing random number of neighbours up to the limit of the kernel
+void reduceNeighbours(vector<Particle*>& theNeighbours){
+    
+    //std::cout << theNeighbours.size() << std::endl;;
+    
+    //Temp
+    vector<Particle*> mapped_neighbours;
+    
+    for(int i = 0; i < KERNEL_LIMIT; i++){
+        int random = rand() % theNeighbours.size();
+        mapped_neighbours.push_back(theNeighbours.at(random));
+        theNeighbours.erase(theNeighbours.begin() + random);
+    }
+    
+    theNeighbours = mapped_neighbours;
+    //std::cout << "tokmånga partiklar";
 }
 
 void calculateDensityAndPressure(){
@@ -125,52 +141,48 @@ void calculateDensityAndPressure(){
     for(int i = 0; i < NUM_PARTICLES; i++){
         
         float density_sum = 0;
-		bool limitBool = false;
         int cellIndex = particles[i].getCellIndex();
         int limit = 0;
 		
+
         vector<int> current_cells = cells[cellIndex].getNeighbours();
 		//cout << "cellIndex = " << cellIndex << endl;
 		//cout << "current_cells.size() = " << current_cells.size() << endl;
         for(int j = 0; j < current_cells.size(); j++){
-			if (limitBool) break;
 
-
-			//Denna funkar ej, for-loopen kraschar
-			//cout << "current_cells.at(j) = " << current_cells.at(j) << endl;
-
-			// Loop through all neighbouring particles
-            for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
-				
-				if (++limit > KERNEL_LIMIT){ 
-					limitBool = true; // This means that there is many surrounding particles
-                    break;
-				}
+			
+            // Loop through all neighbouring particles
+            vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
+            
+            // Too many neighbours...
+            if(neighbours.size() > KERNEL_LIMIT)
+                reduceNeighbours(neighbours);
+            
+            for(int k = 0; k < neighbours.size(); k++){
                 
-                Particle *n = cells[current_cells.at(j)].getParticles().at(k);
-				
+                Particle *n = neighbours.at(k);
+            
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
-				
-				diffvec/=512.f;
-
+            
                 float abs_diffvec = glm::length(diffvec);
-				
+            
+                //std::cout << "ABS DIFFVEC " <<  abs_diffvec << std::endl;
+            
                 if(abs_diffvec < h){
+            
                     density_sum += PARTICLE_MASS * (315 / (64*M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)),3.0);
-				}
+                    //cout << "Density: " << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
+                }
+                
             }
-		}
-		if(density_sum != 0){
-			if (limitBool){
-				density_sum = 111000.f;
-			}
-            particles[i].setDensity(density_sum);
-			particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
+            
         }
-        else{
-            particles[i].setDensity(998.f);
-            particles[i].setPressure(STIFFNESS*(998.f - 998.f));
-        }
+        
+
+        particles[i].setDensity(density_sum);
+        particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
+        
+
         
     }
 
@@ -180,43 +192,44 @@ void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        glm::vec3 gravity = glm::vec3(0, -9.82f*particles[i].getDensity(), 0);
+        glm::vec3 gravity = glm::vec3(0, -GRAVITY_CONST*particles[i].getDensity(), 0);
         glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
         int cellIndex = particles[i].getCellIndex();
-        int limit = 0;
-		bool limitBool = false;
-
-		float prevVisc = 0.0f, prevPress = 0.0f;
+        //int limit = 0;
+		//bool limitBool = false;
+		//float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
   
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
-			if (limitBool) break;
+            
             // Loop through all neighbouring particles
-            for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
-                
-                Particle *n = cells[current_cells.at(j)].getParticles().at(k);
 
+            vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
+            
+            // Too many neighbours
+            if(neighbours.size() > KERNEL_LIMIT)
+                reduceNeighbours(neighbours);
+            
+            for(int k = 0; k < neighbours.size(); k++){
+                
+                Particle *n = neighbours.at(k);
+                
+                // Skip comparison of the same particle
                 if(n->getPos() == particles[i].getPos()){
                     continue;
                 }
                 
-				if (++limit > KERNEL_LIMIT){
-					limitBool = true;
-                    break;
-				}
-                
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
-                diffvec/=512.f;
-                
+
                 float abs_diffvec = glm::length(diffvec);
 
                 if(abs_diffvec < h){
                     
-                    float W_const_pressure = 45/(M_PI * glm::pow(h, 6.0)) * glm::pow(h - abs_diffvec, 3.0) / abs_diffvec;
+                    float W_const_pressure = 45.0f/(M_PI * glm::pow(h, 6.0)) * glm::pow(h - abs_diffvec, 3.0) / abs_diffvec;
                     
                     glm::vec3 W_pressure_gradient = glm::vec3(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, 0);
                     
@@ -241,7 +254,7 @@ void calculateForces(){
 void calculateAcceleration(){
     
     // Clear all particles in cells
-    for (int j = 0; j < GRID_WIDTH * GRID_HEIGHT; j++) {
+    for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT; j++) {
         
         cells[j].clearParticles();
         
@@ -376,10 +389,10 @@ void drawPlane(){
 int main(int argc, char *argv[])
 {
     
-    CreateParticles();
-
-	glfwInit();
-
+    init();
+    
+    glfwInit();
+    
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -413,6 +426,7 @@ int main(int argc, char *argv[])
         display();
         idle();
         
+
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
 		glfwSwapBuffers(window);

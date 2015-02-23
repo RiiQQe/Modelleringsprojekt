@@ -38,12 +38,12 @@ void Box::DrawBox()
 	// Define grid by doing fancy iterations.
 	glColor3f(0.2f, 0.2f, 0.2f);
 
-	for (int i = 1; i < 512 / 32; i++) {
-		glVertex2f(32.f * i, 0);
-		glVertex2f(32.f * i, 512);
+	for (int i = 1; i < 512 / 16; i++) {
+		glVertex2f(16.f * i, 0);
+		glVertex2f(16.f * i, 512);
 
-		glVertex2f(0, 32.f * i);
-		glVertex2f(512, 32.f * i);
+		glVertex2f(0, 16.f * i);
+		glVertex2f(512, 16.f * i);
 	}
 /*
     glVertex2f(0.0f, 64.0f);
