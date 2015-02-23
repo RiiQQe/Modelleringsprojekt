@@ -100,7 +100,9 @@ void CreateParticles()
 
 void calculateDensityAndPressure(){
 
-
+	//
+	//																						ANVÄND FÖR ATT TESTA NEIGHBOURS
+	//
 	//for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT * GRID_LENGTH; i++){
 	//	//cout << "Grannar för cell nr " << i << endl;
 	//	vector<int> neighbors = cells[i].getNeighbours();
@@ -155,7 +157,6 @@ void calculateDensityAndPressure(){
 				
                 if(abs_diffvec < h){
                     density_sum += PARTICLE_MASS * (315 / (64*M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)),3.0);
-					//cout << "Density: " << endl;// << PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0) << endl;
 				}
             }
 		}
@@ -190,9 +191,7 @@ void calculateForces(){
 		float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
-
-
-        
+  
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
 			if (limitBool) break;

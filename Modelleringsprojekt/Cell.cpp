@@ -41,10 +41,6 @@ void Cell::setNeighbours() {
 	int y = (int)((index / W)) % H;
 	int z = floor(index / (H * W));
 
-
-	if (index == 13)
-		cout << "x " << x << "y " << y << "z " << z << " W  " << W << endl;
-
 	switch (index % W) {
 	case 0: //Left side
 		if (index == 0) { //Top left front (3*3*3) (0)
