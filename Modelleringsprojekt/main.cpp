@@ -7,6 +7,7 @@
 
 #include <GL/glew.h>
 
+
 #include <iostream>
 #include "Particle.h"
 #include "Box.h"
@@ -17,8 +18,9 @@
 
 
 
+
 const int NUM_PARTICLES = 800;
-const int KERNEL_LIMIT = 35;
+const int KERNEL_LIMIT = 120;
 
 const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.14f;
@@ -27,7 +29,7 @@ const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
 
 Particle particles[NUM_PARTICLES];
-
+Box box = Box();
 
 Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH];
 
@@ -74,29 +76,31 @@ void init()
     }
     
 
-    int k = 0, j = 0, z = 0 ;
+    int x = 0, y = 0, z = 0 ;
     
     for(int i = 0; i < NUM_PARTICLES; i++){
                 
         //Y-led
-        if(i % 20 == 0)
-            k++;
         
         //X
-        if(i % 20 == 0)
-            j=0;
 
-		if (i % 40 == 0)
-			z = 0;
-        j++;
-		z++;
+        if (x == 10){
+            y++;
+            x = 0;
+        }
+        if(y == 10){
+            z++;
+            y = 0;
+    	}
+        
+        x++;
+		//z++;
 
-
-
-        particles[i].setPos(glm::vec3(j*6, k*6, z*6));
+        particles[i].setPos(glm::vec3(10+x*h/2, 19*16 + y*h/2, 10 + z*h/2)); //z*6
     }
 
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
+        
         cells[j].CreateCell(j);
     }
 }
@@ -147,7 +151,7 @@ void calculateDensityAndPressure(){
         
         float density_sum = 0;
         int cellIndex = particles[i].getCellIndex();
-        int limit = 0;
+        //int limit = 0;
 		
 
         vector<int> current_cells = cells[cellIndex].getNeighbours();
@@ -357,18 +361,16 @@ void drawAxes(){
     glPushMatrix();
     glBegin(GL_LINES);
     
-    glColor3f(1.f, 0.f, 0.f);
+    glColor3f(1.f, 1.f, 1.f);
     
     glVertex3f(0.f,0.f,0.f);
-    glVertex3f(512.f,0.f,0.f);
+    glVertex3f(256.f,0.f,0.f);
     
-	glColor3f(0.f,1.f,0.f);
     glVertex3f(0.f,0.f,0.f);
-    glVertex3f(0.f,512.f,0.f);
-    
-	glColor3f(0.0f,0.0f,1.0f);
+    glVertex3f(0.f,256.f,0.f);
+
     glVertex3f(0.f,0.f,0.f);
-    glVertex3f(0.f, 0.f, 512.f);
+    glVertex3f(0.f, 0.f, 256.f);
     
     glEnd();
     glPopMatrix();
@@ -382,7 +384,7 @@ void drawPlane(){
 	glPushMatrix();
 	glBegin(GL_POLYGON);
 
-	glColor3f(1.0f, 0.0f, 0.0f);  
+	glColor3f(1.0f, 1.0f, 1.0f);
 	glVertex3f(0.0f, 0.0f, 0.0f);
 	glVertex3f(512.0f, 0.0f, 0.0f);
 	glVertex3f(512.0f, 0.0f, 512.0f);
@@ -399,6 +401,12 @@ int main(int argc, char *argv[])
     init();
     
     glfwInit();
+    
+    /*glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //We don't want the old OpenGL*/
     
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
@@ -427,13 +435,14 @@ int main(int argc, char *argv[])
 
 		/*RITA UT PLANET*/
         drawAxes();
-		drawPlane();
+		//drawPlane();
+        
+        box.DrawBox();
 			
 		calculateAcceleration();
         display();
         idle();
         
-
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
 		glfwSwapBuffers(window);

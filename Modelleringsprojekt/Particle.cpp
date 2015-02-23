@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include "Sphere.cpp"
+#include <GLUT/glut.h>
 
 using namespace glm;
 //const float dt = 1.f;
@@ -38,17 +40,16 @@ void Particle::EvolveParticle()
         pos.x = 1;
     }
     
-    else if(pos.x > 512){
+    else if(pos.x > 256){
 
         vel.x = -0.8*vel.x;
-        pos.x = 512;
+        pos.x = 256;
     }
     
     if(pos.y < 1){
         
         vel.y = -0.8*vel.y;
         pos.y = 1;
-        
     }
     
     else if(pos.y > 512){
@@ -61,9 +62,9 @@ void Particle::EvolveParticle()
 		vel.z = -0.8*vel.z;
 		pos.z = 1;
 	}
-	else if(pos.z > 512){
+	else if(pos.z > 256){
 		vel.z = -0.8*vel.z;
-		pos.z = 512;
+		pos.z = 256;
 	}
 
 	//std::cout << "Pos.x = " << pos.x << " Pos.y = " << pos.y << " Pos.z = " << pos.z << std::endl;
@@ -71,9 +72,12 @@ void Particle::EvolveParticle()
 
 //Draw all the particles
 void Particle::DrawObjects() {
+    
+	
+     
 
     //!special ? glColor3f(0.2,0.2,1) :  glColor3f(1,1,1);
-    //glBegin(GL_TRIANGLE_STRIP);
+   /* glBegin(GL_TRIANGLE_STRIP);
 	glPushMatrix();
 	glBegin(GL_QUADS);
 	// Top face (y = 1.0f)
@@ -120,7 +124,27 @@ void Particle::DrawObjects() {
 	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
 
     glEnd();
-	glPopMatrix();
+	glPopMatrix();*/
+    
+    glColor3f(0.2,0.2,1);
+    
+    Sphere sphere(16/3, 6, 12);
+    //glutSolidSphere(16/3, 20.0, 20.0);
+    sphere.draw(pos[0], pos[1], pos[2]);
+    
+    /*glBegin(GL_TRIANGLE_FAN);
+    for(int ii = 0; ii < 15; ii++)
+    {
+        float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
+        
+        float x = 16/3 * cosf(theta);//calculate the x component
+        float y = 16/3 * sinf(theta);//calculate the y component
+        float z = 16/3 * sinf(theta);//calculate the y component
+        
+        glVertex3f(x + pos[0], y + pos[1], z + pos[2]);//output vertex
+    }
+    
+    glEnd();*/
 }
 
 const glm::vec3 Particle::getPos() const {

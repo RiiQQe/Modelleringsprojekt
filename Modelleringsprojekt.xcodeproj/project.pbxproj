@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E1F367D1A9B5AA40003A27B /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E1F367B1A9B5AA40003A27B /* Sphere.cpp */; };
 		1E66A23A1A78D2B0009B9388 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E66A2391A78D2B0009B9388 /* GLUT.framework */; };
 		1ED472F51A7780DF0065D12B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472F41A7780DF0065D12B /* Cocoa.framework */; };
 		1ED472F71A7780FB0065D12B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472F61A7780FB0065D12B /* CoreVideo.framework */; };
@@ -33,6 +34,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1E1F367B1A9B5AA40003A27B /* Sphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
 		1E66A2391A78D2B0009B9388 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		1ED472F41A7780DF0065D12B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		1ED472F61A7780FB0065D12B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -92,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				95B17A6F1A7F6BB100A0D807 /* Box.cpp */,
+				1E1F367B1A9B5AA40003A27B /* Sphere.cpp */,
 				95B17A701A7F6BB100A0D807 /* Box.h */,
 				95B17A7A1A80CB1A00A0D807 /* Cell.cpp */,
 				95B17A7B1A80CB1A00A0D807 /* Cell.h */,
@@ -161,6 +164,7 @@
 				95B17A771A7F717700A0D807 /* Box.cpp in Sources */,
 				95B17A7C1A80CB1A00A0D807 /* Cell.cpp in Sources */,
 				95B17A761A7F6E0B00A0D807 /* Particle.cpp in Sources */,
+				1E1F367D1A9B5AA40003A27B /* Sphere.cpp in Sources */,
 				953CFBAE1A7687B000FBC979 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
