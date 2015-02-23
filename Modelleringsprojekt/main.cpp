@@ -67,6 +67,7 @@ void handleFps() {
 // Create all the particles
 void init()
 {
+
     for(int i = 0; i < NUM_PARTICLES; i++) {
         particles[i].CreateParticle();
         
@@ -78,17 +79,21 @@ void init()
     for(int i = 0; i < NUM_PARTICLES; i++){
                 
         //Y-led
-        if(i % 40 == 0)
+        if(i % 20 == 0)
             k++;
         
         //X
-        if(i % 40 == 0)
+        if(i % 20 == 0)
             j=0;
-        
-        j++;
-        
 
-        particles[i].setPos(glm::vec3(j*6, k*6, -z*6));
+		if (i % 40 == 0)
+			z = 0;
+        j++;
+		z++;
+
+
+
+        particles[i].setPos(glm::vec3(j*6, k*6, z*6));
     }
 
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
@@ -231,7 +236,7 @@ void calculateForces(){
                     
                     float W_const_pressure = 45.0f/(M_PI * glm::pow(h, 6.0)) * glm::pow(h - abs_diffvec, 3.0) / abs_diffvec;
                     
-                    glm::vec3 W_pressure_gradient = glm::vec3(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, 0);
+                    glm::vec3 W_pressure_gradient = glm::vec3(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, W_const_pressure * diffvec.z);
                     
                     float visc_gradient = (45/(M_PI * glm::pow(h, 6.0)))*(h - abs_diffvec);
                     
@@ -254,7 +259,7 @@ void calculateForces(){
 void calculateAcceleration(){
     
     // Clear all particles in cells
-    for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT; j++) {
+    for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
         
         cells[j].clearParticles();
         
@@ -352,14 +357,16 @@ void drawAxes(){
     glPushMatrix();
     glBegin(GL_LINES);
     
-    glColor3f(1.f, 1.f, 1.f);
+    glColor3f(1.f, 0.f, 0.f);
     
     glVertex3f(0.f,0.f,0.f);
     glVertex3f(512.f,0.f,0.f);
     
+	glColor3f(0.f,1.f,0.f);
     glVertex3f(0.f,0.f,0.f);
     glVertex3f(0.f,512.f,0.f);
     
+	glColor3f(0.0f,0.0f,1.0f);
     glVertex3f(0.f,0.f,0.f);
     glVertex3f(0.f, 0.f, 512.f);
     

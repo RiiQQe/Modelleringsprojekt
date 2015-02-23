@@ -17,7 +17,6 @@ class Cell {
 			L = 32
 		};
 
-
 	public:
 		void CreateCell(int _index);
 		void addParticle(Particle &_particle);

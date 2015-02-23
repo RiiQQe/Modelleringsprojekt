@@ -51,12 +51,20 @@ void Particle::EvolveParticle()
         
     }
     
-    
     else if(pos.y > 512){
         
         vel.y = -0.8*vel.y;
         pos.y = 512;
     }
+
+	if (pos.z < 1){
+		vel.z = -0.8*vel.z;
+		pos.z = 1;
+	}
+	else if(pos.z > 512){
+		vel.z = -0.8*vel.z;
+		pos.z = 512;
+	}
 
 	//std::cout << "Pos.x = " << pos.x << " Pos.y = " << pos.y << " Pos.z = " << pos.z << std::endl;
 }
@@ -111,29 +119,6 @@ void Particle::DrawObjects() {
 	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
 	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
 
-
-   
-    /*
-    glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]+2,0.5);     // top    right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]+2,0.5);     // top    left
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]-2,0.5);     // bottom right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]-2,0.5);     // bottom left*/
-    
-    glColor3f(0.2,0.2,1);
-    
-    glBegin(GL_TRIANGLE_FAN);
-    for(int ii = 0; ii < 15; ii++)
-    {
-        float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
-        
-        float x = 16/3 * cosf(theta);//calculate the x component
-        float y = 16/3 * sinf(theta);//calculate the y component
-        
-        glVertex2f(x + pos[0], y + pos[1]);//output vertex
-    }
-    
-
     glEnd();
 	glPopMatrix();
 }
@@ -152,9 +137,9 @@ const glm::vec3 Particle::getVelocity(){
 
 int Particle::getCellIndex() {
 	glm::vec3 cell = glm::vec3(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)), glm::floor(pos[2] / 512.f * (512 / 32)));
-    int _cellIndex = (int)cell.x % 32 + (int)cell.y * 32;
+    int _cellIndex = (int)cell.x % 32 + (int)cell.y % 32 + (int)cell.z * 32;
 	
-   // std::cout << _cellIndex;
+    //std::cout << _cellIndex << std::endl;
     
 	return _cellIndex;
 }
@@ -181,7 +166,6 @@ float Particle::getPressure(){
 
 
 void Particle::setPressureForce(glm::vec3 f){
-    
     pressure_force = f;
 }
 
