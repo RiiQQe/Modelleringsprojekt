@@ -17,6 +17,7 @@ Box::Box()
 {
 	boxX = 0;
 	boxY = 0;
+    side = 4.f;
 	rotAngle = 0;	
 	lastFrameTime = 0;
 }
@@ -38,12 +39,12 @@ void Box::DrawBox()
 	// Define grid by doing fancy iterations.
 	glColor3f(0.2f, 0.2f, 0.2f);
 
-	for (int i = 1; i < 512 / 32; i++) {
-		glVertex2f(32.f * i, 0);
-		glVertex2f(32.f * i, 512);
+	for (int i = 1; i < 512 / (int)side; i++) {
+		glVertex2f(side * i, 0);
+		glVertex2f(side * i, 512);
 
-		glVertex2f(0, 32.f * i);
-		glVertex2f(512, 32.f * i);
+		glVertex2f(0, side * i);
+		glVertex2f(512, side * i);
 	}
 /*
     glVertex2f(0.0f, 64.0f);

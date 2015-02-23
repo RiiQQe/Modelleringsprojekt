@@ -15,7 +15,7 @@ void Particle::CreateParticle()
 
 	mass = 1.0f;
 	gravity = 9.82f;
-	radius = 3.0f;
+	radius = 20.0f;
 	special = false;
 }
 

@@ -12,7 +12,8 @@ class Box
 private:
 	float boxX;
 	float boxY;
-	float rotAngle;	
+	float rotAngle;
+    float side;
 	int lastFrameTime;
 	
 public:

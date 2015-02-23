@@ -11,7 +11,7 @@
 
 #include <thread>
 
-const int NUM_PARTICLES = 100;
+const int NUM_PARTICLES = 3;
 const int GRID_WIDTH = 16;
 const int GRID_HEIGHT = 16;
 
@@ -19,6 +19,8 @@ Particle particles[NUM_PARTICLES];
 Box box = Box();
 
 Cell cells[GRID_WIDTH * GRID_HEIGHT];
+const int TEMPSIZE = 256;
+float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
 int Particle::count = 1;
 
 // FPS specific vars
@@ -77,33 +79,180 @@ void display()
 	}
     
     for(int i = 0; i < NUM_PARTICLES; i++){
+        particles[i].DrawObjects();
+    }
+    
+    // Beta balls begins
+    
+    // Marching cubes algorithm -
+    // bitwise tiling (Jonsson, 2015)
+    // Using ..
+    // f(x,y) = sum(i = 1 -> n) ri^2 / ((x - xi)^2 + (y - yi)^2)
+    //
+    
+    // Needed for scaling
+    int kSize = 512 / TEMPSIZE;
+    
+    // Iterate through all cells
+    for (int k = 0; k < TEMPSIZE * TEMPSIZE; k++) {
+        int x = kSize * (k % TEMPSIZE);
+        int y = (k / (TEMPSIZE)) * kSize;
         
-        int cellIndex = particles[i].getCellIndex();
-        vector<int> current_cells = cells[cellIndex].getNeighbours();
         
-        for(int j = 0; j < current_cells.size(); j++){
-
-            // Loop through all neighbouring particles
-            for(int k = 0; k < cells[current_cells.at(j)].getParticles().size(); k++){
-                
-                Particle n = cells[current_cells.at(j)].getParticles().at(k);
-                
-                glBegin(GL_LINES);
-                glColor3f(1.f, 1.f, 0.f);
-                
-                glVertex2f(particles[i].getPos().x, particles[i].getPos().y);
-                glVertex2f(n.getPos().x, n.getPos().y);
-                
-                glEnd();
-        
-        	}
+        // for each cell, check
+        for(int i = 0; i < NUM_PARTICLES; i++) {
+            // calculate height map, sum
+            
+            squares[k] += (20*20) / ((x - particles[i].getPos().x) * (x - particles[i].getPos().x) + (y - particles[i].getPos().y) * (y - particles[i].getPos().y));
         }
     }
     
-    for(int i = 0; i < NUM_PARTICLES; i++){
-    	particles[i].DrawObjects();
-    
+    // draw stuff
+    for (int i = 0; i < TEMPSIZE - 1; i++) {
+        for (int j = 0; j < TEMPSIZE - 1; j++) {
+            int bitwiseSum = 0;
+            
+            // calculate bitwise sum
+            //
+            
+            if (squares[i     + (j * TEMPSIZE + TEMPSIZE)] > 1.f)       { bitwiseSum += 1; } // upper left corner
+            if (squares[i + 1 + (j * TEMPSIZE + TEMPSIZE)] > 1.f)   { bitwiseSum += 2; } // upper right corner
+            if (squares[i + 1 + (j * TEMPSIZE)] > 1.f)                  { bitwiseSum += 4; } // upper left corner
+            if (squares[i     + (j * TEMPSIZE)] > 1.f)              { bitwiseSum += 8; } // lower right corner
+            
+            // Depending on the bitwiseSum, draw triangles.
+            
+            if (bitwiseSum >= 1.f) {
+                //if (bitwiseSum >= 14) cout << bitwiseSum << endl;
+            
+                glBegin(GL_TRIANGLE_STRIP);
+                glColor3f(1.f, 1.f, 1.f);
+
+                switch (bitwiseSum) {
+                    case 1:
+                        // top left triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,            (j + 1) * kSize + kSize / 2,  0);           // top         left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,(j + 1) * kSize + kSize / 2,  0);           // top         left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,             j * kSize + kSize / 2 + kSize / 2,    0);  // bot+half    left
+                        break;
+                    case 2:
+                        // top right triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);             // top          right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,           (j + 1) * kSize + kSize / 2,  0); // top          left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2 + kSize / 2,        0); // bot+half     right
+                        break;
+                    case 3:
+                        // top rectangle
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);           // top      right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);           // top      left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + 2 * (kSize / 2),        0);     // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + 2 * (kSize / 2),        0);     // bot+half left
+
+                        break;
+                    case 4:
+                        // bot right triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);             // bot         right
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2 + kSize / 2,        0); // bot+half    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,           j * kSize + kSize / 2,        0); // bot left+half
+                        break;
+                    case 5:
+                        std::cout << "SPECIAL CASE" << endl;
+                        break;
+                    case 6:
+                        // right rectangle
+                        
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);           // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);           // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);     // bottom left+half
+                        
+                        break;
+                    case 7:
+                        // missing bot left triangle
+                        
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);             // top          left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);             // top          right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,            j * kSize + 2 * (kSize / 2), 0);             // bottom+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);       // bottom left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);             // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);             // bottom       right
+                        break;
+                    case 8:
+                        // bot left triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,              j * kSize + kSize / 2,        0);        // bottom      left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,              j * kSize + kSize / 2 + kSize / 2, 0);   // bottom+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,  j * kSize + kSize / 2,        0);        // bottom      left+half
+                        break;
+                    case 9:
+                        // left rectangle
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);           // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);           // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);     // bottom left+half
+                        
+                        break;
+                    case 10:
+                        std::cout << "SPECIAL CASE" << endl;
+                        break;
+                    case 11:
+                        // missing bot right triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2 + kSize / 2,        0); // bot+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);     // bottom left+half
+                        
+                        break;
+                    case 12:
+                        // bot rectangle
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);           // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);           // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + 2 * (kSize / 2),        0);     // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + 2 * (kSize / 2),        0);     // bot+half left
+
+                        break;
+                    case 13:
+                        // missing top right triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);            // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + 2 * (kSize / 2),        0);     // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
+                        
+                        
+                        break;
+                    case 14:
+                        // missing top left triangle
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + 2 * (kSize / 2),        0);     // bot+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
+                        
+                        break;
+                    case 15:
+                        // draw full square
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
+                        
+                        break;
+                    default:
+                        break;
+                }
+                
+                glEnd();
+            }
+        }
     }
+
+    // clear squares
+    for (int i = 0; i < TEMPSIZE * TEMPSIZE; ++i) {
+        squares[i] = 0.f;
+    }
+    
+    // Beta balls ends
 }
 
 void reshape_window(GLFWwindow* window, int width, int height)
@@ -149,10 +298,10 @@ int main(int argc, char *argv[])
         glLoadIdentity();
         glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
         
+        
+        //box.DrawBox();
         display();
         idle();
-        
-        // box.DrawBox();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
