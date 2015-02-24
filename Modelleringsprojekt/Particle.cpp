@@ -15,6 +15,7 @@ void Particle::CreateParticle()
     
 	//mass = 1.0f;
 	//gravity = 9.82f;
+    radius = 8;
     pressure = 0;
     density = 0;
     
@@ -114,6 +115,10 @@ int Particle::getCellIndex() {
     //std::cout << "cell.y" << cell.y << std::endl;
     
 	return _cellIndex;
+}
+
+float Particle::getRadius(){
+    return radius;
 }
 
 void Particle::setPos(glm::vec3 p){

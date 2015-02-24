@@ -31,7 +31,17 @@ void Box::DrawBox()
 	// The first parameter is the rotation angle.
 	//glRotatef(rotAngle, 0, 0, 1);
 	
+    glBegin(GL_TRIANGLE_STRIP);
+	    glColor3f(1.f, 1.f, 1.f);
+        glTexCoord2f(0.0,1.0); glVertex3f(0, 0,0.5);
+		glTexCoord2f(0.0,1.0); glVertex3f(0, 512,0.5);
+	    glTexCoord2f(0.0,1.0); glVertex3f(512, 0,0.5);
+	    glTexCoord2f(0.0,1.0); glVertex3f(512, 512,0.5);
+    glEnd();
+    
+    
 	glBegin(GL_LINES);
+    
 		
     // Defines each line
 
