@@ -30,7 +30,6 @@ Box box = Box();
 
 Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH];
 
-
 // FPS specific vars
 double lastTime;
 int frames = 0;
@@ -403,7 +402,9 @@ int main(int argc, char *argv[])
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    while(!glfwWindowShouldClose(window)){
+	bool running = true;
+
+    while(!glfwWindowShouldClose(window) && running){
 
         float ratio;
         int width, height;
@@ -418,8 +419,6 @@ int main(int argc, char *argv[])
         glLoadIdentity();
 
 		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512);
-
-		
 
 		/*ROTATION*/
 		handleCamera();
@@ -443,6 +442,7 @@ int main(int argc, char *argv[])
 
 		glFinish();
 
+		running = !glfwGetKey(window, GLFW_KEY_ESCAPE);
 
 	}
     
