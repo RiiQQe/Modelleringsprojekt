@@ -43,7 +43,7 @@ void handleFps() {
         
         std::ostringstream stream;
         stream << fps;
-        std::string fpsString = "Betafluid 0.0.4 | FPS: " + stream.str();
+        std::string fpsString = "Betafluid 0.0.5 | FPS: " + stream.str();
         
         // Convert the title to a c_str and set it
         const char* pszConstString = fpsString.c_str();
@@ -88,9 +88,6 @@ void init()
 //Trying to reduce calculation by removing random number of neighbours up to the limit of the kernel
 void reduceNeighbours(vector<Particle*>& theNeighbours){
     
-    //std::cout << theNeighbours.size() << std::endl;;
-    
-    //Temp
     vector<Particle*> mapped_neighbours;
     
     for(int i = 0; i < KERNEL_LIMIT; i++){
@@ -100,10 +97,27 @@ void reduceNeighbours(vector<Particle*>& theNeighbours){
     }
     
     theNeighbours = mapped_neighbours;
-    //std::cout << "tokmånga partiklar";
+
 }
 
 void calculateDensityAndPressure(){
+    
+    /*for (int i = 0; i < 32 * 32; i++){
+        //cout << "Grannar för cell nr " << i << endl;
+        vector<int> neighbors = cells[i].getNeighbours();
+        int count = neighbors.size();
+        
+        if (i == 34){
+            int c = 0;
+            cout << " Pos: " << i << endl;
+            cout << " Grannar: " << endl;
+            for (int k = 0; k < count; k++){
+                c++;
+                cout << neighbors.at(k) << endl;
+            }
+            cout << "Antal grannar: " << c - 1 << endl;
+        }
+    }*/
 
     for(int i = 0; i < NUM_PARTICLES; i++){
         
@@ -111,6 +125,8 @@ void calculateDensityAndPressure(){
         int cellIndex = particles[i].getCellIndex();
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
+        
+        //std::cout << current_cells.size() << std::endl;
     
         for(int j = 0; j < current_cells.size(); j++){
 			
@@ -123,13 +139,13 @@ void calculateDensityAndPressure(){
             
             for(int k = 0; k < neighbours.size(); k++){
                 
+                //std::cout << "SIZE " << neighbours.size() << std::endl;
+                
                 Particle *n = neighbours.at(k);
             
                 glm::vec3 diffvec = particles[i].getPos() - n->getPos();
             
                 float abs_diffvec = glm::length(diffvec);
-            
-                //std::cout << "ABS DIFFVEC " <<  abs_diffvec << std::endl;
             
                 if(abs_diffvec < h){
             
@@ -159,9 +175,6 @@ void calculateForces(){
         glm::vec3 viscousity = glm::vec3(0);
         
         int cellIndex = particles[i].getCellIndex();
-        //int limit = 0;
-		//bool limitBool = false;
-		//float prevVisc = 0.0f, prevPress = 0.0f;
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
         
@@ -293,7 +306,7 @@ int main(int argc, char *argv[])
         display();
         idle();
         
-        //box.DrawBox();
+        box.DrawBox();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);

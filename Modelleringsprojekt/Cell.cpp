@@ -39,16 +39,19 @@ void Cell::setNeighbours() {
 	switch (index %GRID_WIDTH) {
 		case 0: 
 			if (index == 0) {
+                //std::cout << "9" << std::endl;
 				neighbours.push_back(index + 1);
 				neighbours.push_back(index + GRID_WIDTH);
 				neighbours.push_back(index + GRID_WIDTH + 1);
 			}
 			else if (index == GRID_HEIGHT * ( GRID_WIDTH - 1)) {
+                std::cout << "8" << std::endl;
 				neighbours.push_back(index + 1);
 				neighbours.push_back(index - GRID_WIDTH);
 				neighbours.push_back(index - GRID_WIDTH + 1);
 			}
 			else {
+                //std::cout << "7" << std::endl;
 				neighbours.push_back(index + 1);
 				neighbours.push_back(index + GRID_WIDTH);
 				neighbours.push_back(index - GRID_WIDTH);
@@ -58,16 +61,19 @@ void Cell::setNeighbours() {
 			break;
 		case (GRID_WIDTH - 1):
 			if (index == GRID_WIDTH - 1) {
+                std::cout << "6" << std::endl;
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + GRID_WIDTH);
 				neighbours.push_back(index + GRID_WIDTH - 1);
 			}
 			else if (index == GRID_WIDTH * GRID_HEIGHT - 1) {
+                //std::cout << "5" << std::endl;
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index - GRID_WIDTH);
 				neighbours.push_back(index - GRID_WIDTH - 1);
 			}
 			else {
+                //std::cout << "4" << std::endl;
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + GRID_WIDTH);
 				neighbours.push_back(index - GRID_WIDTH);
@@ -77,6 +83,7 @@ void Cell::setNeighbours() {
 			break;
 		default:
 			if (index < GRID_WIDTH) {
+               // std::cout << "3" << std::endl;
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
 				neighbours.push_back(index + GRID_WIDTH - 1);
@@ -84,6 +91,7 @@ void Cell::setNeighbours() {
 				neighbours.push_back(index + GRID_WIDTH + 1);
 			}
 			else if (index > GRID_HEIGHT * (GRID_WIDTH- 1) - 1) {
+                //std::cout << "2" << std::endl;
 				neighbours.push_back(index - 1);
 				neighbours.push_back(index + 1);
 				neighbours.push_back(index - GRID_WIDTH - 1);
@@ -91,6 +99,8 @@ void Cell::setNeighbours() {
 				neighbours.push_back(index - GRID_WIDTH + 1);
 			}
 			else {
+                
+                //std::cout << "1" << std::endl;
 				neighbours.push_back(index - GRID_WIDTH - 1);
 				neighbours.push_back(index - GRID_WIDTH);
 				neighbours.push_back(index - GRID_WIDTH + 1);

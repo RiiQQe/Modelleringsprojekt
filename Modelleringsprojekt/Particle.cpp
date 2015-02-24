@@ -40,10 +40,10 @@ void Particle::EvolveParticle()
         pos.x = 1;
     }
     
-    else if(pos.x > 512){
+    else if(pos.x > 511){
         
         vel.x = -0.8*vel.x;
-        pos.x = 512;
+        pos.x = 511;
     }
     
     if(pos.y < 1){
@@ -54,10 +54,10 @@ void Particle::EvolveParticle()
     }
     
     
-    else if(pos.y > 512){
+    else if(pos.y > 511){
         
         vel.y = -0.8*vel.y;
-        pos.y = 512;
+        pos.y = 511;
         
     }
     
@@ -102,10 +102,16 @@ const glm::vec3 Particle::getVelocity(){
 }
 
 int Particle::getCellIndex() {
-	glm::vec2 cell = glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
-    int _cellIndex = (int)cell.x % 32 + (int)cell.y * 32;
+	glm::vec2 cell = glm::vec2(glm::floor(pos[0] / 512.f * 32 ), glm::floor(pos[1] / 512.f * 32));
+    
+    int _cellIndex = ((int)cell.x % 32) + ((int)cell.y)*32;
+    
+   // std::cout << "CELLINDEX : " << _cellIndex << " from pos (" << (int)cell.x % 32 << ", " << (int)cell.y << ")" << std::endl;
 	
    // std::cout << _cellIndex;
+    //std::cout << "_cellIndex" << _cellIndex << std::endl;
+    //std::cout << "cell.x" << cell.x << std::endl;
+    //std::cout << "cell.y" << cell.y << std::endl;
     
 	return _cellIndex;
 }
