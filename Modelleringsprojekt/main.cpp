@@ -19,7 +19,7 @@ Particle particles[NUM_PARTICLES];
 Box box = Box();
 
 Cell cells[GRID_WIDTH * GRID_HEIGHT];
-const int TEMPSIZE = 64;
+const int TEMPSIZE = 32;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
 int Particle::count = 1;
 
