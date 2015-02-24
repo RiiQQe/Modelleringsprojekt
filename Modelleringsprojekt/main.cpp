@@ -11,7 +11,7 @@
 
 #include <thread>
 
-const int NUM_PARTICLES = 3;
+const int NUM_PARTICLES = 5;
 const int GRID_WIDTH = 16;
 const int GRID_HEIGHT = 16;
 
@@ -19,7 +19,7 @@ Particle particles[NUM_PARTICLES];
 Box box = Box();
 
 Cell cells[GRID_WIDTH * GRID_HEIGHT];
-const int TEMPSIZE = 256;
+const int TEMPSIZE = 128;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
 int Particle::count = 1;
 
@@ -103,7 +103,7 @@ void display()
         for(int i = 0; i < NUM_PARTICLES; i++) {
             // calculate height map, sum
             
-            squares[k] += (20*20) / ((x - particles[i].getPos().x) * (x - particles[i].getPos().x) + (y - particles[i].getPos().y) * (y - particles[i].getPos().y));
+            squares[k] += (particles[i].getRadius()*particles[i].getRadius()) / ((x - particles[i].getPos().x) * (x - particles[i].getPos().x) + (y - particles[i].getPos().y) * (y - particles[i].getPos().y));
         }
     }
     
@@ -112,130 +112,195 @@ void display()
         for (int j = 0; j < TEMPSIZE - 1; j++) {
             int bitwiseSum = 0;
             
-            // calculate bitwise sum
+            //  ***** USED FOR MARCHING SQUARES *****
+            //
+            //       CASE EXAMPLE:  bitwiseSum = 4
+            //    (only point d is within a metaball):
+            //
+            //
+            //             |            |
+            //             | a          | b
+            //       ------+------------+------
+            //             |            |
+            //             |            *  (Qx, Qy)
+            //             |        _ ^ |
+            //             | c   _ ^    | d
+            //       ------+-- * -------+------
+            //             | (Px, Py)   |
+            //             |            |
+            //
             //
             
-            if (squares[i     + (j * TEMPSIZE + TEMPSIZE)] > 1.f)       { bitwiseSum += 1; } // upper left corner
-            if (squares[i + 1 + (j * TEMPSIZE + TEMPSIZE)] > 1.f)   { bitwiseSum += 2; } // upper right corner
-            if (squares[i + 1 + (j * TEMPSIZE)] > 1.f)                  { bitwiseSum += 4; } // upper left corner
-            if (squares[i     + (j * TEMPSIZE)] > 1.f)              { bitwiseSum += 8; } // lower right corner
+            
+            // calculate bitwise sum
+            // sum increments by 2^n for each corner, going clockwise, starting in top right
+            
+            float a, b, c, d;
+            a = squares[i     + (j * TEMPSIZE + TEMPSIZE)]; // upper left
+            b = squares[i + 1 + (j * TEMPSIZE + TEMPSIZE)]; // upper right
+            c = squares[i     + (j * TEMPSIZE)]; // lower left
+            d = squares[i + 1 + (j * TEMPSIZE)]; // lower right
+            
+            if (a > 1.f)   { bitwiseSum += 1; } // upper left corner
+            if (b > 1.f)   { bitwiseSum += 2; } // upper right corner
+            if (d > 1.f)   { bitwiseSum += 4; } // lower right corner
+            if (c > 1.f)   { bitwiseSum += 8; } // lower left corner
             
             // Depending on the bitwiseSum, draw triangles.
             
-            if (bitwiseSum >= 1.f) {
-                //if (bitwiseSum >= 14) cout << bitwiseSum << endl;
-            
+            if (bitwiseSum >= 1.f) { // bitwiseSum cannot assume negative values and 0 is an empty square.
+                
+                // These are used for interpolation process, increasing the possible angles from n * PI/4 to basically infinity.
+                float qx, qy, px, py;
+                
+                glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
+                glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
+                glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
+                glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
+                
+                
+                
+                // all points, position
+                float ax, ay, bx, by, cx, cy, dx, dy;
+                
+                // topleft
+                ax =  i * kSize + kSize / 2;
+                ay = (j + 1) * kSize + kSize / 2;
+                
+                // topright
+                bx = (i + 1) * kSize + kSize / 2;
+                by = (j + 1) * kSize + kSize / 2;
+                
+                // botleft
+                cx =  i * kSize + kSize / 2;
+                cy =  j * kSize + kSize / 2;
+                
+                // botright
+                dx = (i + 1) * kSize + kSize / 2;
+                dy =  j * kSize + kSize / 2;
+                
+                
+                
                 glBegin(GL_TRIANGLE_STRIP);
                 glColor3f(1.f, 1.f, 1.f);
+                
 
                 switch (bitwiseSum) {
                     case 1:
                         // top left triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,            (j + 1) * kSize + kSize / 2,  0);           // top         left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,(j + 1) * kSize + kSize / 2,  0);           // top         left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,             j * kSize + kSize / 2 + kSize / 2,    0);  // bot+half    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,  0);  // top         left
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax + kSize / 2, ay,  0);  // top         left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx, cy + kSize / 2,  0);  // bot+half    left
                         break;
                     case 2:
                         // top right triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);             // top          right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,           (j + 1) * kSize + kSize / 2,  0); // top          left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2 + kSize / 2,        0); // bot+half     right
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);  // top          right
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax + kSize / 2, ay,  0);  // top          left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx, dy + kSize / 2,  0);  // bot+half     right
                         break;
                     case 3:
                         // top rectangle
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);           // top      right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);           // top      left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + 2 * (kSize / 2),        0);     // bot+half right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + 2 * (kSize / 2),        0);     // bot+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);  // top      right
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,  0);  // top      left
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx, dy + kSize / 2,  0);  // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx, cy + kSize / 2,  0);  // bot+half left
 
                         break;
                     case 4:
+                        // Points of intersection of square boundaries from metaballs
+                        qx = bx;
+                        qy = by + (dy - by) * ((1 - b) / (d - b));
+                        
+                        px = dx + (cx - bx) * ((1 - d) / (c - d));
+                        py = cy;
+                        
                         // bot right triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);             // bot         right
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2 + kSize / 2,        0); // bot+half    right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,           j * kSize + kSize / 2,        0); // bot left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2, j * kSize + kSize / 2,  0);   // bot right
+                        glTexCoord2f(0.0,1.0); glVertex3f(px, py, 0);
+                        glTexCoord2f(0.0,1.0); glVertex3f(qx, qy, 0);
+                        
                         break;
                     case 5:
-                        std::cout << "SPECIAL CASE" << endl;
+                        std::cout << "SPECIAL CASE 5" << endl;
                         break;
                     case 6:
                         // right rectangle
                         
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);           // top    right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);           // bottom right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);     // bottom left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);    // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax + kSize / 2, ay,  0);    // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx,             dy,  0);    // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx + kSize / 2, cy,  0);    // bottom left+half
                         
                         break;
                     case 7:
                         // missing bot left triangle
                         
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);             // top          left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);             // top          right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,            j * kSize + 2 * (kSize / 2), 0);             // bottom+half left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);       // bottom left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);             // top    right
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);             // bottom       right
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,  0);    // top        left
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);    // top        right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx, cy + kSize / 2,  0);    // bot+half   left
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx + kSize / 2, cy,  0);    // bot        left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);    // top        right
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx,             dy,  0);    // bot        right
                         break;
                     case 8:
                         // bot left triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,              j * kSize + kSize / 2,        0);        // bottom      left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,              j * kSize + kSize / 2 + kSize / 2, 0);   // bottom+half left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2 + kSize / 2,  j * kSize + kSize / 2,        0);        // bottom      left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,   0);   // bottom      left
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx, cy + kSize / 2,   0);   // bottom+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx + kSize / 2, cy,   0);   // bottom      left+half
                         break;
                     case 9:
                         // left rectangle
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);           // top    left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);           // bottom left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);     // bottom left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,   0);   // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,   0);   // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax + kSize / 2, ay,   0);   // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx + kSize / 2, cy,   0);   // bottom left+half
                         
                         break;
                     case 10:
-                        std::cout << "SPECIAL CASE" << endl;
+                        std::cout << "SPECIAL CASE 10" << endl;
                         break;
                     case 11:
                         // missing bot right triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2 + kSize / 2,        0); // bot+half
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           j * kSize + kSize / 2,        0);     // bottom left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,  0);    // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);    // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,  0);    // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx, dy + kSize / 2,  0);    // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx + kSize / 2, cy,  0);    // bottom left+half
                         
                         break;
                     case 12:
                         // bot rectangle
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);           // bottom right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);           // bottom left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + 2 * (kSize / 2),        0);     // bot+half right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + 2 * (kSize / 2),        0);     // bot+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx,             dy,  0);    // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,  0);    // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx, dy + kSize / 2,  0);    // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx, cy + kSize / 2,  0);    // bot+half left
 
                         break;
                     case 13:
                         // missing top right triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);            // bottom left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + 2 * (kSize / 2),        0);     // bot+half right
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,  0);    // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax + kSize / 2, ay,  0);    // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,  0);    // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx, dy + kSize / 2,  0);    // bot+half right
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx,             dy,  0);    // bottom right
                         
                         
                         break;
                     case 14:
                         // missing top left triangle
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + 2 * (kSize / 2),        0);     // bot+half left
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + 2 * (kSize / 2),           (j + 1) * kSize + kSize / 2,  0);     // top    left+half
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx, cy + kSize / 2,  0);    // bot+half left
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax + kSize / 2, ay,  0);    // top    left+half
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,  0);    // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);    // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx,             dy,  0);    // bottom right
                         
                         break;
                     case 15:
                         // draw full square
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     (j + 1) * kSize + kSize / 2,  0);     // top    right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           (j + 1) * kSize + kSize / 2,  0);     // top    left
-                        glTexCoord2f(0.0,1.0); glVertex3f((i + 1) * kSize + kSize / 2,     j * kSize + kSize / 2,        0);     // bottom right
-                        glTexCoord2f(0.0,1.0); glVertex3f(i * kSize + kSize / 2,           j * kSize + kSize / 2,        0);     // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(ax,             ay,  0);    // top    left
+                        glTexCoord2f(0.0,1.0); glVertex3f(bx,             by,  0);    // top    right
+                        glTexCoord2f(0.0,1.0); glVertex3f(cx,             cy,  0);    // bottom left
+                        glTexCoord2f(0.0,1.0); glVertex3f(dx,             dy,  0);    // bottom right
                         
                         break;
                     default:

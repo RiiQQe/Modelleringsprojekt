@@ -15,7 +15,7 @@ void Particle::CreateParticle()
 
 	mass = 1.0f;
 	gravity = 9.82f;
-	radius = 20.0f;
+	radius = 50.0f - rand() % 35;
 	special = false;
 }
 
@@ -57,6 +57,10 @@ int Particle::getCellIndex() {
 	int _cellIndex = (int)cell.x % 16 + (int)cell.y * 16;
 	
 	return _cellIndex;
+}
+
+int Particle::getRadius() {
+    return radius;
 }
 
 void Particle::addToVel(glm::vec2 v) {

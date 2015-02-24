@@ -20,6 +20,7 @@ class Particle
         void DrawObjects();
         const glm::vec3 &getPos() const;
 		int getCellIndex();
+        int getRadius();
         void addToVel(glm::vec2 v);
         glm::vec2 getVel();
 };
