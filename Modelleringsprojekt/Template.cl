@@ -32,11 +32,7 @@ __kernel void Add(__global int* pA, __global int* pB, __global float* pC)
     const int id = y * width + x;
 	bool k = true;
 
-	if(k){ 
 
-		pC[id] = 0;
-
-	}
 
 	if (pA[id] < h){
 

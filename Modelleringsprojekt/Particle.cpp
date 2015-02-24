@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 using namespace glm;
-const float dt = 0.5f;
+const float dt = 0.0004f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
@@ -13,8 +13,8 @@ void Particle::CreateParticle()
 	pos = vec3(0, 0, 0);
 	vel = vec3(0, 0, 0);
     
-	mass = 1.0f;
-	gravity = 9.82f;
+	//mass = 1.0f;
+	//gravity = 9.82f;
     pressure = 0;
     density = 0;
     
@@ -36,26 +36,27 @@ void Particle::EvolveParticle()
     
     if(pos.x < 1){
         
-        vel.x = -vel.x;
+        vel.x = -0.8*vel.x;
         pos.x = 1;
     }
     
     else if(pos.x > 512){
         
-        vel.x = -vel.x;
+        vel.x = -0.8*vel.x;
         pos.x = 512;
     }
     
     if(pos.y < 1){
         
-        vel.y = -vel.y;
+        vel.y = -0.8*vel.y;
         pos.y = 1;
         
     }
     
+    
     else if(pos.y > 512){
         
-        vel.y = -vel.y;
+        vel.y = -0.8*vel.y;
         pos.y = 512;
         
     }
@@ -64,12 +65,26 @@ void Particle::EvolveParticle()
 
 //Draw all the particles
 void Particle::DrawObjects() {
-    glColor3f(0.2,0.2,1);
+   
+    /*
     glBegin(GL_TRIANGLE_STRIP);
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]+2,0.5);     // top    right
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]+2,0.5);     // top    left
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]-2,0.5);     // bottom right
-    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]-2,0.5);     // bottom left
+    glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]-2,0.5);     // bottom left*/
+    
+    glColor3f(0.2,0.2,1);
+    
+    glBegin(GL_TRIANGLE_FAN);
+    for(int ii = 0; ii < 15; ii++)
+    {
+        float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
+        
+        float x = 16/3 * cosf(theta);//calculate the x component
+        float y = 16/3 * sinf(theta);//calculate the y component
+        
+        glVertex2f(x + pos[0], y + pos[1]);//output vertex
+    }
     
     glEnd();
 }
@@ -88,8 +103,10 @@ const glm::vec3 Particle::getVelocity(){
 
 int Particle::getCellIndex() {
 	glm::vec2 cell = glm::vec2(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)));
-	int _cellIndex = (int)cell.x % 16 + (int)cell.y * 16;
+    int _cellIndex = (int)cell.x % 32 + (int)cell.y * 32;
 	
+   // std::cout << _cellIndex;
+    
 	return _cellIndex;
 }
 

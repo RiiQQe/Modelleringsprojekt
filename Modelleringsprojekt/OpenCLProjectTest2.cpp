@@ -952,11 +952,13 @@ void calculateDensityAndPressure(ocl_args_d_t *ocl, float* inputA, float* inputB
 	//maps the output from the graphicscard to to "resultPtr". resultPtr can be accessed via resultPtr[index]
 	float *resultPtr = (float *)clEnqueueMapBuffer(ocl->commandQueue, ocl->dstMem, true, CL_MAP_READ, 0, sizeof(float) * 10 * 10, 0, NULL, NULL, &err);
 
+	
+
+	clFinish(ocl->commandQueue);
+
 	for (int i = 0; i < 100; i++){
 		cout << "resultPtr = " << resultPtr[i] << endl;
 	}
-
-	clFinish(ocl->commandQueue);
 
 	clEnqueueUnmapMemObject(ocl->commandQueue, ocl->dstMem, resultPtr, 0, NULL, NULL);
 
