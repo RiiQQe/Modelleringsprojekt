@@ -826,6 +826,7 @@ cl_uint ExecuteAddKernel(ocl_args_d_t *ocl, cl_uint width, cl_uint height)
 
     // Call clFinish to guarantee that output region is updated
     err = clFinish(ocl->commandQueue);
+
     if (CL_SUCCESS != err)
     {
         LogError("Error: clFinish returned %s\n", TranslateOpenCLError(err));
@@ -911,6 +912,8 @@ void calculateDensityAndPressure(ocl_args_d_t *ocl, float* inputA, float* inputB
 				if (abs_diffvec < h){
 
 					density_sum += PARTICLE_MASS * (315 / (64 * M_PI * glm::pow(h, 9.0))) * glm::pow((glm::pow(h, 2.0) - glm::pow(abs_diffvec, 2.f)), 3.0);
+					//cout << "density_sum " << density_sum << endl;
+				
 				}
 
 			}
@@ -949,6 +952,13 @@ void calculateDensityAndPressure(ocl_args_d_t *ocl, float* inputA, float* inputB
 	//maps the output from the graphicscard to to "resultPtr". resultPtr can be accessed via resultPtr[index]
 	float *resultPtr = (float *)clEnqueueMapBuffer(ocl->commandQueue, ocl->dstMem, true, CL_MAP_READ, 0, sizeof(float) * 10 * 10, 0, NULL, NULL, &err);
 
+	for (int i = 0; i < 100; i++){
+		cout << "resultPtr = " << resultPtr[i] << endl;
+	}
+
+	clFinish(ocl->commandQueue);
+
+	clEnqueueUnmapMemObject(ocl->commandQueue, ocl->dstMem, resultPtr, 0, NULL, NULL);
 
 
 }

@@ -26,6 +26,9 @@ __kernel void Add(__global int* pA, __global int* pB, __global float* pC)
     const int y     = get_global_id(1);
     const int width = get_global_size(0);
 
+	const float PARTICLE_MASS = 500 * .14f;
+	const float h = 16.f;
+
     const int id = y * width + x;
 	bool k = true;
 
@@ -33,6 +36,13 @@ __kernel void Add(__global int* pA, __global int* pB, __global float* pC)
 
 		pC[id] = 0;
 
+	}
+
+	if (pA[id] < h){
+
+			pC[id] += PARTICLE_MASS * (315 / (64 * 3.14f * pow(h, 9.0))) * pow((pow(h, 2.0) - pow(pA[id], 2.f)), 3.0);
+			//cout << "density_sum " << density_sum << endl;
+				
 	}
 
 }
