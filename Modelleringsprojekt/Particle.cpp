@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include "Sphere.cpp"
-#include <GLUT/glut.h>
 
 using namespace glm;
 //const float dt = 1.f;

@@ -16,9 +16,6 @@
 #include <thread>
 #include <sstream>
 
-
-
-
 const int NUM_PARTICLES = 800;
 const int KERNEL_LIMIT = 120;
 
@@ -318,7 +315,7 @@ void handleCamera(){
 		phi -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
 		phi = fmod(phi, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
 		if (phi < 0.0) phi += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
-		glRotatef(phi, 0, 1, 0);
+		glRotatef(-phi, 0, 1, 0);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A))
 	{
@@ -331,7 +328,7 @@ void handleCamera(){
 		theta -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
 		theta = fmod(theta, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
 		if (theta < 0.0) theta += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
-		glRotatef(theta, 1, 0, 0);
+		glRotatef(-theta, 1, 0, 0);
 	}
 	if (glfwGetKey(window, GLFW_KEY_W))
 	{
@@ -348,10 +345,10 @@ void handleCamera(){
 		glTranslatef(-10.f, 0.0f, 0.0f);
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN)){
-		glTranslatef(0.f, -10.0f, 0.0f);
+		glTranslatef(0.f, -10.f, 0.0f);
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP)){
-		glTranslatef(0.f, 10.0f, 0.0f);
+		glTranslatef(0.f, 10.f, 0.0f);
 	}
 
 }
@@ -402,12 +399,6 @@ int main(int argc, char *argv[])
     
     glfwInit();
     
-    /*glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //We don't want the old OpenGL*/
-    
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -421,14 +412,14 @@ int main(int argc, char *argv[])
         ratio = width / (float) height;
         
         glClear(GL_COLOR_BUFFER_BIT);
-
-		//glClearDepth(1.0f);
-		        
-        glMatrixMode(GL_PROJECTION);
+     
+		glMatrixMode(GL_PROJECTION);
 
         glLoadIdentity();
 
 		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512);
+
+		
 
 		/*ROTATION*/
 		handleCamera();
@@ -449,6 +440,9 @@ int main(int argc, char *argv[])
         
         //Poll for and process events
         glfwPollEvents();
+
+		glFinish();
+
 
 	}
     
