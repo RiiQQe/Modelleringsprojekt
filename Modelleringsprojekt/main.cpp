@@ -1,4 +1,4 @@
-/*****************************************************************************
+/***************************************************************************** 
  * Copyright (c) 2013-2014 Intel Corporation
  * All rights reserved.
  *
@@ -288,6 +288,7 @@ struct ocl_args_d_t
     cl_program       program;           // hold the program handler
     cl_kernel        kernel;            // hold the kernel handler
 	cl_kernel		 kernel2;
+	cl_kernel		 kernel3;
     float            platformVersion;   // hold the OpenCL platform version (default 1.2)
     float            deviceVersion;     // hold the OpenCL device version (default. 1.2)
     float            compilerVersion;   // hold the device OpenCL C version (default. 1.2)
@@ -308,6 +309,8 @@ ocl_args_d_t::ocl_args_d_t():
         commandQueue(NULL),
         program(NULL),
         kernel(NULL),
+		kernel2(NULL),
+		kernel3(NULL),
         platformVersion(OPENCL_VERSION_1_2),
         deviceVersion(OPENCL_VERSION_1_2),
         compilerVersion(OPENCL_VERSION_1_2),
@@ -344,6 +347,22 @@ ocl_args_d_t::~ocl_args_d_t()
             LogError("Error: clReleaseKernel returned '%s'.\n", TranslateOpenCLError(err));
         }
     }
+	if (kernel2)
+	{
+		err = clReleaseKernel(kernel2);
+		if (CL_SUCCESS != err)
+		{
+			LogError("Error: clReleaseKernel returned '%s'.\n", TranslateOpenCLError(err));
+		}
+	}
+	if (kernel3)
+	{
+		err = clReleaseKernel(kernel3);
+		if (CL_SUCCESS != err)
+		{
+			LogError("Error: clReleaseKernel returned '%s'.\n", TranslateOpenCLError(err));
+		}
+	}
     if (program)
     {
         err = clReleaseProgram(program);
@@ -929,6 +948,20 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
         LogError("error: Failed to set argument pos_b, returned %s\n", TranslateOpenCLError(err));
         return err;
     }
+	////Position Arg AccelerationKernel
+	err = clSetKernelArg(ocl->kernel2, 0, sizeof(cl_mem), (void *)&ocl->pos_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("error: Failed to set argument pos_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	////Position Arg MoveParticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 0, sizeof(cl_mem), (void *)&ocl->pos_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("error: Failed to set argument pos_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
 
 	////Velocity Arg
     err  = clSetKernelArg(ocl->kernel, 1, sizeof(cl_mem), (void *)&ocl->vel_b);
@@ -937,9 +970,37 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
         LogError("Error: Failed to set argument vel_b, returned %s\n", TranslateOpenCLError(err));
         return err;
     }
+	////Velocity Arg accelerationKernel
+	err = clSetKernelArg(ocl->kernel2, 1, sizeof(cl_mem), (void *)&ocl->vel_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument vel_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	////Velocity Arg Moveparticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 1, sizeof(cl_mem), (void *)&ocl->vel_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument vel_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
 
 	//Viscosity Force Arg
 	err = clSetKernelArg(ocl->kernel, 2, sizeof(cl_mem), (void *)&ocl->viscosity_force_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument viscosity_force_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Viscosity Force Arg Acceleration Kernel
+	err = clSetKernelArg(ocl->kernel2, 2, sizeof(cl_mem), (void *)&ocl->viscosity_force_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument viscosity_force_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Viscosity Force Arg MoveParticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 2, sizeof(cl_mem), (void *)&ocl->viscosity_force_b);
 	if (CL_SUCCESS != err)
 	{
 		LogError("Error: Failed to set argument viscosity_force_b, returned %s\n", TranslateOpenCLError(err));
@@ -953,6 +1014,22 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 		LogError("Error: Failed to set argument pressure_force_b, returned %s\n", TranslateOpenCLError(err));
 		return err;
 	}
+	//Pressure Force Arg Acceleration Kernel
+	err = clSetKernelArg(ocl->kernel2, 3, sizeof(cl_mem), (void *)&ocl->pressure_force_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument pressure_force_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Pressure Force Arg Moveparticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 3, sizeof(cl_mem), (void *)&ocl->pressure_force_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument pressure_force_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
+
 	//Gravity Force Arg
 	err = clSetKernelArg(ocl->kernel, 4, sizeof(cl_mem), (void *)&ocl->gravity_force_b);
 	if (CL_SUCCESS != err)
@@ -961,6 +1038,20 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 		return err;
 	}
 
+	//Gravity Force Arg ACceleration Kernel
+	err = clSetKernelArg(ocl->kernel2, 4, sizeof(cl_mem), (void *)&ocl->gravity_force_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument gravity_force_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Gravity Force Arg MoveParticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 4, sizeof(cl_mem), (void *)&ocl->gravity_force_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument gravity_force_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
 	//Pressure Arg
     err  = clSetKernelArg(ocl->kernel, 5, sizeof(cl_mem), (void *)&ocl->pressure_b);
     if (CL_SUCCESS != err)
@@ -968,9 +1059,37 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
         LogError("Error: Failed to set argument pressure_b, returned %s\n", TranslateOpenCLError(err));
         return err;
     }
+	//Pressure Arg acceleretion Kernel
+	err = clSetKernelArg(ocl->kernel2, 5, sizeof(cl_mem), (void *)&ocl->pressure_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument pressure_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Pressure Arg MoveParticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 5, sizeof(cl_mem), (void *)&ocl->pressure_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument pressure_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
 
 	//Density Argk
 	err = clSetKernelArg(ocl->kernel, 6, sizeof(cl_mem), (void *)&ocl->density_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument density_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Density Argk Acceleration Kernel
+	err = clSetKernelArg(ocl->kernel2, 6, sizeof(cl_mem), (void *)&ocl->density_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument density_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//Density Argk MoveParticles Kernel
+	err = clSetKernelArg(ocl->kernel3, 6, sizeof(cl_mem), (void *)&ocl->density_b);
 	if (CL_SUCCESS != err)
 	{
 		LogError("Error: Failed to set argument density_b, returned %s\n", TranslateOpenCLError(err));
@@ -982,9 +1101,9 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 
 
 /*
- * Execute the kernel
+ * Execute the Density and Pressure kernel
  */
-cl_uint ExecuteAccelerationKernel(ocl_args_d_t *ocl)
+cl_uint ExecuteDensAndPressKernel(ocl_args_d_t *ocl)
 {
     cl_int err = CL_SUCCESS;
 
@@ -1016,6 +1135,74 @@ cl_uint ExecuteAccelerationKernel(ocl_args_d_t *ocl)
 */
     return CL_SUCCESS;
 }
+/*
+* Execute the Density and Pressure kernel
+*/
+cl_uint ExecuteAccelerationKernel(ocl_args_d_t *ocl)
+{
+	cl_int err = CL_SUCCESS;
+
+	// Define global iteration space for clEnqueueNDRangeKernel.
+	size_t globalWorkSize[1] = { NUM_PARTICLES };
+
+
+	// execute kernel
+	err = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernel2, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to run kernel, return %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
+	// Wait until the queued kernel is completed by the device
+	err = clFinish(ocl->commandQueue);
+
+
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clFinish return %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	/*else
+	{
+	std::cout << "FINISHED KERNEL EXECUTE SUCCESS" << std::endl;
+	}
+	*/
+	return CL_SUCCESS;
+}
+
+cl_uint ExecuteMoveParticleKernel(ocl_args_d_t *ocl)
+{
+	cl_int err = CL_SUCCESS;
+
+	// Define global iteration space for clEnqueueNDRangeKernel.
+	size_t globalWorkSize[1] = { NUM_PARTICLES };
+
+
+	// execute kernel
+	err = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernel3, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to run kernel, return %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
+	// Wait until the queued kernel is completed by the device
+	err = clFinish(ocl->commandQueue);
+
+
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clFinish return %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	/*else
+	{
+	std::cout << "FINISHED KERNEL EXECUTE SUCCESS" << std::endl;
+	}
+	*/
+	return CL_SUCCESS;
+}
 
 
 /*
@@ -1029,7 +1216,7 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
     // Enqueue a command to map the buffer object (ocl->pressure_b) into the host address space and returns a pointer to it
     // The map operation is blocking
     
-	//TEMPORARY COMMENTED, TEST TO SEE IF EVERYTHING IS OK
+	
 	vec4 *resultParticle_pos = (vec4*)clEnqueueMapBuffer(ocl->commandQueue, ocl->pos_b, true, CL_MAP_READ, 0, sizeof(vec4) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	vec4 *resultParticle_vel = (vec4*)clEnqueueMapBuffer(ocl->commandQueue, ocl->vel_b, true, CL_MAP_READ, 0, sizeof(vec4) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	vec4 *resultParticle_visc_f = (vec4*)clEnqueueMapBuffer(ocl->commandQueue, ocl->viscosity_force_b, true, CL_MAP_READ, 0, sizeof(vec4) * NUM_PARTICLES, 0, NULL, NULL, &err);
@@ -1048,7 +1235,7 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
 	particle_pressure = resultParticle_pressure;
 	particle_density = resultParticle_density;
 
-	displayGPU();
+	
 	//idle();
 
 
@@ -1162,6 +1349,18 @@ int _tmain(int argc, TCHAR* argv[])
         LogError("Error: clCreateKernel returned %s\n", TranslateOpenCLError(err));
         return -1;
     }
+	ocl.kernel2 = clCreateKernel(ocl.program, "calculateAccelerations", &err);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clCreateKernel returned %s\n", TranslateOpenCLError(err));
+		return -1;
+	}
+	ocl.kernel3 = clCreateKernel(ocl.program, "moveParticles", &err);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clCreateKernel returned %s\n", TranslateOpenCLError(err));
+		return -1;
+	}
 
     // Passing arguments into OpenCL kernel.
     if (CL_SUCCESS != SetKernelArguments(&ocl))
@@ -1184,10 +1383,27 @@ int _tmain(int argc, TCHAR* argv[])
 	if (queueProfilingEnable)
 		QueryPerformanceCounter(&performanceCountNDRangeStart);
 	// Execute (enqueue) the kernel
+	if (CL_SUCCESS != ExecuteDensAndPressKernel(&ocl))
+	{
+		return -1;
+	}
+	
+	if (queueProfilingEnable)
+		QueryPerformanceCounter(&performanceCountNDRangeStop);
+
+	// The last part of this function: getting processed results back.
+	// use map-unmap sequence to update original memory area with output buffer.
+	ReadAndVerify(&ocl);
+
+	queueProfilingEnable = true;
+	if (queueProfilingEnable)
+		QueryPerformanceCounter(&performanceCountNDRangeStart);
+	// Execute (enqueue) the kernel
 	if (CL_SUCCESS != ExecuteAccelerationKernel(&ocl))
 	{
 		return -1;
 	}
+
 	if (queueProfilingEnable)
 		QueryPerformanceCounter(&performanceCountNDRangeStop);
 
@@ -1227,11 +1443,12 @@ int _tmain(int argc, TCHAR* argv[])
 		glLoadIdentity();
 		glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
 		//GPU STUFF
+		//EXECUTE DENSITY AND PRESSURE KERNEL
 		bool queueProfilingEnable = true;
 		if (queueProfilingEnable)
 			QueryPerformanceCounter(&performanceCountNDRangeStart);
 		// Execute (enqueue) the kernel
-		if (CL_SUCCESS != ExecuteAccelerationKernel(&ocl))
+		if (CL_SUCCESS != ExecuteDensAndPressKernel(&ocl))
 		{
 			return -1;
 		}
@@ -1240,6 +1457,42 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 		ReadAndVerify(&ocl);
+
+		//EXECUTE ACCELERATIONKERNEL 
+		queueProfilingEnable = true;
+		if (queueProfilingEnable)
+			QueryPerformanceCounter(&performanceCountNDRangeStart);
+		// Execute (enqueue) the kernel
+		if (CL_SUCCESS != ExecuteAccelerationKernel(&ocl))
+		{
+			return -1;
+		}
+
+		if (queueProfilingEnable)
+			QueryPerformanceCounter(&performanceCountNDRangeStop);
+
+		// The last part of this function: getting processed results back.
+		// use map-unmap sequence to update original memory area with output buffer.
+		ReadAndVerify(&ocl);
+
+		//EXECUTE MOVE PARTICLE KERNEL 
+		queueProfilingEnable = true;
+		if (queueProfilingEnable)
+			QueryPerformanceCounter(&performanceCountNDRangeStart);
+		// Execute (enqueue) the kernel
+		if (CL_SUCCESS != ExecuteMoveParticleKernel(&ocl))
+		{
+			return -1;
+		}
+
+		if (queueProfilingEnable)
+			QueryPerformanceCounter(&performanceCountNDRangeStop);
+
+		// The last part of this function: getting processed results back.
+		// use map-unmap sequence to update original memory area with output buffer.
+		ReadAndVerify(&ocl);
+
+		displayGPU();
 		
 
 		// retrieve performance counter frequency
