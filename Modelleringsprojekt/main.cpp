@@ -68,7 +68,7 @@
 
 using namespace glm;
 
-const cl_uint NUM_PARTICLES = 800;
+const cl_uint NUM_PARTICLES = 200;
 const int KERNEL_LIMIT = 35;
 
 
@@ -80,7 +80,9 @@ vec4* particle_grav_f;
 cl_float* particle_density;
 cl_float* particle_pressure;
 
-
+//BETA BALLS
+const int TEMPSIZE = 1;
+float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
 
 
 // FPS specific vars
@@ -143,6 +145,347 @@ void drawParticles(){
 
 }
 
+void drawBetaBalls(){
+
+	handleFps();
+	// Beta balls begins
+
+	// Marching cubes algorithm -
+	// bitwise tiling (Jonsson, 2015)
+	// Using ..
+	// f(x,y) = sum(i = 1 -> n) ri^2 / ((x - xi)^2 + (y - yi)^2)
+	//
+
+	// Needed for scaling
+	int kSize = 512 / TEMPSIZE;
+
+	// Iterate through all cells
+	for (int k = 0; k < TEMPSIZE * TEMPSIZE; k++) {
+		int x = kSize * (k % TEMPSIZE);
+		int y = (k / (TEMPSIZE)) * kSize;
+
+		// Brute force
+		// for each cell, check
+		for (int i = 0; i < NUM_PARTICLES; i++) {
+			// calculate height map, sum
+
+			squares[k] += (8.0f*8.0f) / ((x - particle_pos[i].x) * (x - particle_pos[i].x) + (y - particle_pos[i].y) * (y - particle_pos[i].y));
+		}
+	}
+
+	// draw stuff
+	for (int i = 0; i < TEMPSIZE - 1; i++) {
+		for (int j = 0; j < TEMPSIZE - 1; j++) {
+			int bitwiseSum = 0;
+
+			//  ***** USED FOR MARCHING SQUARES *****
+			//
+			//       CASE EXAMPLE:  bitwiseSum = 4
+			//    (only point d is within a metaball):
+			//
+			//
+			//             |            |
+			//             | a          | b
+			//       ------+------------+------
+			//             |            |
+			//             |            *  (Qx, Qy)
+			//             |        _ ^ |
+			//             | c   _ ^    | d
+			//       ------+-- * -------+------
+			//             | (Px, Py)   |
+			//             |            |
+			//
+			//t
+
+
+			// calculate bitwise sum
+			// sum increments by 2^n for each corner, going clockwise, starting in top right
+
+			float a, b, c, d;
+			a = squares[i + (j * TEMPSIZE + TEMPSIZE)]; // upper left
+			b = squares[i + 1 + (j * TEMPSIZE + TEMPSIZE)]; // upper right
+			c = squares[i + (j * TEMPSIZE)]; // lower left
+			d = squares[i + 1 + (j * TEMPSIZE)]; // lower right
+
+			if (a > 1.f)   { bitwiseSum += 1; } // upper left corner
+			if (b > 1.f)   { bitwiseSum += 2; } // upper right corner
+			if (d > 1.f)   { bitwiseSum += 4; } // lower right corner
+			if (c > 1.f)   { bitwiseSum += 8; } // lower left corner
+
+			// Depending on the bitwiseSum, draw triangles.
+
+			if (bitwiseSum >= 1.f) { // bitwiseSum cannot assume negative values and 0 ®is an empty square.
+
+				// These are used for interpolation process, increasing the possible angles from n * PI/4 to basically infinity.
+				float qx, qy, px, py;
+
+				// all points, position
+				float ax, ay, bx, by, cx, cy, dx, dy;
+
+				// topleft
+				ax = i * kSize + kSize / 2;
+				ay = (j + 1) * kSize + kSize / 2;
+
+				// topright
+				bx = (i + 1) * kSize + kSize / 2;
+				by = (j + 1) * kSize + kSize / 2;
+
+				// botleft
+				cx = i * kSize + kSize / 2;
+				cy = j * kSize + kSize / 2;
+
+				// botright
+				dx = (i + 1) * kSize + kSize / 2;
+				dy = j * kSize + kSize / 2;
+
+				glBegin(GL_TRIANGLE_STRIP);
+
+				glColor4f(0.5f, 0.7f, 1.f, 0.0f);
+
+				switch (bitwiseSum) {
+				case 1:
+					// Points of intersection of square bounadires from metaballs
+					// left intersection
+					qx = ax;
+					qy = ay + (cy - ay) * ((1 - a) / (c - a));
+
+					// upper intersection
+					px = bx + (ax - bx) * ((1 - b) / (a - b));
+					py = ay;
+
+					// top left triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);  // top         left
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);  // top         left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);  // bot+half    left
+					break;
+				case 2:
+					// Points of intersection of square boundaries from metaballs
+					// right intersection
+					qx = bx;
+					qy = by + (dy - by) * ((1 - b) / (d - b));
+
+					// upper intersection
+					px = bx + (ax - bx) * ((1 - b) / (a - b));
+					py = ay;
+
+					// top right triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);  // top          right
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);  // top          left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);  // bot+half     right
+
+					break;
+				case 3:
+					// Points of intersection of square boundaries from metaballs
+					// right intersection
+					qx = bx;
+					qy = by + (dy - by) * ((1 - b) / (d - b));
+
+					// left intersection
+					px = ax;
+					py = ay + (cy - ay) * ((1 - a) / (c - a));
+
+
+					// top rectangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);  // top      right
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);  // top      left
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);  // bot+half right
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);  // bot+half left
+
+					break;
+				case 4:
+					// Points of intersection of square boundaries from metaballs
+					// right intersection
+					qx = bx;
+					qy = by + (dy - by) * ((1 - b) / (d - b));
+
+					// lower intersection
+					px = dx + (cx - dx) * ((1 - d) / (c - d));
+					py = cy;
+
+					// bot right triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);   // bot      right
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);   // bot      left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);   // bot+half right
+
+					break;
+				case 5:
+					//std::cout << "SPECIAL CASE 5" << endl;
+					break;
+				case 6:
+					// Points of intersection of square boundaries from metaballs
+					// upper intersection
+					qx = bx + (ax - bx) * ((1 - b) / (a - b));
+					qy = ay;
+
+					// lower intersection
+					px = dx + (cx - dx) * ((1 - d) / (c - d));
+					py = cy;
+
+					// right rectangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);    // top    right
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);    // top    left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);    // bottom right
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);    // bottom left+half
+
+					break;
+				case 7:
+					// Points of intersection of square boundaries from metaballs
+					// left intersection
+					qx = ax;
+					qy = ay + (cy - ay) * ((1 - a) / (c - a));
+
+					// lower intersection
+					px = dx + (cx - dx) * ((1 - d) / (c - d));
+					py = cy;
+
+					// missing bot left triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);    // top        left
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);    // top        right
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);    // bot+half   left
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);    // bot        left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);    // top        right
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);    // bot        right
+					break;
+				case 8:
+					// Points of intersection of square boundaries from metaballs
+					// left intersection
+					qx = ax;
+					qy = ay + (cy - ay) * ((1 - a) / (c - a));
+
+					// lower intersection
+					px = dx + (cx - dx) * ((1 - d) / (c - d));
+					py = cy;
+
+					// bot left triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);   // bottom      left
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);   // bottom+half left
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);   // bottom      left+half
+					break;
+				case 9:
+					// Points of intersection of square boundaries from metaballs
+					// upper intersection
+					qx = bx + (ax - bx) * ((1 - b) / (a - b));
+					qy = ay;
+
+					// lower intersection
+					px = dx + (cx - dx) * ((1 - d) / (c - d));
+					py = cy;
+
+					// left rectangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);   // top    left
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);   // bottom left
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);   // top    left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);   // bottom left+half
+
+					break;
+				case 10:
+					//std::cout << "SPECIAL CASE 10" << endl;
+					break;
+				case 11:
+					// Points of intersection of square boundaries from metaballs
+					// right intersection
+					qx = bx;
+					qy = by + (dy - by) * ((1 - b) / (d - b));
+
+					// lower intersection
+					px = dx + (cx - dx) * ((1 - d) / (c - d));
+					py = cy;
+
+					// missing bot right triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);    // top    left
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);    // top    right
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);    // bottom left
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);    // bot+half right
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);    // bottom left+half
+					break;
+				case 12:
+					// Points of intersection of square boundaries from metaballs
+					qx = bx;
+					qy = by + (dy - by) * ((1 - b) / (d - b));
+
+					// left intersection
+					px = ax;
+					py = ay + (cy - ay) * ((1 - a) / (c - a));
+
+
+					// bot rectangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);    // bottom right
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);    // bottom left
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);    // bot+half right
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);    // bot+half left
+
+					break;
+				case 13:
+					// Points of intersection of square boundaries from metaballs
+					// right intersection
+					qx = bx;
+					qy = by + (dy - by) * ((1 - b) / (d - b));
+
+					// upper intersection
+					px = bx + (ax - bx) * ((1 - b) / (a - b));
+					py = ay;
+
+					// missing top right triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);    // top    left
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);    // top    left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);    // bottom left
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);    // bot+half right
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);    // bottom right
+
+					break;
+				case 14:
+
+
+					// Points of intersection of square bounadires from metaballs
+					// left intersection
+					qx = ax;
+					qy = ay + (cy - ay) * ((1 - a) / (c - a));
+
+					// upper intersection
+					px = bx + (ax - bx) * ((1 - b) / (a - b));
+					py = ay;
+
+					// missing top left triangle
+					glTexCoord2f(0.0, 1.0); glVertex3f(qx, qy, 0);    // bot+half left
+					glTexCoord2f(0.0, 1.0); glVertex3f(px, py, 0);    // top    left+half
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);    // bottom left
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);    // top    right
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);    // bottom right
+
+					break;
+				case 15:
+					// draw full square
+					glTexCoord2f(0.0, 1.0); glVertex3f(ax, ay, 0);    // top    left
+					glTexCoord2f(0.0, 1.0); glVertex3f(bx, by, 0);    // top    right
+					glTexCoord2f(0.0, 1.0); glVertex3f(cx, cy, 0);    // bottom left
+					glTexCoord2f(0.0, 1.0); glVertex3f(dx, dy, 0);    // bottom right
+
+					break;
+				default:
+					cout << "THIS IS FUCKED" << endl;
+					break;
+				}
+
+				glEnd();
+			}
+		}
+	}
+
+	// clear squares
+	for (int i = 0; i < TEMPSIZE * TEMPSIZE; ++i) {
+		squares[i] = 0.f;
+	}
+
+	// Beta balls ends
+
+	/*for(int i = 0; i < NUM_PARTICLES; i++){
+
+	particles[i].DrawObjects();
+
+	}*/
+
+
+}
 
 void reshape_window(GLFWwindow* window, int width, int height)
 {
@@ -1436,7 +1779,8 @@ int _tmain(int argc, TCHAR* argv[])
 		//GPU STUFF
 		executeOnGPU(&ocl);
 		//END GPU STUFF
-		drawParticles();
+		//drawParticles();
+		drawBetaBalls();
 
 		//Swap front and back buffers
 		glfwSetWindowSizeCallback(window, reshape_window);
