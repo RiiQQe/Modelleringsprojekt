@@ -6,8 +6,6 @@
 #define GLFW_KEY_D
 
 #include <GL/glew.h>
-
-
 #include <iostream>
 #include "Particle.h"
 #include "Box.h"
@@ -16,7 +14,8 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 800;
+
+const int NUM_PARTICLES = 100;
 const int KERNEL_LIMIT = 120;
 
 const float VISCOUSITY = 500*5.f;
@@ -24,6 +23,13 @@ const float PARTICLE_MASS = 500*.14f;
 const double h = 16.f;
 const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
+
+
+GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
+GLfloat model[16];
+GLfloat vect[4];
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -149,16 +155,15 @@ void calculateDensityAndPressure(){
         int cellIndex = particles[i].getCellIndex();
         //int limit = 0;
 		
-
+		//Hämtar neighbouring celler
         vector<int> current_cells = cells[cellIndex].getNeighbours();
 		//cout << "cellIndex = " << cellIndex << endl;
 		//cout << "current_cells.size() = " << current_cells.size() << endl;
         for(int j = 0; j < current_cells.size(); j++){
 
-			
             // Loop through all neighbouring particles
             vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
-            
+
             // Too many neighbours...
             if(neighbours.size() > KERNEL_LIMIT)
                 reduceNeighbours(neighbours);
@@ -393,7 +398,7 @@ void drawPlane(){
 
 int main(int argc, char *argv[])
 {
-    
+
     init();
     
     glfwInit();
@@ -423,6 +428,25 @@ int main(int argc, char *argv[])
 		/*ROTATION*/
 		handleCamera();
 
+		glGetFloatv(GL_MODELVIEW_MATRIX, model);
+
+		newDown[0] = model[0] * down[0] + model[1] * down[1] + model[2] * down[2] + model[3] * down[3];
+		newDown[1] = model[4] * down[0] + model[5] * down[1] + model[6] * down[2] + model[7] * down[3];
+		newDown[2] = model[8] * down[0] + model[9] * down[1] + model[10] * down[2] + model[11] * down[3];
+		newDown[3] = model[12] * down[0] + model[13] * down[1] + model[14] * down[2] + model[15] * down[3];
+
+		GLfloat diffvec2[4];
+
+		diffvec2[0] = newDown[0] - down[0];
+		diffvec2[1] = newDown[1] - down[1];
+		diffvec2[2] = newDown[2] - down[2];
+		diffvec2[3] = newDown[3] - down[3];
+
+		cout << "diffvec[0] " << diffvec2[0] << endl;
+		cout << "diffvec[1] " << diffvec2[1] << endl;
+		cout << "diffvec[2] " << diffvec2[2] << endl;
+		cout << "diffvec[3] " << diffvec2[3] << endl;
+
 		/*RITA UT PLANET*/
         drawAxes();
 		//drawPlane();
@@ -433,6 +457,8 @@ int main(int argc, char *argv[])
         display();
         idle();
         
+		
+
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
 		glfwSwapBuffers(window);

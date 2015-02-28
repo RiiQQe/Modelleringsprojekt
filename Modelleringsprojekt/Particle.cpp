@@ -65,8 +65,6 @@ void Particle::EvolveParticle()
 		vel.z = -0.8*vel.z;
 		pos.z = 256;
 	}
-
-	//std::cout << "Pos.x = " << pos.x << " Pos.y = " << pos.y << " Pos.z = " << pos.z << std::endl;
 }
 
 //Draw all the particles
