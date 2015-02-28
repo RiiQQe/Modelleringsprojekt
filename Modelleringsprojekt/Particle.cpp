@@ -70,78 +70,10 @@ void Particle::EvolveParticle()
 //Draw all the particles
 void Particle::DrawObjects() {
     
-	
-     
-
-    //!special ? glColor3f(0.2,0.2,1) :  glColor3f(1,1,1);
-   /* glBegin(GL_TRIANGLE_STRIP);
-	glPushMatrix();
-	glBegin(GL_QUADS);
-	// Top face (y = 1.0f)
-	// Define vertices in counter-clockwise (CCW) order with normal pointing out
-	glColor3f(0.0f, 1.0f, 0.0f);     // Green
-	glVertex3f(pos[0] + 2.0f, pos[1] + 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] + 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] + 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] + 2.0f, pos[2] + 2.0f);
-
-	// Bottom face (y = -1.0f)
-	glColor3f(1.0f, 0.5f, 0.0f);     // Orange
-	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
-
-	// Front face  (z = 1.0f)
-	glColor3f(1.0f, 0.0f, 0.0f);     // Red
-	glVertex3f(pos[0] + 2.0f, pos[1] + 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] + 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
-
-	// Back face (z = -1.0f)
-	glColor3f(0.0f, 1.0f, 1.0f);     // Blue
-	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] + 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] + 2.0f, pos[2] - 2.0f);
-
-	// Left face (x = -1.0f)
-	glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
-	glVertex3f(pos[0] - 2.0f, pos[1] + 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] + 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] - 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
-
-	// Right face (x = 1.0f)
-	glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
-	glVertex3f(pos[0] + 2.0f, pos[1] + 2.0f, pos[2] - 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] + 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] + 2.0f);
-	glVertex3f(pos[0] + 2.0f, pos[1] - 2.0f, pos[2] - 2.0f);
-
-    glEnd();
-	glPopMatrix();*/
-    
     glColor3f(0.2,0.2,1);
-    
     Sphere sphere(16/3, 6, 12);
-    //glutSolidSphere(16/3, 20.0, 20.0);
     sphere.draw(pos[0], pos[1], pos[2]);
     
-    /*glBegin(GL_TRIANGLE_FAN);
-    for(int ii = 0; ii < 15; ii++)
-    {
-        float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
-        
-        float x = 16/3 * cosf(theta);//calculate the x component
-        float y = 16/3 * sinf(theta);//calculate the y component
-        float z = 16/3 * sinf(theta);//calculate the y component
-        
-        glVertex3f(x + pos[0], y + pos[1], z + pos[2]);//output vertex
-    }
-    
-    glEnd();*/
 }
 
 const glm::vec3 Particle::getPos() const {

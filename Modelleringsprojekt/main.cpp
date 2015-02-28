@@ -14,22 +14,19 @@
 #include <thread>
 #include <sstream>
 
-
-const int NUM_PARTICLES = 100;
-const int KERNEL_LIMIT = 120;
+const int NUM_PARTICLES = 500;
+const int KERNEL_LIMIT = 160;
 
 const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.14f;
 const double h = 16.f;
 const float STIFFNESS = 500*5.f;
-const float GRAVITY_CONST = 80000*9.82f;
-
+const float GRAVITY_CONST = 8000*9.82f;
 
 GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
 GLfloat model[16];
-GLfloat vect[4];
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -78,36 +75,34 @@ void init()
     }
     
 
-    int x = 0, y = 0, z = 0 ;
+    int x = 0, y = 0, z = 0;
     
     for(int i = 0; i < NUM_PARTICLES; i++){
-                
-        //Y-led
-        
-        //X
 
         if (x == 10){
             y++;
             x = 0;
         }
+        
         if(y == 10){
             z++;
             y = 0;
     	}
         
         x++;
-		//z++;
 
-        particles[i].setPos(glm::vec3(10+x*h/2, 19*16 + y*h/2, 10 + z*h/2)); //z*6
+        particles[i].setPos(glm::vec3(10+x*h/2, 19*16 + y*h/2, 10 + z*h/2));
     }
 
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
         
         cells[j].CreateCell(j);
     }
+    
 }
 
 //Trying to reduce calculation by removing random number of neighbours up to the limit of the kernel
+//
 void reduceNeighbours(vector<Particle*>& theNeighbours){
     
     //std::cout << theNeighbours.size() << std::endl;;
@@ -187,12 +182,9 @@ void calculateDensityAndPressure(){
             }
             
         }
-        
 
         particles[i].setDensity(density_sum);
         particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
-        
-
         
     }
 
@@ -202,20 +194,11 @@ void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        //glm::vec3 gravity = glm::vec3(0, -GRAVITY_CONST*particles[i].getDensity(), 0);
-
-
-		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2]);
-
-
-        glm::vec3 pressure = glm::vec3(0);
+		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2])*GRAVITY_CONST;
+		glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
         int cellIndex = particles[i].getCellIndex();
-        //int limit = 0;
-		//bool limitBool = false;
-		//float prevVisc = 0.0f, prevPress = 0.0f;
-        
         vector<int> current_cells = cells[cellIndex].getNeighbours();
   
         //Loop through all cells
@@ -348,22 +331,22 @@ void handleCamera(){
 	}
 
 
-	if (glfwGetKey(window, GLFW_KEY_RIGHT)){
+	if (glfwGetKey(window, GLFW_KEY_LEFT)){
 		glTranslatef(10.f,0.0f,0.0f);
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT)){
+	if (glfwGetKey(window, GLFW_KEY_RIGHT)){
 		glTranslatef(-10.f, 0.0f, 0.0f);
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN)){
+	if (glfwGetKey(window, GLFW_KEY_UP)){
 		glTranslatef(0.f, -10.f, 0.0f);
 	}
-	if (glfwGetKey(window, GLFW_KEY_UP)){
+	if (glfwGetKey(window, GLFW_KEY_DOWN)){
 		glTranslatef(0.f, 10.f, 0.0f);
 	}
 
 }
 
-void drawAxes(){
+void drawCoordinateAxes(){
 
     glPushMatrix();
     glBegin(GL_LINES);
@@ -385,22 +368,15 @@ void drawAxes(){
 
 }
 
-void drawPlane(){
 
+//Calculates the gravity vector based on the current position of the box
+void calculateNewGravityVec(){
+    
+    newDown[0] = model[0] * down[0] + model[1] * down[1] + model[2] * down[2] + model[3] * down[3];
+    newDown[1] = model[4] * down[0] + model[5] * down[1] + model[6] * down[2] + model[7] * down[3];
+    newDown[2] = model[8] * down[0] + model[9] * down[1] + model[10] * down[2] + model[11] * down[3];
 
-	glPushMatrix();
-	glBegin(GL_POLYGON);
-
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(512.0f, 0.0f, 0.0f);
-	glVertex3f(512.0f, 0.0f, 512.0f);
-	glVertex3f(0.0f, 0.0f, 512.0f);
-	
-	glEnd();
-	glPopMatrix();
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -431,28 +407,13 @@ int main(int argc, char *argv[])
 
 		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512);
 
-		/*ROTATION*/
 		handleCamera();
 
+        // Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
-
-		newDown[0] = model[0] * down[0] + model[1] * down[1] + model[2] * down[2] + model[3] * down[3];
-		newDown[1] = model[4] * down[0] + model[5] * down[1] + model[6] * down[2] + model[7] * down[3];
-		newDown[2] = model[8] * down[0] + model[9] * down[1] + model[10] * down[2] + model[11] * down[3];
-		newDown[3] = model[12] * down[0] + model[13] * down[1] + model[14] * down[2] + model[15] * down[3];
-
-		GLfloat diffvec2[4];
-
-		//This should be the gravity
-		diffvec2[0] = newDown[0] - down[0];
-		diffvec2[1] = newDown[1] - down[1];
-		diffvec2[2] = newDown[2] - down[2];
-		diffvec2[3] = newDown[3] - down[3];
-
-		/*RITA UT PLANET*/
-        drawAxes();
-		//drawPlane();
         
+        calculateNewGravityVec();
+        drawCoordinateAxes();
         box.DrawBox();
 			
 		calculateAcceleration();
