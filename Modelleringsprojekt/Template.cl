@@ -39,7 +39,7 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 
 	for (uint j = 0; j < NUM_PARTICLES; j++){
 		//printf("ABS DIFFVEC");
-		if (id != j){
+		//if (id != j){
 			float4 diffvec = position[id] - position[j];
 			//Absvec 
 			float abs_diffvec = sqrt(pow(diffvec.x, 2.0f) + pow(diffvec.y, 2.0f) + pow(diffvec.z, 2.0f));
@@ -50,7 +50,7 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 				density_sum += PARTICLE_MASS* (315.0 / (64.0 * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(abs_diffvec, 2.0f)), 3);
 
 			}
-		}
+		//}
 
 	}
 
@@ -124,41 +124,6 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 	pressure_f[id] = pressureforce;
 	gravity_f[id] = gravityforce;
 
-/*
-	float dt = 0.0001f;
-
-	float4 newPos = position[id] + dt * velocity[id] + dt * dt* ((gravity_f[id] + pressure_f[id] + viscosity_f[id]) / density[id]) / 2.f;
-	float4 newVel = (newPos - position[id]) / dt;
-
-	position[id] = newPos;
-	velocity[id] = newVel;
-
-	if (position[id].x < 1){
-		velocity[id].x = -0.8*velocity[id].x;
-		position[id].x = 1;
-	}
-
-	else if (position[id].x > 512){
-
-		velocity[id].x = -0.8*velocity[id].x;
-		position[id].x = 512;
-	}
-
-	if (position[id].y < 1){
-
-		velocity[id].y = -0.8*velocity[id].y;
-		position[id].y = 1;
-
-	}
-
-
-	else if (position[id].y > 512){
-		velocity[id].y = -0.8*velocity[id].y;
-		position[id].y = 512;
-
-	}*/
-
-
 
 
 }
@@ -182,9 +147,9 @@ __kernel void moveParticles(__global float4* position, __global float4* velocity
 	const float STIFFNESS = 500 * 3.f;
 	const float GRAVITY_CONST = 50000 * 9.82f;
 
-	float dt = 0.0001f;
+	float dt = 0.0004f;
 
-	float4 newPos = position[id] + dt * velocity[id] + dt * dt* ((gravity_f[id] + 0.01f* pressure_f[id] + 0.01f*viscosity_f[id]) / density[id]) / 2.f;
+	float4 newPos = position[id] + dt * velocity[id] + dt * dt* ((gravity_f[id] +  pressure_f[id] + viscosity_f[id]) / density[id]) / 2.f;
 	float4 newVel = (newPos - position[id]) / dt;
 
 	position[id] = newPos;
