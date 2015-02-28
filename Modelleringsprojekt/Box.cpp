@@ -1,11 +1,11 @@
 /*
- *  Box.cpp
- *  Graphics Assignment Four
- *
- *  Created by Karl Grogan on 27/04/2011.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+*  Box.cpp
+*  Graphics Assignment Four
+*
+*  Created by Karl Grogan on 27/04/2011.
+*  Copyright 2011 __MyCompanyName__. All rights reserved.
+*
+*/
 
 #include "Box.h"
 #include <GLFW/glfw3.h>
@@ -17,7 +17,7 @@ Box::Box()
 {
 	boxX = 0;
 	boxY = 0;
-	rotAngle = 0;	
+	rotAngle = 0;
 	lastFrameTime = 0;
 }
 
@@ -30,10 +30,10 @@ void Box::DrawBox()
 	// Rotates the box about the x,y or z axis depending where the '1' is specified in the parameters.
 	// The first parameter is the rotation angle.
 	//glRotatef(rotAngle, 0, 0, 1);
-	
+
 	glBegin(GL_LINES);
-		
-    // Defines each line
+
+	// Defines each line
 
 	// Define grid by doing fancy iterations.
 	glColor3f(0.2f, 0.2f, 0.2f);
@@ -45,22 +45,22 @@ void Box::DrawBox()
 		glVertex2f(0, 16.f * i);
 		glVertex2f(512, 16.f * i);
 	}
-/*
-    glVertex2f(0.0f, 64.0f);
-    glVertex2f(512.0f, 64.0f);
-    
-    glVertex2f(10.0f, 10.0f);
-    glVertex2f(502.0f, 10.0f);
-    
-    glVertex2f(502.0f, 10.0f);	//bottom right
-    glVertex2f(502.0f, 502.0f ); //top right
-    
-    glVertex2f(502.0f, 502.0f);
-    glVertex2f(10.0f, 500.0f);
+	/*
+	glVertex2f(0.0f, 64.0f);
+	glVertex2f(512.0f, 64.0f);
+
+	glVertex2f(10.0f, 10.0f);
+	glVertex2f(502.0f, 10.0f);
+
+	glVertex2f(502.0f, 10.0f);	//bottom right
+	glVertex2f(502.0f, 502.0f ); //top right
+
+	glVertex2f(502.0f, 502.0f);
+	glVertex2f(10.0f, 500.0f);
 	*/
 
-    glEnd();
-	
+	glEnd();
+
 	glPopMatrix();
-	
+
 }

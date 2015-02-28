@@ -7,7 +7,7 @@ using namespace std;
 void Cell::CreateCell(int _index) {
 	// Let each cell know it's own index in the big picture
 	index = _index;
-	
+
 	// At first execution, find my neighbours and save them
 	setNeighbours();
 }
@@ -35,79 +35,79 @@ const std::vector<int> &Cell::getNeighbours() const {
 // Set the neighbours
 void Cell::setNeighbours() {
 	neighbours.push_back(index);
-	
-	switch (index % W) {
-		case 0: 
-			if (index == 0) {
-				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W + 1);
-			}
-			else if (index == H * ( W - 1)) {
-				neighbours.push_back(index + 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W + 1);
-			}
-			else {
-				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index + W + 1);
-				neighbours.push_back(index - W + 1); 
-			}
-			break;
-		case (W - 1):
-			if (index == W - 1) {
-				neighbours.push_back(index - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W - 1);
-			}
-			else if (index == W * H - 1) {
-				neighbours.push_back(index - 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W - 1);
-			}
-			else {
-				neighbours.push_back(index - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index + W - 1);
-				neighbours.push_back(index - W - 1); 
-			}
-			break;
-		default:
-			if (index < W) {
-				neighbours.push_back(index - 1);
-				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W + 1);
-			}
-			else if (index > H * (W - 1) - 1) {
-				neighbours.push_back(index - 1);
-				neighbours.push_back(index + 1);
-				neighbours.push_back(index - W - 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W + 1);
-			}
-			else {
-				neighbours.push_back(index - W - 1);
-				neighbours.push_back(index - W);
-				neighbours.push_back(index - W + 1);
-				neighbours.push_back(index - 1);
-				neighbours.push_back(index + 1);
-				neighbours.push_back(index + W - 1);
-				neighbours.push_back(index + W);
-				neighbours.push_back(index + W + 1);
-			}
-			break;
+
+	switch (index % GRID_WIDTH) {
+	case 0:
+		if (index == 0) {
+			neighbours.push_back(index + 1);
+			neighbours.push_back(index + GRID_WIDTH);
+			neighbours.push_back(index + GRID_WIDTH + 1);
+		}
+		else if (index == GRID_HEIGHT * (GRID_WIDTH - 1)) {
+			neighbours.push_back(index + 1);
+			neighbours.push_back(index - GRID_WIDTH);
+			neighbours.push_back(index - GRID_WIDTH + 1);
+		}
+		else {
+			neighbours.push_back(index + 1);
+			neighbours.push_back(index + GRID_WIDTH);
+			neighbours.push_back(index - GRID_WIDTH);
+			neighbours.push_back(index + GRID_WIDTH + 1);
+			neighbours.push_back(index - GRID_WIDTH + 1);
+		}
+		break;
+	case (GRID_WIDTH - 1) :
+		if (index == GRID_WIDTH - 1) {
+			neighbours.push_back(index - 1);
+			neighbours.push_back(index + GRID_WIDTH);
+			neighbours.push_back(index + GRID_WIDTH - 1);
+		}
+		else if (index == GRID_WIDTH * GRID_HEIGHT - 1) {
+			neighbours.push_back(index - 1);
+			neighbours.push_back(index - GRID_WIDTH);
+			neighbours.push_back(index - GRID_WIDTH - 1);
+		}
+		else {
+			neighbours.push_back(index - 1);
+			neighbours.push_back(index + GRID_WIDTH);
+			neighbours.push_back(index - GRID_WIDTH);
+			neighbours.push_back(index + GRID_WIDTH - 1);
+			neighbours.push_back(index - GRID_WIDTH - 1);
+		}
+		break;
+	default:
+		if (index < GRID_WIDTH) {
+			neighbours.push_back(index - 1);
+			neighbours.push_back(index + 1);
+			neighbours.push_back(index + GRID_WIDTH - 1);
+			neighbours.push_back(index + GRID_WIDTH);
+			neighbours.push_back(index + GRID_WIDTH + 1);
+		}
+		else if (index > GRID_HEIGHT * (GRID_WIDTH - 1) - 1) {
+			neighbours.push_back(index - 1);
+			neighbours.push_back(index + 1);
+			neighbours.push_back(index - GRID_WIDTH - 1);
+			neighbours.push_back(index - GRID_WIDTH);
+			neighbours.push_back(index - GRID_WIDTH + 1);
+		}
+		else {
+			neighbours.push_back(index - GRID_WIDTH - 1);
+			neighbours.push_back(index - GRID_WIDTH);
+			neighbours.push_back(index - GRID_WIDTH + 1);
+			neighbours.push_back(index - 1);
+			neighbours.push_back(index + 1);
+			neighbours.push_back(index + GRID_WIDTH - 1);
+			neighbours.push_back(index + GRID_WIDTH);
+			neighbours.push_back(index + GRID_WIDTH + 1);
+		}
+		break;
 	}
 
 	/*std::cout << "Setting the neighbours of cell: " << index << std::endl;
-	std::cout << "Neighbours are: "; 
+	std::cout << "Neighbours are: ";
 
 	for (std::vector<int>::iterator it = neighbours.begin(); it != neighbours.end(); ++it) {
-		std::cout << *it << ", ";
+	std::cout << *it << ", ";
 	}
 	std::cout << std::endl;*/
 }
