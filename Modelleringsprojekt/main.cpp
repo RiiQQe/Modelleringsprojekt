@@ -117,7 +117,7 @@ void handleFps() {
 
 
 
-void displayGPU(){
+void drawParticles(){
 	handleFps();
 
 
@@ -1277,9 +1277,49 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
     return result;
 }
 
-//void executeOnGPU(){
-//	
-//}
+int executeOnGPU(ocl_args_d_t *ocl){
+
+	// Regularly you wish to use OpenCL in your application to achieve greater performance results
+	// that are hard to achieve in other ways.
+	// To understand those performance benefits you may want to measure time your application spent in OpenCL kernel execution.
+	// The recommended way to obtain this time is to measure interval between two moments:
+	//   - just before clEnqueueNDRangeKernel is called, and
+	//   - just after clFinish is called
+	// clFinish is necessary to measure entire time spending in the kernel, measuring just clEnqueueNDRangeKernel is not enough,
+	// because this call doesn't guarantees that kernel is finished.
+	// clEnqueueNDRangeKernel is just enqueue new command in OpenCL command queue and doesn't wait until it ends.
+	// clFinish waits until all commands in command queue are finished, that suits your need to measure time.
+
+	//EXECUTE DENSITY AND PRESSURE KERNEL
+	// Execute (enqueue) the kernel
+	if (CL_SUCCESS != ExecuteDensAndPressKernel(ocl))
+	{
+		return -1;
+	}
+	//Get values from Dens and pressure kernel
+	ReadAndVerify(ocl);
+
+	//EXECUTE ACCELERATIONKERNEL 
+;
+	if (CL_SUCCESS != ExecuteAccelerationKernel(ocl))
+	{
+		return -1;
+	}
+	//Get values from Acceleration kernel
+	ReadAndVerify(ocl);
+
+	//EXECUTE MOVE PARTICLE KERNEL ;
+	// Execute (enqueue) the kernel
+	if (CL_SUCCESS != ExecuteMoveParticleKernel(ocl))
+	{
+		return -1;
+	}
+
+	//Get values from moveparticles kernel
+	ReadAndVerify(ocl);
+
+	
+}
 
 
 /*
@@ -1367,60 +1407,11 @@ int _tmain(int argc, TCHAR* argv[])
     {
         return -1;
     }
-
-    // Regularly you wish to use OpenCL in your application to achieve greater performance results
-    // that are hard to achieve in other ways.
-    // To understand those performance benefits you may want to measure time your application spent in OpenCL kernel execution.
-    // The recommended way to obtain this time is to measure interval between two moments:
-    //   - just before clEnqueueNDRangeKernel is called, and
-    //   - just after clFinish is called
-    // clFinish is necessary to measure entire time spending in the kernel, measuring just clEnqueueNDRangeKernel is not enough,
-    // because this call doesn't guarantees that kernel is finished.
-    // clEnqueueNDRangeKernel is just enqueue new command in OpenCL command queue and doesn't wait until it ends.
-    // clFinish waits until all commands in command queue are finished, that suits your need to measure time.
-   
-	bool queueProfilingEnable = true;
-	if (queueProfilingEnable)
-		QueryPerformanceCounter(&performanceCountNDRangeStart);
-	// Execute (enqueue) the kernel
-	if (CL_SUCCESS != ExecuteDensAndPressKernel(&ocl))
-	{
-		return -1;
-	}
 	
-	if (queueProfilingEnable)
-		QueryPerformanceCounter(&performanceCountNDRangeStop);
-
-	// The last part of this function: getting processed results back.
-	// use map-unmap sequence to update original memory area with output buffer.
-	ReadAndVerify(&ocl);
-
-	queueProfilingEnable = true;
-	if (queueProfilingEnable)
-		QueryPerformanceCounter(&performanceCountNDRangeStart);
-	// Execute (enqueue) the kernel
-	if (CL_SUCCESS != ExecuteAccelerationKernel(&ocl))
-	{
-		return -1;
-	}
-
-	if (queueProfilingEnable)
-		QueryPerformanceCounter(&performanceCountNDRangeStop);
-
-	// The last part of this function: getting processed results back.
-	// use map-unmap sequence to update original memory area with output buffer.
-	ReadAndVerify(&ocl);
-
-	// retrieve performance counter frequency
-	if (queueProfilingEnable)
-	{
-		QueryPerformanceFrequency(&perfFrequency);
-		LogInfo("NDRange performance counter time %f ms.\n",
-			1000.0f*(float)(performanceCountNDRangeStop.QuadPart - performanceCountNDRangeStart.QuadPart) / (float)perfFrequency.QuadPart);
-	}
-
+	//Execute Kernels on GPU
+	executeOnGPU(&ocl);
+	
 	//From main projekt
-	//////init();
 	glfwInit();
 
 	window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
@@ -1443,69 +1434,9 @@ int _tmain(int argc, TCHAR* argv[])
 		glLoadIdentity();
 		glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
 		//GPU STUFF
-		//EXECUTE DENSITY AND PRESSURE KERNEL
-		bool queueProfilingEnable = true;
-		if (queueProfilingEnable)
-			QueryPerformanceCounter(&performanceCountNDRangeStart);
-		// Execute (enqueue) the kernel
-		if (CL_SUCCESS != ExecuteDensAndPressKernel(&ocl))
-		{
-			return -1;
-		}
-		if (queueProfilingEnable)
-			QueryPerformanceCounter(&performanceCountNDRangeStop);
-
-
-		ReadAndVerify(&ocl);
-
-		//EXECUTE ACCELERATIONKERNEL 
-		queueProfilingEnable = true;
-		if (queueProfilingEnable)
-			QueryPerformanceCounter(&performanceCountNDRangeStart);
-		// Execute (enqueue) the kernel
-		if (CL_SUCCESS != ExecuteAccelerationKernel(&ocl))
-		{
-			return -1;
-		}
-
-		if (queueProfilingEnable)
-			QueryPerformanceCounter(&performanceCountNDRangeStop);
-
-		// The last part of this function: getting processed results back.
-		// use map-unmap sequence to update original memory area with output buffer.
-		ReadAndVerify(&ocl);
-
-		//EXECUTE MOVE PARTICLE KERNEL 
-		queueProfilingEnable = true;
-		if (queueProfilingEnable)
-			QueryPerformanceCounter(&performanceCountNDRangeStart);
-		// Execute (enqueue) the kernel
-		if (CL_SUCCESS != ExecuteMoveParticleKernel(&ocl))
-		{
-			return -1;
-		}
-
-		if (queueProfilingEnable)
-			QueryPerformanceCounter(&performanceCountNDRangeStop);
-
-		// The last part of this function: getting processed results back.
-		// use map-unmap sequence to update original memory area with output buffer.
-		ReadAndVerify(&ocl);
-
-		displayGPU();
-		
-
-		// retrieve performance counter frequency
-		/*if (queueProfilingEnable)
-		{
-			QueryPerformanceFrequency(&perfFrequency);
-			LogInfo("NDRange performance counter time %f ms.\n",
-				1000.0f*(float)(performanceCountNDRangeStop.QuadPart - performanceCountNDRangeStart.QuadPart) / (float)perfFrequency.QuadPart);
-		}*/
-
+		executeOnGPU(&ocl);
 		//END GPU STUFF
-
-	
+		drawParticles();
 
 		//Swap front and back buffers
 		glfwSetWindowSizeCallback(window, reshape_window);

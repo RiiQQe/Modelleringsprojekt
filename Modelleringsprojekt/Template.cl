@@ -47,7 +47,7 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 
 			if (abs_diffvec < h){
 				//printf("ABS DIFFVEC %4.8f \n", abs_diffvec);
-				density_sum += PARTICLE_MASS* (315.0 / (64.0 * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(abs_diffvec, 2.0f)), 3);
+				density_sum += PARTICLE_MASS* (315.0f / (64.0f * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(abs_diffvec, 2.0f)), 3.f);
 
 			}
 		//}
@@ -105,7 +105,7 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 				//printf("W_const_pressure :   %4.8f \n", W_const_pressure);
 				float4 W_pressure_gradient = (float4)(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, 0, 0);
 				//printf("W_pressure_gradient :   %4.8f \n", W_pressure_gradient.x);
-				float visc_gradient = (45 / (M_PI* pow(h, 6.0f)))*(h - abs_diffvec);
+				float visc_gradient = (45.f / (M_PI* pow(h, 6.0f)))*(h - abs_diffvec);
 				//printf("visc_gradient :   %4.8f \n", visc_gradient);
 				pressureforce += -PARTICLE_MASS * ((pressure[id] + pressure[k]) / (2.0 * density[k])) * W_pressure_gradient;
 
