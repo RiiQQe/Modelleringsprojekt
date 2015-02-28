@@ -202,7 +202,12 @@ void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        glm::vec3 gravity = glm::vec3(0, -GRAVITY_CONST*particles[i].getDensity(), 0);
+        //glm::vec3 gravity = glm::vec3(0, -GRAVITY_CONST*particles[i].getDensity(), 0);
+
+
+		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2]);
+
+
         glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
@@ -258,6 +263,7 @@ void calculateForces(){
         particles[i].setViscousityForce(viscousity);
         particles[i].setPressureForce(pressure);
         particles[i].setGravityForce(gravity);   
+
     }
 }
 
@@ -437,15 +443,11 @@ int main(int argc, char *argv[])
 
 		GLfloat diffvec2[4];
 
+		//This should be the gravity
 		diffvec2[0] = newDown[0] - down[0];
 		diffvec2[1] = newDown[1] - down[1];
 		diffvec2[2] = newDown[2] - down[2];
 		diffvec2[3] = newDown[3] - down[3];
-
-		cout << "diffvec[0] " << diffvec2[0] << endl;
-		cout << "diffvec[1] " << diffvec2[1] << endl;
-		cout << "diffvec[2] " << diffvec2[2] << endl;
-		cout << "diffvec[3] " << diffvec2[3] << endl;
 
 		/*RITA UT PLANET*/
         drawAxes();
@@ -456,8 +458,6 @@ int main(int argc, char *argv[])
 		calculateAcceleration();
         display();
         idle();
-        
-		
 
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
