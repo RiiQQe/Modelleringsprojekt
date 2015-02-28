@@ -52,7 +52,7 @@ void Particle::EvolveParticle()
     }
     
     else if(pos.y > 512){
-        
+        s
         vel.y = -0.8*vel.y;
         pos.y = 512;
     }
@@ -61,10 +61,12 @@ void Particle::EvolveParticle()
 		vel.z = -0.8*vel.z;
 		pos.z = 1;
 	}
+    
 	else if(pos.z > 256){
 		vel.z = -0.8*vel.z;
 		pos.z = 256;
 	}
+    
 }
 
 //Draw all the particles

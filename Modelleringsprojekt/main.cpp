@@ -15,7 +15,7 @@
 #include <sstream>
 
 const int NUM_PARTICLES = 500;
-const int KERNEL_LIMIT = 160;
+const int KERNEL_LIMIT = 100;
 
 const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.14f;
@@ -117,6 +117,7 @@ void reduceNeighbours(vector<Particle*>& theNeighbours){
     }
     
     theNeighbours = mapped_neighbours;
+    
     //std::cout << "tokmånga partiklar";
 }
 
@@ -330,7 +331,7 @@ void handleCamera(){
 		glRotatef(theta, 1, 0, 0);
 	}
 
-
+/*
 	if (glfwGetKey(window, GLFW_KEY_LEFT)){
 		glTranslatef(10.f,0.0f,0.0f);
 	}
@@ -342,7 +343,7 @@ void handleCamera(){
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN)){
 		glTranslatef(0.f, 10.f, 0.0f);
-	}
+	}*/
 
 }
 
@@ -388,6 +389,7 @@ int main(int argc, char *argv[])
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
+	glTranslatef(512.f, 512.f, 0.0f);
 
 	bool running = true;
 
@@ -405,7 +407,7 @@ int main(int argc, char *argv[])
 
         glLoadIdentity();
 
-		glOrtho(0.0, 512.0, 0.0, 512.0, -512.0, 512);
+		glOrtho(0.0, 1024.0, 0.0, 1024.0, -1024.0, 1024);
 
 		handleCamera();
 
