@@ -540,7 +540,14 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 	glm::vec3 temp;
 	double mu;
 
-	mu = (1 - val1) / (val2 - val1);
+	if (abs(1.0f - val1) < 0.00001)
+		return xyz;
+	if (abs(1.0f - val2) < 0.00001)
+		return dxyz;
+	if (abs(val1 - val2) < 0.00001)
+		return xyz;
+
+	mu = (1.0f - val1) / (val2 - val1);
 
 	temp.x = xyz.x + mu * (dxyz.x - xyz.x);
 	temp.y = xyz.y + mu * (dxyz.y - xyz.y);
@@ -548,7 +555,13 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 
 	return temp;
 }
- 
+
+void displayWithoutMarching(){
+	for(int i = 0; i < NUM_PARTICLES; i++){
+	
+		particles[i].DrawObjects();
+	}
+}
 
 void display()
 {
@@ -572,6 +585,7 @@ void display()
 
 			// calculate height map, sum
 			// squares contains the radius to the particle
+			// jag tror de är denna som inte funkar som vi har tänkt oss riktigt
 			squares[k] += (particles[i].getRadius()*particles[i].getRadius()) / ((x - particles[i].getPos().x) * (x - particles[i].getPos().x) +
 			(y - particles[i].getPos().y) * (y - particles[i].getPos().y) + 
 			(z - particles[i].getPos().z) * (z - particles[i].getPos().z));
@@ -724,7 +738,7 @@ void display()
 				}
 
 				glBegin(GL_TRIANGLE_STRIP);
-				glColor3f(1.0f,0.0f,0.0f);
+				glColor3f(0.0f,0.0f,1.0f);
 				int kalle = 0;
 				//Den kan tydligen gå in i flera av if-satserna ovanför, måste ändra bitwiseSum
 				//Fast de verkar den ta hand om, om man kollar loggarna
@@ -745,8 +759,7 @@ void display()
 					cout << "------------------------" << endl;
 					cout << "i : " << kalle << endl;
 				}*/
-				if (bolesk)
-				cout << "KLART SOM FAN!" << endl;
+				
 				glEnd();
 			}
 		}
@@ -889,6 +902,7 @@ int main(int argc, char *argv[])
 			
 		calculateAcceleration();
         display();
+		//displayWithoutMarching();
         idle();
 
         //Swap front and back buffers
