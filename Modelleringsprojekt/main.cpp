@@ -69,7 +69,7 @@
 
 using namespace glm;
 
-const cl_uint NUM_PARTICLES = 600;
+const cl_uint NUM_PARTICLES = 800;
 const int KERNEL_LIMIT = 35;
 
 const float GRAVITY_CONST = 50000 * 9.82f;
@@ -105,6 +105,8 @@ int frames = 0;
 // References and pointer needed globally
 GLFWwindow* window;
 
+void initParticles();
+
 // Neat way of displaying FPS
 void handleFps() {
 	frames++;
@@ -127,15 +129,20 @@ void handleFps() {
 }
 
 
-void handleCamera(){
+void handleInputs(){
 
 	glMatrixMode(GL_MODELVIEW);
 	newTime = glfwGetTime();
 	deltaTime = newTime - currTime;
 	currTime = newTime;
 
-	
+	//GENERAL INPUT
+	if (glfwGetKey(window, GLFW_KEY_G)) {
+		initParticles();
+	}
 
+	
+	//CAMERA CONTROLS
 	if (glfwGetKey(window, GLFW_KEY_D)) {
 		phi -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
 		phi = fmod(phi, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
@@ -182,43 +189,28 @@ void drawParticlesContainer(){
 	
 	float containerSize = 256.f / 2;
 
-	//The Borders
-	/*glPushMatrix();
-	glBegin(GL_LINES);
-
-	glColor3f(1.f, 1.f, 1.f);
-
-	glVertex3f(0.f, 0.f, 0.f);
-	glVertex3f(256.f, 0.f, 0.f);
-
-	glVertex3f(0.f, 0.f, 0.f);
-	glVertex3f(0.f, 256.f, 0.f);
-
-	glVertex3f(0.f, 0.f, 0.f);
-	glVertex3f(0.f, 0.f, 256.f);
-
-	glEnd();
-	glPopMatrix();*/
-
-	//The Walls
 	glPushMatrix();
+	//Move cube to right coordinates
 	glTranslatef(containerSize, containerSize, containerSize);
+	
+	//The Borders
 	glPushMatrix();
 	glBegin(GL_LINES);
 	glColor3f(1.f, 1.f, 1.f);
-
+	//Top
 	glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
 
 	glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
-
+	//Bottom
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 
 	glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
 	
+	//Front
 	glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 
@@ -245,11 +237,10 @@ void drawParticlesContainer(){
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
 
-
-
 	glEnd();
 	glPopMatrix();
 
+	//The Walls
 	glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
 	// Top face (y = 1.0f)
 	// Define vertices in counter-clockwise (CCW) order with normal pointing out
@@ -364,8 +355,9 @@ void drawSphereParticles() {
 		
 	}
 }
-
+//Draw particles as Cubes
 void drawCubeParticles(){
+	handleFps();
 
 	for (int i = 0; i < NUM_PARTICLES; i++){
 		glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
@@ -377,36 +369,36 @@ void drawCubeParticles(){
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 
-		// Bottom face (y = -1.0f*particleSize)
+		// Bottom face (y = -1.0f)
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 
-		// Front face  (z = 1.0f*particleSize)
+		// Front face  (z = 1.0f)
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 
-		// Back face (z = -1.0f*particleSize)
+		// Back face (z = -1.0f)
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 
-		// Left face (x = -1.0f*particleSize)
+		// Left face (x = -1.0f)
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 
-		// Right face (x = 1.0f*particleSize)
+		// Right face (x = 1.0f)
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
-		glEnd();  // End of drawing color-cube	
+		glEnd();  	
 
 	}
 }
@@ -1279,29 +1271,23 @@ int GetPlatformAndDeviceVersion (cl_platform_id platformId, ocl_args_d_t *ocl)
 /*
  * Generate random value for input buffers
  */
-void initParticles(vec4* particle_pos_arr, vec4* particle_vel_arr,
-	vec4* particle_visc_f_arr,
-	vec4* particle_press_f_arr,
-	vec4* particle_grav_f_arr,
-	cl_float* density,
-	cl_float* pressure)
+void initParticles()
 {
 
 	for (cl_uint i = 0; i < NUM_PARTICLES; i++) {
 
 		
-		particle_pos_arr[i] = vec4(0.f, 0.f, 0.f, 0.f);
-		particle_vel_arr[i] = vec4(0.f, 0.f, 0.f, 0.f);
+		particle_pos[i] = vec4(0.f, 0.f, 0.f, 0.f);
+		particle_vel[i] = vec4(0.f, 0.f, 0.f, 0.f);
 
 		//Forces
-		particle_grav_f_arr[i] = vec4(0.f, 0.0f, 0.f, 0.f);
-		particle_visc_f_arr[i] = vec4(0.f, 0.f, 0.f, 0.f);
-		particle_press_f_arr[i] = vec4(0.f, 0.f, 0.f, 0.f);
+		particle_grav_f[i] = vec4(0.f, 0.0f, 0.f, 0.f);
+		particle_visc_f[i] = vec4(0.f, 0.f, 0.f, 0.f);
+		particle_press_f[i] = vec4(0.f, 0.f, 0.f, 0.f);
 
 		//Defines
-		density[i] = 0;
-		pressure[i]= 0;
-
+		particle_density[i] = 0;
+		particle_pressure[i] = 0;
 
 	}
 	// Set positions
@@ -1317,13 +1303,13 @@ void initParticles(vec4* particle_pos_arr, vec4* particle_vel_arr,
 		if (y == 10){
 			z++; // z + 5;
 			y = 0;
-			printf("Z position %i \n", z);
+			//printf("Z position %i \n", z);
 		}
 
 		x++;
 		
 
-		particle_pos_arr[i] = (vec4(10.0 + x*16.f / 2.0, 19.0 * 16.f + y*16.f / 2, 10 + z*16.f / 2, 0));
+		particle_pos[i] = (vec4(10.0 + x*16.f / 2.0, 19.0 * 16.f + y*16.f / 2, 10 + z*16.f / 2, 0));
 	}
 
 
@@ -2008,8 +1994,8 @@ int _tmain(int argc, TCHAR* argv[])
         return -1;
     }*/
 	
-    //Initialize particles
-    initParticles(particle_pos, particle_vel, particle_visc_f, particle_press_f, particle_grav_f,  particle_density, particle_pressure);
+    //Initialize particles , In this order!
+    initParticles(); //particle_pos, particle_vel, particle_visc_f, particle_press_f, particle_grav_f,  particle_density, particle_pressure
     
 
     // Create OpenCL buffers from host memory
@@ -2109,7 +2095,7 @@ int _tmain(int argc, TCHAR* argv[])
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
 		glOrtho(0.0, 512, 0.0, 512, -512.0, 512);
-		handleCamera();
+		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
 		calculateNewGravityVec();
