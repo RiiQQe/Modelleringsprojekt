@@ -30,7 +30,8 @@
 #include <memory.h>
 #include <vector>
 
-#include "CL2\cl.h"
+//Foldername modified in CUDA library for OpenCL
+#include "CL_nvidia\cl.h"
 #include "utils.h"
 
 #include <GL/glew.h>
