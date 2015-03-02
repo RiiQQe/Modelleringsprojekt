@@ -20,7 +20,9 @@
  * problem reports or change requests be submitted to it directly
  *****************************************************************************/
 
-#include "CL2\cl.h"
+
+//Foldername modified in CUDA library for OpenCL
+#include "CL_nvidia\cl.h"
 #include <d3d9.h>
 
 

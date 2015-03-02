@@ -69,8 +69,12 @@
 #include <sstream>
 
 using namespace glm;
+const cl_uint MAX_ADDED_PARTICLES = 100;
+const cl_uint BEGIN_PARTICLES = 400;
+const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
+//Global variable for squirting particles
+cl_uint ADDED_PARTICLES = 0;
 
-const cl_uint NUM_PARTICLES = 800;
 const int KERNEL_LIMIT = 35;
 
 const float GRAVITY_CONST = 50000 * 9.82f;
@@ -106,7 +110,9 @@ int frames = 0;
 // References and pointer needed globally
 GLFWwindow* window;
 
+//Some function declarations
 void initParticles();
+int generateNewParticles();
 
 // Neat way of displaying FPS
 void handleFps() {
@@ -138,9 +144,13 @@ void handleInputs(){
 	currTime = newTime;
 
 	//GENERAL INPUT
-	if (glfwGetKey(window, GLFW_KEY_G)) {
+	if (glfwGetKey(window, GLFW_KEY_R)) {
 		initParticles();
 	}
+	if (glfwGetKey(window, GLFW_KEY_G)) {
+		generateNewParticles();
+	}
+	
 
 	
 	//CAMERA CONTROLS
@@ -1294,7 +1304,7 @@ void initParticles()
 	// Set positions
 	int x = 0, y = 0, z = 0;
 
-	for (int i = 0; i < NUM_PARTICLES; i++){
+	for (int i = 0; i < NUM_PARTICLES - MAX_ADDED_PARTICLES; i++){
 
 		if (x == 10){
 			y++;
@@ -1313,30 +1323,28 @@ void initParticles()
 		particle_pos[i] = (vec4(10.0 + x*16.f / 2.0, 19.0 * 16.f + y*16.f / 2, 10 + z*16.f / 2, 0));
 	}
 
+}
 
 
+int generateNewParticles(){
+
+	
+	
+	if (ADDED_PARTICLES >= MAX_ADDED_PARTICLES)
+	{
+		printf("Number of added Particles reached Limit \n");
+		return -1;
+	}
+	
 
 
-	//FOR 2D PARTICLES
-	//int k = 0, j = 0;
+	cl_int i = ADDED_PARTICLES + BEGIN_PARTICLES;
 
-	//for (int i = 0; i < NUM_PARTICLES; i++){
+	// Set positions
+	particle_pos[i] = (vec4(64.f, 256.f, 256.f, 0));
+	particle_vel[i] = (vec4(-550.f, -50.0, -700.f, 0));
+	ADDED_PARTICLES++;
 
-	//	//Y-led
-	//	if (i % 40 == 0)
-	//		k++;
-
-	//	//X
-	//	if (i % 40 == 0){
-	//		j = 0;
-	//	
-	//	}
-	//	j++;
-
-	//	particle_pos_arr[i] = (vec4(20 + j*16 / 2 - 8, 19 * 16 + k*16/ 2 - 8, 0.5, 0));
-
-	//}
-    
 
 
 }
@@ -1731,7 +1739,7 @@ cl_uint ExecuteDensAndPressKernel(ocl_args_d_t *ocl)
     cl_int err = CL_SUCCESS;
 
     // Define global iteration space for clEnqueueNDRangeKernel.
-	size_t globalWorkSize[1] = { NUM_PARTICLES };
+	size_t globalWorkSize[1] = { BEGIN_PARTICLES + ADDED_PARTICLES };
 
 
     // execute kernel
@@ -1766,7 +1774,7 @@ cl_uint ExecuteAccelerationKernel(ocl_args_d_t *ocl)
 	cl_int err = CL_SUCCESS;
 
 	// Define global iteration space for clEnqueueNDRangeKernel.
-	size_t globalWorkSize[1] = { NUM_PARTICLES };
+	size_t globalWorkSize[1] = { BEGIN_PARTICLES + ADDED_PARTICLES };
 
 
 	// execute kernel
@@ -1799,7 +1807,7 @@ cl_uint ExecuteMoveParticleKernel(ocl_args_d_t *ocl)
 	cl_int err = CL_SUCCESS;
 
 	// Define global iteration space for clEnqueueNDRangeKernel.
-	size_t globalWorkSize[1] = { NUM_PARTICLES };
+	size_t globalWorkSize[1] = { BEGIN_PARTICLES + ADDED_PARTICLES };
 
 
 	// execute kernel
