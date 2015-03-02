@@ -145,6 +145,10 @@ void Particle::setPos(glm::vec3 p){
     pos = p;
 }
 
+void Particle::setVel(glm::vec3 v){
+
+    vel = v;
+}
 void Particle::setPressure(float p){
     pressure = p;
 }

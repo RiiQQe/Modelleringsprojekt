@@ -19,6 +19,7 @@ class Particle
 		int getCellIndex();
 
     	void setPos(glm::vec3 p);
+    	void setVel(glm::vec3 v);
     	void setDensity(float d);
     	void setPressure(float p);
     	void setPressureForce(glm::vec3 f);

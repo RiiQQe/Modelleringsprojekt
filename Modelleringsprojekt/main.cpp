@@ -14,7 +14,7 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 1000;
+const int NUM_PARTICLES = 500;
 const int KERNEL_LIMIT = 130;
 
 const float VISCOUSITY = 500*5.f;
@@ -23,13 +23,14 @@ const double h = 16.f;
 const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
 
-GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+bool user_running = false;
 
+GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
 GLfloat model[16];
 
-Particle particles[NUM_PARTICLES];
-Box box = Box();
+//Particle particles[NUM_PARTICLES];
+std::vector<Particle> particles;
 
 Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH];
 
@@ -64,16 +65,29 @@ void handleFps() {
     }
 }
 
+// Adds new particles
 
-// Create all the particles
-void init()
+void addNewParticles(){
+    
+    Particle p;
+    p.CreateParticle();
+    p.setPos(glm::vec3(128.f, 256.f, 128.f));
+    p.setVel(glm::vec3(0, -100000.f, 0.f));
+    
+    particles.push_back(p);
+    
+}
+
+
+// Initialize particles system
+void initParticles()
 {
 
     for(int i = 0; i < NUM_PARTICLES; i++) {
-        particles[i].CreateParticle();
-        
+        Particle p;
+        p.CreateParticle();
+        particles.push_back(p);
     }
-    
 
     int x = 0, y = 0, z = 0;
     
@@ -93,6 +107,9 @@ void init()
 
         particles[i].setPos(glm::vec3(20+x*h/2, 20 + y*h/2, 20 + z*h/2));
     }
+    
+    
+    // Create all the cells
 
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
         
@@ -100,6 +117,9 @@ void init()
     }
     
 }
+
+
+
 
 //Trying to reduce calculation by removing random number of neighbours up to the limit of the kernel
 //
@@ -145,7 +165,7 @@ void calculateDensityAndPressure(){
 	//	}
 	//}
 
-    for(int i = 0; i < NUM_PARTICLES; i++){
+    for(int i = 0; i < particles.size(); i++){
         
         float density_sum = 0;
         int cellIndex = particles[i].getCellIndex();
@@ -193,7 +213,7 @@ void calculateDensityAndPressure(){
 
 void calculateForces(){
     
-    for(int i = 0; i < NUM_PARTICLES; i++){
+    for(int i = 0; i < particles.size(); i++){
         
 		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2])*GRAVITY_CONST*particles[i].getDensity();
 		glm::vec3 pressure = glm::vec3(0);
@@ -261,7 +281,7 @@ void calculateAcceleration(){
     }
     
     // Push every particle into corresponding cell
-    for(int i = 0; i < NUM_PARTICLES; i++) {
+    for(int i = 0; i < particles.size(); i++) {
         
         cells[particles[i].getCellIndex()].addParticle(particles[i]);
         
@@ -276,7 +296,7 @@ void display()
 {
     handleFps();
     
-    for(int i = 0; i < NUM_PARTICLES; i++){
+    for(int i = 0; i < particles.size(); i++){
     
     	particles[i].DrawObjects();
     
@@ -291,20 +311,35 @@ void reshape_window(GLFWwindow* window, int width, int height)
 
 void idle()
 {
-    for (int i = 0; i < NUM_PARTICLES; i++)
+    for (int i = 0; i < particles.size(); i++)
     {
         particles[i].EvolveParticle();
     }
     
 }
 
-void handleCamera(){
+void handleInputs(){
 
 	glMatrixMode(GL_MODELVIEW);
 	newTime = glfwGetTime();
 	deltaTime = newTime - currTime;
 	currTime = newTime;
-
+    
+    //GENERAL INPUT
+    
+    // Init particle system
+    if (glfwGetKey(window, GLFW_KEY_G)) {
+        user_running = true;
+    }
+    
+     // Add particles
+    if (glfwGetKey(window, GLFW_KEY_H)) {
+        
+        if(user_running)
+        	addNewParticles();
+    }
+    
+    //CAMERA CONTROLS
 	if (glfwGetKey(window, GLFW_KEY_D)) {
 		phi -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
 		phi = fmod(phi, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
@@ -510,9 +545,8 @@ void drawPlane(){
 int main(int argc, char *argv[])
 {
 
-    init();
-    
     glfwInit();
+    initParticles();
     
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
@@ -537,7 +571,11 @@ int main(int argc, char *argv[])
         
 		glOrtho(0.0, 1024.0, 0.0, 1024.0, -1024.0, 1024);
 
-		handleCamera();
+		handleInputs();
+        
+        //std::cout << particles.size();
+        
+        
 
         // Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
@@ -549,10 +587,17 @@ int main(int argc, char *argv[])
         //box.DrawBox();
         
         drawParticlesContainer();
+        
+        
+        if(user_running){
 			
-		calculateAcceleration();
+			calculateAcceleration();
+        	idle();
+            
+        }
+        
         display();
-        idle();
+   
 
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
