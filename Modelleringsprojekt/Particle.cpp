@@ -133,3 +133,7 @@ void Particle::setGravityForce(glm::vec3 f){
     gravity_force = f;
     
 }
+
+float Particle::getRadius(){
+	return radius;
+}
