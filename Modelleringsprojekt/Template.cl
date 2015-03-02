@@ -39,18 +39,18 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 
 	for (uint j = 0; j < NUM_PARTICLES; j++){
 		//printf("ABS DIFFVEC");
-		//if (id != j){
-			float4 diffvec = position[id] - position[j];
-			//Absvec 
-			float abs_diffvec = sqrt(pow(diffvec.x, 2.0f) + pow(diffvec.y, 2.0f) + pow(diffvec.z, 2.0f));
+		//Calculate on same particle!!! No if(id != j)
+		float4 diffvec = position[id] - position[j];
+		//Absvec 
+		float abs_diffvec = sqrt(pow(diffvec.x, 2.0f) + pow(diffvec.y, 2.0f) + pow(diffvec.z, 2.0f));
 
 
-			if (abs_diffvec < h){
-				//printf("ABS DIFFVEC %4.8f \n", abs_diffvec);
-				density_sum += PARTICLE_MASS* (315.0f / (64.0f * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(abs_diffvec, 2.0f)), 3.f);
+		if (abs_diffvec < h){
+			//printf("ABS DIFFVEC %4.8f \n", abs_diffvec);
+			density_sum += PARTICLE_MASS* (315.0f / (64.0f * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(abs_diffvec, 2.0f)), 3.f);
 
-			}
-		//}
+		}
+	
 
 	}
 
@@ -84,7 +84,7 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 	const float GRAVITY_CONST = 50000 * 9.82f;
 
 	//NOW CALCULATE FORCES 
-	float4 gravityforce = (float4)(0, -GRAVITY_CONST * density[id], 0, 0);
+	float4 gravityforce = (float4)(0, -GRAVITY_CONST * density[id], 0, 0);  //(float4)(gravity_f[id].x * density[id], gravity_f[id].y * density[id], gravity_f[id].z * density[id], 0);
 
 	float4 pressureforce = (float4)(0, 0, 0, 0);
 	float4 viscosityforce = (float4)(0, 0, 0, 0);
@@ -103,7 +103,7 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 
 				float W_const_pressure = 45.0f / (M_PI * pow(h, 6.0f)) * pow(h - abs_diffvec, 3.0f) / abs_diffvec;
 				//printf("W_const_pressure :   %4.8f \n", W_const_pressure);
-				float4 W_pressure_gradient = (float4)(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, 0, 0);
+				float4 W_pressure_gradient = (float4)(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, W_const_pressure * diffvec.z, 0);
 				//printf("W_pressure_gradient :   %4.8f \n", W_pressure_gradient.x);
 				float visc_gradient = (45.f / (M_PI* pow(h, 6.0f)))*(h - abs_diffvec);
 				//printf("visc_gradient :   %4.8f \n", visc_gradient);
@@ -160,17 +160,15 @@ __kernel void moveParticles(__global float4* position, __global float4* velocity
 		position[id].x = 1;
 	}
 
-	else if (position[id].x > 512){
+	else if (position[id].x > 256){
 
 		velocity[id].x = -0.8*velocity[id].x;
-		position[id].x = 512;
+		position[id].x = 256;
 	}
 
 	if (position[id].y < 1){
-
 		velocity[id].y = -0.8*velocity[id].y;
 		position[id].y = 1;
-
 	}
 
 
@@ -179,6 +177,16 @@ __kernel void moveParticles(__global float4* position, __global float4* velocity
 		position[id].y = 512;
 
 	}
+
+	if (position[id].z < 1){
+		velocity[id].z = -0.8*velocity[id].z;
+		position[id].z = 1;
+	}
+	else if (position[id].z > 256){
+		velocity[id].z = -0.8*velocity[id].z;
+		position[id].z = 256;
+	}
+	//printf("PARTICLE POSITION Z %f4.8 \n ", position[id].z);
 
 
 
