@@ -9,6 +9,7 @@ using namespace glm;
 //const float dt = 1.f;
 bool first = true;
 const float dt = 0.0004f;
+const float particleSize = 3.5f;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
@@ -51,10 +52,10 @@ void Particle::EvolveParticle()
         pos.y = 1;
     }
     
-    else if(pos.y > 512){
-        s
+    else if(pos.y > 256){
+        
         vel.y = -0.8*vel.y;
-        pos.y = 512;
+        pos.y = 256;
     }
 
 	if (pos.z < 1){
@@ -66,15 +67,56 @@ void Particle::EvolveParticle()
 		vel.z = -0.8*vel.z;
 		pos.z = 256;
 	}
+
     
 }
 
 //Draw all the particles
 void Particle::DrawObjects() {
-    
+    /*
     glColor3f(0.2,0.2,1);
     Sphere sphere(16/3, 6, 12);
-    sphere.draw(pos[0], pos[1], pos[2]);
+    sphere.draw(pos[0], pos[1], pos[2]);*/
+    
+    glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
+    // Top face (y = 1.0f)
+    // Define vertices in counter-clockwise (CCW) order with normal pointing out
+    glColor3f( 0.0f, 1.0f, 0.0f);     // Green
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z - 1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + 1.0f*particleSize);
+    
+    // Bottom face (y = -1.0f*particleSize)
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + -1.0f*particleSize);
+    
+    // Front face  (z = 1.0f*particleSize)
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + 1.0f*particleSize);
+    
+    // Back face (z = -1.0f*particleSize)
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + -1.0f*particleSize);
+    
+    // Left face (x = -1.0f*particleSize)
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + -1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + 1.0f*particleSize);
+    
+    // Right face (x = 1.0f*particleSize)
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + 1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + 1.0f*particleSize,  pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + 1.0f*particleSize);
+    glVertex3f(pos.x + 1.0f*particleSize, pos.y + -1.0f*particleSize, pos.z + -1.0f*particleSize);
+    glEnd();  // End of drawing color-cube
     
 }
 

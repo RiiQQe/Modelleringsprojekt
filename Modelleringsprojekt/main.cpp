@@ -14,14 +14,14 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 500;
-const int KERNEL_LIMIT = 100;
+const int NUM_PARTICLES = 1000;
+const int KERNEL_LIMIT = 130;
 
 const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.14f;
 const double h = 16.f;
 const float STIFFNESS = 500*5.f;
-const float GRAVITY_CONST = 8000*9.82f;
+const float GRAVITY_CONST = 80000*9.82f;
 
 GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -91,7 +91,7 @@ void init()
         
         x++;
 
-        particles[i].setPos(glm::vec3(10+x*h/2, 19*16 + y*h/2, 10 + z*h/2));
+        particles[i].setPos(glm::vec3(20+x*h/2, 20 + y*h/2, 20 + z*h/2));
     }
 
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
@@ -195,7 +195,7 @@ void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2])*GRAVITY_CONST;
+		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2])*GRAVITY_CONST*particles[i].getDensity();
 		glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
@@ -347,6 +347,110 @@ void handleCamera(){
 
 }
 
+void drawParticlesContainer(){
+    
+    
+    float containerSize = 256.f / 2;
+    
+    //For transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    glPushMatrix();
+    //Move cube to right coordinates
+    glTranslatef(containerSize, containerSize, containerSize);
+    
+    //The Borders
+    glPushMatrix();
+    glBegin(GL_LINES);
+    glColor3f(1.f, 1.f, 1.f);
+    //Top
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    //Bottom
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    
+    //Front
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    
+    //BACK
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    
+    // Left
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    
+    // Right
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    
+    glEnd();
+    glPopMatrix();
+    
+    //The Walls
+    glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
+    // Top face (y = 1.0f)
+    // Define vertices in counter-clockwise (CCW) order with normal pointing out
+    glColor4f(.7f, .2f, .2f, 0.2f);     // Green
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    
+    
+    // Bottom face (y = -1.0f*containerSize)
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    
+    // Front face  (z = 1.0f*containerSize)
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    
+    // Back face (z = -1.0f*containerSize)
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    
+    // Left face (x = -1.0f*containerSize)
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    
+    // Right face (x = 1.0f*containerSize)
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glEnd();  // End of drawing color-cube
+    glPopMatrix();
+}
+
 void drawCoordinateAxes(){
 
     glPushMatrix();
@@ -379,6 +483,30 @@ void calculateNewGravityVec(){
 
 }
 
+void drawPlane(){
+
+	
+	
+    glColor4f(0.8f, 0.8f, 0.8f, 1.f);
+    glPushMatrix();
+    glBegin(GL_TRIANGLES);
+    glEnable(GL_BLEND);
+    
+    //Bottom
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(256.0f, 0.0f, 0.0f);
+    glVertex3f(256.0f, 0.0f, 256.0f);
+    
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 256.0f);
+    glVertex3f(256.0f, 0.0f, 256.0f);
+    
+    glEnd();
+    glPopMatrix();
+    
+    
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -406,7 +534,7 @@ int main(int argc, char *argv[])
 		glMatrixMode(GL_PROJECTION);
 
         glLoadIdentity();
-
+        
 		glOrtho(0.0, 1024.0, 0.0, 1024.0, -1024.0, 1024);
 
 		handleCamera();
@@ -414,9 +542,13 @@ int main(int argc, char *argv[])
         // Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
         
+        
         calculateNewGravityVec();
-        drawCoordinateAxes();
-        box.DrawBox();
+        //drawCoordinateAxes();
+        //drawPlane();
+        //box.DrawBox();
+        
+        drawParticlesContainer();
 			
 		calculateAcceleration();
         display();
