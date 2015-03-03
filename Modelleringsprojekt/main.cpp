@@ -54,30 +54,38 @@
  * (E.g. "CL_DEVICE_NOT_FOUND" instead of just -1.)
  */
 
-
 //From main projekt
-//#define GLEW_STATIC
-//#define _USE_MATH_DEFINES
 #include <GL/glew.h>
 
 #include <iostream>
 #include "Particle.h"
 #include "Box.h"
-#include "Cell.h"
+//#include "Cell.h"
 #include <GLFW/glfw3.h>
 #include <thread>
 #include <sstream>
 
+typedef struct{
+	int neighbours[30];
+	int positions[1000];
+	int nrOfParticles;
+} Cell;
+
+
+
 using namespace glm;
+
+const int W = 32, H = 32, L = 32;
+const int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 400;
+const cl_uint BEGIN_PARTICLES = 200;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
 
 const int KERNEL_LIMIT = 35;
 
-const float GRAVITY_CONST = 50000 * 9.82f;
+const float GRAVITY_CONST = 80000 * 9.82f;
 
 vec4* particle_pos;
 vec4* particle_vel;
@@ -86,6 +94,12 @@ vec4* particle_press_f;
 vec4* particle_grav_f;
 cl_float* particle_density;
 cl_float* particle_pressure;
+
+Cell *cells;
+
+
+
+
 
 //BETA BALLS
 const int TEMPSIZE = 64;
@@ -113,6 +127,7 @@ GLFWwindow* window;
 //Some function declarations
 void initParticles();
 int generateNewParticles();
+void setNeighbours(int index);
 
 // Neat way of displaying FPS
 void handleFps() {
@@ -134,6 +149,7 @@ void handleFps() {
 		glfwSetWindowTitle(window, pszConstString);
 	}
 }
+
 
 
 void handleInputs(){
@@ -483,7 +499,7 @@ void drawBetaBalls(){
 
 			// Depending on the bitwiseSum, draw triangles.
 
-			if (bitwiseSum >= 1.f) { // bitwiseSum cannot assume negative values and 0 ®is an empty square.
+			if (bitwiseSum >= 1.f) { // bitwiseSum cannot assume negative values and 0 ï¿½is an empty square.
 
 				// These are used for interpolation process, increasing the possible angles from n * PI/4 to basically infinity.
 				float qx, qy, px, py;
@@ -731,7 +747,7 @@ void drawBetaBalls(){
 
 					break;
 				default:
-					cout << "THIS IS FUCKED" << endl;
+					std::cout << "THIS IS FUCKED" << std::endl;
 					break;
 				}
 
@@ -805,6 +821,445 @@ void idle()
 	}
 
 }
+void initNeighbours(){
+
+	for (int i = 0; i < NUM_CELLS; i++){
+		std::cout << "INIT PARTICLES" << cells[i].neighbours[1] << std::endl;
+		cells[i].neighbours;
+	}
+}
+//void setNeighbours(int index) {
+//	
+//	cells[index].neighbours.push_back(index);
+//	std::cout << "SETNEIGHBOUR Function" << std::endl;
+//	int x = index % W;
+//	int y = (int)((index / W)) % H;
+//	int z = floor(index / (H * W));
+//
+//	switch (index % W) {
+//	case 0: //Left side
+//		if (index == 0) { //Top left front (3*3*3) (0)
+//			cells[index].neighbours.push_back(1);          // 1
+//			cells[index].neighbours.push_back(W);          // 3
+//			cells[index].neighbours.push_back(W + 1);        // 4
+//			cells[index].neighbours.push_back(W*H);          // 9
+//			cells[index].neighbours.push_back(W*H + 1);        // 10
+//			cells[index].neighbours.push_back(W*H + W);        // 12
+//			cells[index].neighbours.push_back(W*H + W + 1);      // 13
+//		}
+//		else if (index == H * (W - 1)) { // Down left front (6)
+//			cells[index].neighbours.push_back(index + 1);      // 7
+//			cells[index].neighbours.push_back(index - W);      // 3
+//			cells[index].neighbours.push_back(index - W + 1);    // 4
+//			cells[index].neighbours.push_back(index + W*H);      // 15
+//			cells[index].neighbours.push_back(index + W*H + 1);    // 16
+//			cells[index].neighbours.push_back(index + W*H - W);    // 12
+//			cells[index].neighbours.push_back(index + W*H - W + 1);  // 13
+//		}
+//		else if (index == L * H * (W - 1)) { // Top left back (18)
+//			cells[index].neighbours.push_back(index + 1);      // 19
+//			cells[index].neighbours.push_back(index + W);      // 21
+//			cells[index].neighbours.push_back(index + W + 1);    // 22 
+//			cells[index].neighbours.push_back(index - W*H);      // 9
+//			cells[index].neighbours.push_back(index - W*H + 1);    // 10
+//			cells[index].neighbours.push_back(index - W*H + W);    // 12
+//			cells[index].neighbours.push_back(index - W*H + W + 1);  // 13
+//		}
+//		else if (index == H * L * W - W){// Down left back (24)
+//			cells[index].neighbours.push_back(index + 1);      // 25
+//			cells[index].neighbours.push_back(index - W);      // 21
+//			cells[index].neighbours.push_back(index - W + 1);    // 22
+//			cells[index].neighbours.push_back(index - W*H);      // 15
+//			cells[index].neighbours.push_back(index - W*H + 1);    // 16
+//			cells[index].neighbours.push_back(index - W*H - W);    // 12
+//			cells[index].neighbours.push_back(index - W*H - W + 1);  // 13
+//		}
+//		else{       //4*4*4     
+//
+//			if (y == H - 1 && z < H - 1 && z > 0){  // (28)
+//
+//				cells[index].neighbours.push_back(index + 1);    // 29
+//				cells[index].neighbours.push_back(index - W);    // 24
+//				cells[index].neighbours.push_back(index - W + 1);  // 25
+//				cells[index].neighbours.push_back(index + W*H);    // 44
+//				cells[index].neighbours.push_back(index + W*H + 1);  // 45
+//				cells[index].neighbours.push_back(index + W*H - W);  // 40
+//				cells[index].neighbours.push_back(index + W*H - W + 1);//41
+//				cells[index].neighbours.push_back(index - W*H);    //12
+//				cells[index].neighbours.push_back(index - W*H + 1);  //13
+//				cells[index].neighbours.push_back(index - W*H - W);  //8
+//				cells[index].neighbours.push_back(index - W*H - W + 1); //9
+//			}
+//
+//			else if (y == 0 && z < H - 1 && z > 0){//(16)
+//				cells[index].neighbours.push_back(index + 1);    //17
+//				cells[index].neighbours.push_back(index + W);    //20
+//				cells[index].neighbours.push_back(index + W + 1);  //21
+//				cells[index].neighbours.push_back(index + W*H);    //32
+//				cells[index].neighbours.push_back(index + W*H + 1);  //33
+//				cells[index].neighbours.push_back(index + W*H + W);  //36
+//				cells[index].neighbours.push_back(index + W*H + W + 1); // 37
+//				cells[index].neighbours.push_back(index - W*H);    //0
+//				cells[index].neighbours.push_back(index - W*H + 1);  //1
+//				cells[index].neighbours.push_back(index - W*H + W);  //4
+//				cells[index].neighbours.push_back(index - W*H + W + 1); //5
+//			}
+//			else if (z == 0 && y > 0 && y < H - 1){// (4)
+//				cells[index].neighbours.push_back(index + 1);    //5
+//				cells[index].neighbours.push_back(index + W);    //8
+//				cells[index].neighbours.push_back(index + W + 1);  //9
+//				cells[index].neighbours.push_back(index - W);    //0
+//				cells[index].neighbours.push_back(index - W + 1);  //1
+//				cells[index].neighbours.push_back(index + W*H);    //20
+//				cells[index].neighbours.push_back(index + W*H + 1);  //21
+//				cells[index].neighbours.push_back(index + W*H + W);  //24
+//				cells[index].neighbours.push_back(index + W*H + W + 1);//25
+//				cells[index].neighbours.push_back(index + W*H - W);  //16
+//				cells[index].neighbours.push_back(index + W*H - W + 1);//17
+//			}
+//
+//			else if (z == L - 1 && x == 0 && y < H - 1 && y > 0){ // (52)
+//				cells[index].neighbours.push_back(index + 1);      //53
+//				cells[index].neighbours.push_back(index + W);      //56
+//				cells[index].neighbours.push_back(index + W + 1);    //57
+//				cells[index].neighbours.push_back(index - W);      //48
+//				cells[index].neighbours.push_back(index - W + 1);    //49
+//				cells[index].neighbours.push_back(index - W*H);      //36
+//				cells[index].neighbours.push_back(index - W*H + 1);    //37
+//				cells[index].neighbours.push_back(index - W*H - W);    //32
+//				cells[index].neighbours.push_back(index - W*H - W + 1);  //33
+//				cells[index].neighbours.push_back(index - W*H + W);    //40
+//				cells[index].neighbours.push_back(index - W*H + W + 1);  //41
+//			}
+//
+//			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ // (20) 
+//				cells[index].neighbours.push_back(index + 1);        // 21 
+//				cells[index].neighbours.push_back(index + W);        // 24
+//				cells[index].neighbours.push_back(index + W + 1);      // 25
+//				cells[index].neighbours.push_back(index - W);        // 16
+//				cells[index].neighbours.push_back(index - W + 1);      // 17
+//				cells[index].neighbours.push_back(index + W * H);      // 36
+//				cells[index].neighbours.push_back(index + W * H + 1);    // 37
+//				cells[index].neighbours.push_back(index + W * H + W);    // 40
+//				cells[index].neighbours.push_back(index + W * H + W + 1);  //41
+//				cells[index].neighbours.push_back(index + W * H - W);    //32
+//				cells[index].neighbours.push_back(index + W * H - W + 1);    //33
+//				cells[index].neighbours.push_back(index - W * H);      //4
+//				cells[index].neighbours.push_back(index - W * H + 1);    //5
+//				cells[index].neighbours.push_back(index - W * H + W);    // 8
+//				cells[index].neighbours.push_back(index - W * H + W + 1);  //9
+//				cells[index].neighbours.push_back(index - W * H - W);    //0
+//				cells[index].neighbours.push_back(index - W * H - W + 1);  //1
+//			}
+//		}
+//		break;
+//	case (W - 1) : //Right side
+//		if (index == W - 1) { //Top right front     (2) 
+//			cells[index].neighbours.push_back(index - 1);      //1
+//			cells[index].neighbours.push_back(index + W);      //5
+//			cells[index].neighbours.push_back(index + W - 1);    //4
+//			cells[index].neighbours.push_back(index + W*H);      //11
+//			cells[index].neighbours.push_back(index + W*H - 1);    //10
+//			cells[index].neighbours.push_back(index + W*H + W);    //14
+//			cells[index].neighbours.push_back(index + W*H + W - 1);  //13
+//		}
+//		else if (index == W * H - 1) { //Down right front (8)
+//			cells[index].neighbours.push_back(index - 1);      //7
+//			cells[index].neighbours.push_back(index - W);      //5
+//			cells[index].neighbours.push_back(index - W - 1);    //4
+//			cells[index].neighbours.push_back(index + W*H);      //17
+//			cells[index].neighbours.push_back(index + W*H - 1);    //16      
+//			cells[index].neighbours.push_back(index + W*H - W);    //14
+//			cells[index].neighbours.push_back(index + W*H - W - 1);  //13
+//		}
+//		else if (index == W * H * L - W*H + W - 1){ //Top right back (20)
+//			cells[index].neighbours.push_back(index - 1);      //19
+//			cells[index].neighbours.push_back(index + W);      //23
+//			cells[index].neighbours.push_back(index + W - 1);    //22
+//			cells[index].neighbours.push_back(index - W*H);      //11
+//			cells[index].neighbours.push_back(index - W*H - 1);    //10
+//			cells[index].neighbours.push_back(index - W*H + W);    //14
+//			cells[index].neighbours.push_back(index - W*H + W - 1);  //13
+//		}
+//		else if (index == W * H * L - 1){ //Down right back (26)
+//			cells[index].neighbours.push_back(index - 1);      //25
+//			cells[index].neighbours.push_back(index - W);      //23
+//			cells[index].neighbours.push_back(index - W - 1);    //22
+//			cells[index].neighbours.push_back(index - W*H);      //17
+//			cells[index].neighbours.push_back(index - W*H - 1);    //16
+//			cells[index].neighbours.push_back(index - W*H - W);    //14
+//			cells[index].neighbours.push_back(index - W*H - W - 1); // 13
+//		}
+//		else{ // (4*4*4)
+//
+//			if (y == H - 1 && x == W - 1 && z < L - 1 && z > 0){    // (31)
+//
+//				cells[index].neighbours.push_back(index - 1);      //30
+//				cells[index].neighbours.push_back(index - W);      //27
+//				cells[index].neighbours.push_back(index - W - 1);    //26
+//				cells[index].neighbours.push_back(index + W*H);      //47
+//				cells[index].neighbours.push_back(index + W*H - 1);    //46
+//				cells[index].neighbours.push_back(index + W*H - W);    //43
+//				cells[index].neighbours.push_back(index + W*H - W - 1);  //42
+//				cells[index].neighbours.push_back(index - W*H);      //15
+//				cells[index].neighbours.push_back(index - W*H - 1);    //14
+//				cells[index].neighbours.push_back(index - W*H - W);    //11
+//				cells[index].neighbours.push_back(index - W*H - W - 1);  //10  
+//			}
+//			else if (y == 0 && z < L - 1 && z > 0){       // (19)
+//				cells[index].neighbours.push_back(index - 1);      //18
+//				cells[index].neighbours.push_back(index + W);      //23
+//				cells[index].neighbours.push_back(index + W - 1);    //22
+//				cells[index].neighbours.push_back(index - W*H);      //3
+//				cells[index].neighbours.push_back(index - W*H - 1);    //2
+//				cells[index].neighbours.push_back(index - W*H + W);    //7
+//				cells[index].neighbours.push_back(index - W*H + W - 1);  //6
+//				cells[index].neighbours.push_back(index + W*H);      //35
+//				cells[index].neighbours.push_back(index + W*H - 1);    //34
+//				cells[index].neighbours.push_back(index + W*H + W);    //39
+//				cells[index].neighbours.push_back(index + W*H + W - 1);  //38
+//			}
+//			else if (z == L - 1 && y < H - 1 && y > 0){ // (55)
+//				cells[index].neighbours.push_back(index - 1);      //54
+//				cells[index].neighbours.push_back(index - W);      //51
+//				cells[index].neighbours.push_back(index - W - 1);    //50
+//				cells[index].neighbours.push_back(index + W);      //59
+//				cells[index].neighbours.push_back(index + W - 1);    //58
+//				cells[index].neighbours.push_back(index - W*H);      //39
+//				cells[index].neighbours.push_back(index - W*H - 1);    //38
+//				cells[index].neighbours.push_back(index - W*H - W);    //35
+//				cells[index].neighbours.push_back(index - W*H - W - 1);  //34
+//				cells[index].neighbours.push_back(index - W*H + W);    //43
+//				cells[index].neighbours.push_back(index - W*H + W - 1);  //42
+//			}
+//			else if (z == 0 && y > 0 && y < H - 1){//(7)
+//				cells[index].neighbours.push_back(index - 1);    // 6
+//				cells[index].neighbours.push_back(index - W);    //3
+//				cells[index].neighbours.push_back(index - W - 1);  //2
+//				cells[index].neighbours.push_back(index + W);    //11
+//				cells[index].neighbours.push_back(index + W - 1);  //10
+//				cells[index].neighbours.push_back(index + W*H);    //23
+//				cells[index].neighbours.push_back(index + W*H - 1);  //22
+//				cells[index].neighbours.push_back(index + W*H - W);  //19
+//				cells[index].neighbours.push_back(index + W*H - W - 1); //18
+//				cells[index].neighbours.push_back(index + W*H + W);  //27
+//				cells[index].neighbours.push_back(index + W*H + W - 1); //26
+//			}
+//			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ //Right side (23)
+//				cells[index].neighbours.push_back(index - 1);          //22
+//				cells[index].neighbours.push_back(index + W);          //27
+//				cells[index].neighbours.push_back(index + W - 1);        //26
+//				cells[index].neighbours.push_back(index - W);          //20
+//				cells[index].neighbours.push_back(index - W - 1);        //19
+//				cells[index].neighbours.push_back(index + W*H);          //39
+//				cells[index].neighbours.push_back(index + W*H - 1);        //38
+//				cells[index].neighbours.push_back(index + W*H + W);        //43
+//				cells[index].neighbours.push_back(index + W*H + W - 1);      //42
+//				cells[index].neighbours.push_back(index + W*H - W);        //35
+//				cells[index].neighbours.push_back(index + W*H - W - 1);      //34
+//				cells[index].neighbours.push_back(index - W*H);          //7
+//				cells[index].neighbours.push_back(index - W*H - 1);        //6
+//				cells[index].neighbours.push_back(index - W*H + W);        //11
+//				cells[index].neighbours.push_back(index - W*H + W - 1);      //10
+//				cells[index].neighbours.push_back(index - W*H - W);        //3
+//				cells[index].neighbours.push_back(index - W*H - W - 1);      //2
+//			}
+//		}
+//		break;
+//	default:
+//		if (x > 0 && x < W - 1 && y > 0 && y < H - 1 && z > 0 && z < L - 1){ //(21) //Centralt
+//
+//			cells[index].neighbours.push_back(index - 1);          //20
+//			cells[index].neighbours.push_back(index + 1);          //22
+//			cells[index].neighbours.push_back(index + W);          //25
+//			cells[index].neighbours.push_back(index + W - 1);        //24
+//			cells[index].neighbours.push_back(index + W + 1);        //26
+//			cells[index].neighbours.push_back(index - W);          //17
+//			cells[index].neighbours.push_back(index - W - 1);        //16
+//			cells[index].neighbours.push_back(index - W + 1);        //18
+//
+//			cells[index].neighbours.push_back(index - W*H);          //5
+//			cells[index].neighbours.push_back(index - W*H - 1);        //4
+//			cells[index].neighbours.push_back(index - W*H + 1);        //6
+//			cells[index].neighbours.push_back(index - W*H - W);        //1
+//			cells[index].neighbours.push_back(index - W*H - W - 1);      //0
+//			cells[index].neighbours.push_back(index - W*H - W + 1);      //2
+//			cells[index].neighbours.push_back(index - W*H + W);        //9
+//			cells[index].neighbours.push_back(index - W*H + W - 1);      //8
+//			cells[index].neighbours.push_back(index - W*H + W + 1);      //10
+//
+//			cells[index].neighbours.push_back(index + W*H);          //37
+//			cells[index].neighbours.push_back(index + W*H - 1);        //36
+//			cells[index].neighbours.push_back(index + W*H + 1);        //38
+//			cells[index].neighbours.push_back(index + W*H - W);        //33
+//			cells[index].neighbours.push_back(index + W*H - W - 1);      //32
+//			cells[index].neighbours.push_back(index + W*H - W + 1);      //34
+//			cells[index].neighbours.push_back(index + W*H + W);        //41
+//			cells[index].neighbours.push_back(index + W*H + W - 1);      //40
+//			cells[index].neighbours.push_back(index + W*H + W + 1);      //42
+//		}
+//		else if (y == H - 1 && x > 0 && x < W - 1 && z > 0 && z < L - 1){ //(29) Bottenplatta
+//
+//			cells[index].neighbours.push_back(index - 1);          //28
+//			cells[index].neighbours.push_back(index + 1);          //30
+//			cells[index].neighbours.push_back(index - W);          //25
+//			cells[index].neighbours.push_back(index - W - 1);        //24
+//			cells[index].neighbours.push_back(index - W + 1);        //26
+//
+//			cells[index].neighbours.push_back(index - W*H);          //13
+//			cells[index].neighbours.push_back(index - W*H - 1);        //12
+//			cells[index].neighbours.push_back(index - W*H + 1);        //14
+//			cells[index].neighbours.push_back(index - W*H - W);        //9
+//			cells[index].neighbours.push_back(index - W*H - W - 1);      //8
+//			cells[index].neighbours.push_back(index - W*H - W + 1);      //10
+//
+//			cells[index].neighbours.push_back(index + W*H);          //45
+//			cells[index].neighbours.push_back(index + W*H - 1);        //44
+//			cells[index].neighbours.push_back(index + W*H + 1);        //46
+//			cells[index].neighbours.push_back(index + W*H - W);        //41
+//			cells[index].neighbours.push_back(index + W*H - W - 1);      //40
+//			cells[index].neighbours.push_back(index + W*H - W + 1);      //42
+//
+//		}
+//		else if (y == 0 && x < W - 1 && z > 0 && z < L - 1){  //(17) Topplatta
+//
+//			cells[index].neighbours.push_back(index - 1);          //16
+//			cells[index].neighbours.push_back(index + 1);          //18
+//			cells[index].neighbours.push_back(index + W);          //21
+//			cells[index].neighbours.push_back(index + W - 1);        //20
+//			cells[index].neighbours.push_back(index + W + 1);        //22
+//
+//			cells[index].neighbours.push_back(index + W*H);          //33
+//			cells[index].neighbours.push_back(index + W*H - 1);        //32
+//			cells[index].neighbours.push_back(index + W*H + 1);        //34
+//			cells[index].neighbours.push_back(index + W*H + W);        //37
+//			cells[index].neighbours.push_back(index + W*H + W - 1);      //36
+//			cells[index].neighbours.push_back(index + W*H + W + 1);      //38
+//
+//			cells[index].neighbours.push_back(index - W*H);          //1
+//			cells[index].neighbours.push_back(index - W*H - 1);        //0
+//			cells[index].neighbours.push_back(index - W*H + 1);        //2
+//			cells[index].neighbours.push_back(index - W*H + W);        //5
+//			cells[index].neighbours.push_back(index - W*H + W - 1);      //4
+//			cells[index].neighbours.push_back(index - W*H + W + 1);      //6
+//
+//		}
+//		else if (z == 0 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(5) Bortaplatta
+//
+//			cells[index].neighbours.push_back(index - 1);          //4
+//			cells[index].neighbours.push_back(index + 1);          //6
+//			cells[index].neighbours.push_back(index + W);          //9
+//			cells[index].neighbours.push_back(index + W - 1);        //8
+//			cells[index].neighbours.push_back(index + W + 1);        //10
+//			cells[index].neighbours.push_back(index - W);          //1
+//			cells[index].neighbours.push_back(index - W - 1);        //0
+//			cells[index].neighbours.push_back(index - W + 1);        //2
+//
+//			cells[index].neighbours.push_back(index + W*H);          //21
+//			cells[index].neighbours.push_back(index + W*H - 1);        //20
+//			cells[index].neighbours.push_back(index + W*H + 1);        //22
+//			cells[index].neighbours.push_back(index + W*H + W);        //25
+//			cells[index].neighbours.push_back(index + W*H + W - 1);      //24
+//			cells[index].neighbours.push_back(index + W*H + W + 1);      //26
+//			cells[index].neighbours.push_back(index + W*H - W);        //17
+//			cells[index].neighbours.push_back(index + W*H - W - 1);      //16
+//			cells[index].neighbours.push_back(index + W*H - W + 1);      //18
+//
+//		}
+//		else if (z == L - 1 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(53) //Motplattan
+//
+//			cells[index].neighbours.push_back(index - 1);          //52
+//			cells[index].neighbours.push_back(index + 1);          //54
+//			cells[index].neighbours.push_back(index + W);          //57
+//			cells[index].neighbours.push_back(index + W - 1);        //56
+//			cells[index].neighbours.push_back(index + W + 1);        //58
+//
+//			cells[index].neighbours.push_back(index - W);          //49
+//			cells[index].neighbours.push_back(index - W - 1);        //48
+//			cells[index].neighbours.push_back(index - W + 1);        //50
+//
+//			cells[index].neighbours.push_back(index - W*H);          //37
+//			cells[index].neighbours.push_back(index - W*H - 1);        //36
+//			cells[index].neighbours.push_back(index - W*H + 1);        //38
+//
+//			cells[index].neighbours.push_back(index - W*H - W);        //33
+//			cells[index].neighbours.push_back(index - W*H - W - 1);      //32
+//			cells[index].neighbours.push_back(index - W*H - W + 1);      //34
+//
+//			cells[index].neighbours.push_back(index - W*H + W);        //41
+//			cells[index].neighbours.push_back(index - W*H + W - 1);      //40
+//			cells[index].neighbours.push_back(index - W*H + W + 1);      //42
+//		}
+//		else if (y == H - 1 && z == 0 && x > 0 && x < W - 1){     //(13)
+//
+//			cells[index].neighbours.push_back(index - 1);          //12
+//			cells[index].neighbours.push_back(index + 1);          //14
+//			cells[index].neighbours.push_back(index - W);          //9
+//			cells[index].neighbours.push_back(index - W - 1);        //8
+//			cells[index].neighbours.push_back(index - W + 1);        //10
+//
+//			cells[index].neighbours.push_back(index + W*H);          //29
+//			cells[index].neighbours.push_back(index + W*H - 1);        //28
+//			cells[index].neighbours.push_back(index + W*H + 1);        //30
+//
+//			cells[index].neighbours.push_back(index + W*H - W);        //25
+//			cells[index].neighbours.push_back(index + W*H - W - 1);      //24
+//			cells[index].neighbours.push_back(index + W*H - W + 1);      //26
+//		}
+//		else if (y == H - 1 && z == L - 1 && x > 0 && x < W - 1){     //(61)
+//
+//			cells[index].neighbours.push_back(index - 1);          //60
+//			cells[index].neighbours.push_back(index + 1);          //62
+//
+//			cells[index].neighbours.push_back(index - W);          //57
+//			cells[index].neighbours.push_back(index - W - 1);        //56
+//			cells[index].neighbours.push_back(index - W + 1);        //58
+//
+//			cells[index].neighbours.push_back(index - W*H);          //45
+//			cells[index].neighbours.push_back(index - W*H - 1);        //44
+//			cells[index].neighbours.push_back(index - W*H + 1);        //46
+//
+//			cells[index].neighbours.push_back(index - W*H - W);        //41
+//			cells[index].neighbours.push_back(index - W*H - W - 1);      //40
+//			cells[index].neighbours.push_back(index - W*H - W + 1);      //42
+//		}
+//		else if (z == L - 1 && y == 0 && x > 0 && x < W - 1){     //(49)
+//
+//			cells[index].neighbours.push_back(index - 1);          //48
+//			cells[index].neighbours.push_back(index + 1);          //50
+//
+//			cells[index].neighbours.push_back(index + W);          //53
+//			cells[index].neighbours.push_back(index + W - 1);        //52
+//			cells[index].neighbours.push_back(index + W + 1);        //54
+//
+//			cells[index].neighbours.push_back(index - W*H);          //33
+//			cells[index].neighbours.push_back(index - W*H - 1);        //32
+//			cells[index].neighbours.push_back(index - W*H + 1);        //34
+//
+//			cells[index].neighbours.push_back(index - W*H + W);        //37
+//			cells[index].neighbours.push_back(index - W*H + W - 1);      //36
+//			cells[index].neighbours.push_back(index + W*H + W + 1);      //38
+//		}
+//		else if (z == 0 && y == 0 && x > 0 && x < W - 1){     //(1)
+//
+//			cells[index].neighbours.push_back(index - 1);          //0
+//			cells[index].neighbours.push_back(index + 1);          //2
+//
+//			cells[index].neighbours.push_back(index + W);          //5
+//			cells[index].neighbours.push_back(index + W - 1);        //4
+//			cells[index].neighbours.push_back(index + W + 1);        //6
+//
+//			cells[index].neighbours.push_back(index + W*H);          //17
+//			cells[index].neighbours.push_back(index + W*H - 1);        //16
+//			cells[index].neighbours.push_back(index + W*H + 1);        //18
+//
+//			cells[index].neighbours.push_back(index + W*H + W);        //21
+//			cells[index].neighbours.push_back(index + W*H + W - 1);      //20
+//			cells[index].neighbours.push_back(index + W*H + W + 1);      //22
+//		}
+//		break;
+//	}
+//}
 
 const char* TranslateOpenCLError(cl_int errorCode)
 {
@@ -901,6 +1356,7 @@ struct ocl_args_d_t
     cl_kernel        kernel;            // hold the kernel handler
 	cl_kernel		 kernel2;
 	cl_kernel		 kernel3;
+	cl_kernel		 kernel4;
     float            platformVersion;   // hold the OpenCL platform version (default 1.2)
     float            deviceVersion;     // hold the OpenCL device version (default. 1.2)
     float            compilerVersion;   // hold the device OpenCL C version (default. 1.2)
@@ -913,6 +1369,7 @@ struct ocl_args_d_t
 	cl_mem			 gravity_force_b;
 	cl_mem			 pressure_b;
 	cl_mem			 density_b;
+	cl_mem			 cells_b;
 };
 
 ocl_args_d_t::ocl_args_d_t():
@@ -923,6 +1380,7 @@ ocl_args_d_t::ocl_args_d_t():
         kernel(NULL),
 		kernel2(NULL),
 		kernel3(NULL),
+		kernel4(NULL),
         platformVersion(OPENCL_VERSION_1_2),
         deviceVersion(OPENCL_VERSION_1_2),
         compilerVersion(OPENCL_VERSION_1_2),
@@ -932,7 +1390,8 @@ ocl_args_d_t::ocl_args_d_t():
 		viscosity_force_b(NULL),
 		gravity_force_b(NULL),
         pressure_b(NULL),
-		density_b(NULL)
+		density_b(NULL),
+		cells_b(NULL)
 {
 }
 
@@ -975,6 +1434,15 @@ ocl_args_d_t::~ocl_args_d_t()
 			LogError("Error: clReleaseKernel returned '%s'.\n", TranslateOpenCLError(err));
 		}
 	}
+	if (kernel4)
+	{
+		err = clReleaseKernel(kernel4);
+		if (CL_SUCCESS != err)
+		{
+			LogError("Error: clReleaseKernel returned '%s'.\n", TranslateOpenCLError(err));
+		}
+	}
+
     if (program)
     {
         err = clReleaseProgram(program);
@@ -1034,6 +1502,14 @@ ocl_args_d_t::~ocl_args_d_t()
 	if (density_b)
 	{
 		err = clReleaseMemObject(density_b);
+		if (CL_SUCCESS != err)
+		{
+			LogError("Error: clReleaseMemObject returned '%s'.\n", TranslateOpenCLError(err));
+		}
+	}
+	if (cells_b)
+	{
+		err = clReleaseMemObject(cells_b);
 		if (CL_SUCCESS != err)
 		{
 			LogError("Error: clReleaseMemObject returned '%s'.\n", TranslateOpenCLError(err));
@@ -1500,7 +1976,7 @@ Finish:
 int CreateBufferArguments(ocl_args_d_t *ocl, vec4* particle_pos, vec4* particle_vel, vec4* particle_visc_f,
 	vec4* particle_press_f, vec4* particle_grav_f,
 	float* particle_pressure,
-	cl_float* particle_density)
+	cl_float* particle_density, Cell* cells)
 {
     cl_int err = CL_SUCCESS;
 
@@ -1559,6 +2035,13 @@ int CreateBufferArguments(ocl_args_d_t *ocl, vec4* particle_pos, vec4* particle_
 		return err;
 	}
 
+	ocl->cells_b = clCreateBuffer(ocl->context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, sizeof(Cell) * NUM_CELLS, cells , &err);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clCreateBuffer for cells_b returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
 
     return CL_SUCCESS;
 }
@@ -1593,7 +2076,13 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 		LogError("error: Failed to set argument pos_b, returned %s\n", TranslateOpenCLError(err));
 		return err;
 	}
-
+	////Position Arg setCellParticles Kernel
+	err = clSetKernelArg(ocl->kernel4, 0, sizeof(cl_mem), (void *)&ocl->pos_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("error: Failed to set argument pos_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
 	////Velocity Arg
     err  = clSetKernelArg(ocl->kernel, 1, sizeof(cl_mem), (void *)&ocl->vel_b);
     if (CL_SUCCESS != err)
@@ -1613,6 +2102,13 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 	if (CL_SUCCESS != err)
 	{
 		LogError("Error: Failed to set argument vel_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	//setCellParticles Arg kernel
+	err = clSetKernelArg(ocl->kernel4, 1, sizeof(cl_mem), (void *)&ocl->cells_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument cells_b, returned %s\n", TranslateOpenCLError(err));
 		return err;
 	}
 
@@ -1727,9 +2223,49 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 		return err;
 	}
 
+	//Cell Arg kernel
+	err = clSetKernelArg(ocl->kernel, 7, sizeof(cl_mem), (void *)&ocl->cells_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument cells_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
     return err;
 }
 
+cl_uint ExecuteSetCellParticlesKernel(ocl_args_d_t *ocl)
+{
+	cl_int err = CL_SUCCESS;
+
+	// Define global iteration space for clEnqueueNDRangeKernel.
+	size_t globalWorkSize[1] = { BEGIN_PARTICLES + ADDED_PARTICLES };
+
+
+	// execute kernel
+	err = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernel4, 1, NULL, globalWorkSize, NULL, 0, NULL, NULL);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to run kernel, return %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
+	// Wait until the queued kernel is completed by the device
+	err = clFinish(ocl->commandQueue);
+
+
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clFinish return %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	/*else
+	{
+	std::cout << "FINISHED KERNEL EXECUTE SUCCESS" << std::endl;
+	}
+	*/
+	return CL_SUCCESS;
+}
 
 /*
  * Execute the Density and Pressure kernel
@@ -1855,7 +2391,7 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
 	vec4 *resultParticle_grav_f = (vec4*)clEnqueueMapBuffer(ocl->commandQueue, ocl->gravity_force_b, true, CL_MAP_READ, 0, sizeof(vec4) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	cl_float *resultParticle_pressure = (cl_float*)clEnqueueMapBuffer(ocl->commandQueue, ocl->pressure_b, true, CL_MAP_READ, 0, sizeof(cl_float) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	cl_float *resultParticle_density = (cl_float*)clEnqueueMapBuffer(ocl->commandQueue, ocl->density_b, true, CL_MAP_READ, 0, sizeof(cl_float) * NUM_PARTICLES, 0, NULL, NULL, &err);
-
+	Cell* resultCell = (Cell*)clEnqueueMapBuffer(ocl->commandQueue, ocl->cells_b, true, CL_MAP_READ, 0, sizeof(Cell) * NUM_PARTICLES, 0, NULL, NULL, &err);
 
 
 	particle_pos = resultParticle_pos;
@@ -1927,6 +2463,15 @@ int executeOnGPU(ocl_args_d_t *ocl){
 	// clEnqueueNDRangeKernel is just enqueue new command in OpenCL command queue and doesn't wait until it ends.
 	// clFinish waits until all commands in command queue are finished, that suits your need to measure time.
 
+	//EXECUTE SetCellParticles KERNEL
+	// Execute (enqueue) the kernel
+	if (CL_SUCCESS != ExecuteSetCellParticlesKernel(ocl))
+	{
+		return -1;
+	}
+	//Get values from Dens and pressure kernel
+	ReadAndVerify(ocl);
+
 	//EXECUTE DENSITY AND PRESSURE KERNEL
 	// Execute (enqueue) the kernel
 	if (CL_SUCCESS != ExecuteDensAndPressKernel(ocl))
@@ -1979,6 +2524,8 @@ int _tmain(int argc, TCHAR* argv[])
     LARGE_INTEGER performanceCountNDRangeStart;
     LARGE_INTEGER performanceCountNDRangeStop;
 
+	
+
 
     //initialize Open CL objects (context, queue, etc.)
     if (CL_SUCCESS != SetupOpenCL(&ocl, deviceType))
@@ -1996,6 +2543,10 @@ int _tmain(int argc, TCHAR* argv[])
 	particle_grav_f = (vec4*)_aligned_malloc(optimizedSize, 4096);
 	particle_density = (cl_float*)_aligned_malloc(optimizedSize, 4096);
 	particle_pressure = (cl_float*)_aligned_malloc(optimizedSize, 4096);
+	float optimizedSizeCell = ((sizeof(Cell) * NUM_CELLS - 1) / 64 + 1) * 64;
+	cells = (Cell*)_aligned_malloc(optimizedSizeCell, 4096);
+
+	
 	/*
     if (NULL == particle_pos || NULL == particle_vel)
     {
@@ -2009,7 +2560,7 @@ int _tmain(int argc, TCHAR* argv[])
 
     // Create OpenCL buffers from host memory
     // These buffers will be used later by the OpenCL kernel
-    if (CL_SUCCESS != CreateBufferArguments(&ocl, particle_pos, particle_vel, particle_visc_f, particle_press_f, particle_grav_f ,particle_pressure, particle_density))
+    if (CL_SUCCESS != CreateBufferArguments(&ocl, particle_pos, particle_vel, particle_visc_f, particle_press_f, particle_grav_f ,particle_pressure, particle_density, cells))
     {
         return -1;
     }
@@ -2042,12 +2593,25 @@ int _tmain(int argc, TCHAR* argv[])
 		return -1;
 	}
 
+	ocl.kernel4 = clCreateKernel(ocl.program, "setCellParticles", &err);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clCreateKernel returned %s\n", TranslateOpenCLError(err));
+		return -1;
+	}
+
     // Passing arguments into OpenCL kernel.
     if (CL_SUCCESS != SetKernelArguments(&ocl))
     {
         return -1;
     }
-	
+
+	initNeighbours();
+	////Set Neighbours
+	//for (int i = 0; i < NUM_CELLS; i++){
+	//	std::cout << "HEEEL O" << std::endl;
+	//	setNeighbours(i);
+	//}
 	//Execute Kernels on GPU
 	executeOnGPU(&ocl);
 	
@@ -2060,25 +2624,25 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 	//DEFAULT CAMERA ROTATE and TRANSLATE
-	glMatrixMode(GL_MODELVIEW);
-	float angle = 0.0;
-	angle += 360. / 10.;
+	//glMatrixMode(GL_MODELVIEW);
+	//float angle = 0.0;
+	//angle += 360. / 10.;
 
-	// set camera parameters
-	GLdouble eyeX = .5*cos(angle);
-	GLdouble eyeY = .5*sin(angle);
-	GLdouble eyeZ = 0.;
-	GLdouble centerX = 128.f;
-	GLdouble centerY = 128.f;
-	GLdouble centerZ = 128.f;
-	GLdouble upX = 0.;
-	GLdouble upY = 1.;
-	GLdouble upZ = 0.;
+	//// set camera parameters
+	//GLdouble eyeX = .5*cos(angle);
+	//GLdouble eyeY = .5*sin(angle);
+	//GLdouble eyeZ = 0.;
+	//GLdouble centerX = 128.f;
+	//GLdouble centerY = 128.f;
+	//GLdouble centerZ = 128.f;
+	//GLdouble upX = 0.;
+	//GLdouble upY = 1.;
+	//GLdouble upZ = 0.;
 
-	gluLookAt(eyeX, eyeY, eyeZ,
-		centerX, centerY, centerZ,
-		upX, upY, upZ);
-	glTranslatef(-256.f, 128.f, 0);
+	//gluLookAt(eyeX, eyeY, eyeZ,
+	//	centerX, centerY, centerZ,
+	//	upX, upY, upZ);
+	//glTranslatef(-256.f, 128.f, 0);
 
 	while (!glfwWindowShouldClose(window)){
 
@@ -2093,8 +2657,8 @@ int _tmain(int argc, TCHAR* argv[])
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//For transparency
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/*glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -2114,10 +2678,10 @@ int _tmain(int argc, TCHAR* argv[])
 		executeOnGPU(&ocl);
 		//END GPU STUFF
 		//drawParticles();
-		drawCubeParticles();
+		//drawCubeParticles();
 		drawParticlesContainer();
 		//drawSphereParticles();
-		//drawBetaBalls();
+		drawBetaBalls();
 
 		//Swap front and back buffers
 		glfwSetWindowSizeCallback(window, reshape_window);
@@ -2140,6 +2704,7 @@ int _tmain(int argc, TCHAR* argv[])
 	_aligned_free(particle_grav_f);
 	_aligned_free(particle_density);
 	_aligned_free(particle_pressure);
+	_aligned_free(cells);
 
     return 0;
 }
