@@ -14,8 +14,8 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 500;
-const int KERNEL_LIMIT = 130;
+const int NUM_PARTICLES = 1;
+const int KERNEL_LIMIT = 150;
 
 const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.14f;
@@ -23,7 +23,9 @@ const double h = 16.f;
 const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
 
-bool user_running = false;
+int containerWidth = 1;
+
+bool user_running = false, show_grid = false, pressed = false;
 
 GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
@@ -31,6 +33,7 @@ GLfloat model[16];
 
 //Particle particles[NUM_PARTICLES];
 std::vector<Particle> particles;
+Box box = Box();
 
 Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH];
 
@@ -328,16 +331,57 @@ void handleInputs(){
     //GENERAL INPUT
     
     // Init particle system
-    if (glfwGetKey(window, GLFW_KEY_G)) {
+    if (glfwGetKey(window, GLFW_KEY_R)) {
         user_running = true;
     }
     
+    // Toggle grid
+    if (glfwGetKey(window, GLFW_KEY_G) ) {
+        
+        if (!pressed){
+            pressed = true;
+        	!show_grid ? show_grid = true : show_grid = false;
+        }
+        
+    } else {
+    	if (pressed) {
+            pressed = false;
+        }
+    }
+        
+    
+
      // Add particles
     if (glfwGetKey(window, GLFW_KEY_H)) {
         
         if(user_running)
         	addNewParticles();
     }
+    
+    // Change width of container
+    if (glfwGetKey(window, GLFW_KEY_T)) {
+        
+        containerWidth = 3;
+        Particle::maxX = 512;
+        
+    }
+    
+    // Change width of container
+    if (glfwGetKey(window, GLFW_KEY_Y)) {
+        
+        containerWidth = 0.5;
+        Particle::maxX = 128;
+    
+    }
+    
+    // Change width of container
+    if (glfwGetKey(window, GLFW_KEY_U)) {
+        
+        containerWidth = 1;
+        Particle::maxX = 256;
+        
+    }
+    
     
     //CAMERA CONTROLS
 	if (glfwGetKey(window, GLFW_KEY_D)) {
@@ -394,30 +438,29 @@ void drawParticlesContainer(){
     //The Borders
     glPushMatrix();
     glBegin(GL_LINES);
-    glColor3f(1.f, 1.f, 1.f);
     //Top
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, 1.0f*containerSize, 1.0f*containerSize);
     //Bottom
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     
     //Front
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
     
     //BACK
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
@@ -430,23 +473,25 @@ void drawParticlesContainer(){
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     
     // Right
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(1.0f*containerWidth*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     
     glEnd();
     glPopMatrix();
     
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
     
-   /* GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
-    GLfloat red[] = {1.0, 0.6, 0.2, 1.0};
-    GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
+    //GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+    //GLfloat red[] = {1.0, 0.6, 0.2, 1.0};
+    GLfloat white[] = {0.7, 0.7, 0.7, 1.0};
     glMaterialfv(GL_FRONT, GL_AMBIENT, white);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
     glMaterialfv(GL_FRONT, GL_SPECULAR, white);
-    glMaterialf(GL_FRONT, GL_SHININESS, 60.0);*/
+    glMaterialf(GL_FRONT, GL_SHININESS, 30.0);
+    
+    glDisable(GL_LIGHTING);
     
     //For transparency
     glEnable(GL_BLEND);
@@ -456,30 +501,30 @@ void drawParticlesContainer(){
     glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
     // Top face (y = 1.0f)
     // Define vertices in counter-clockwise (CCW) order with normal pointing out
-    glColor4f(.7f, .2f, .2f, 0.2f);     // Green
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glColor4f(.7f, .1f, .1f, .1f);     // Green
+    glVertex3f(containerWidth*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, 1.0f*containerSize, 1.0f*containerSize);
     
     
     // Bottom face (y = -1.0f*containerSize)
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     
     // Front face  (z = 1.0f*containerSize)
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, 1.0f*containerSize, 1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     
     // Back face (z = -1.0f*containerSize)
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, 1.0f*containerSize, -1.0f*containerSize);
     
     // Left face (x = -1.0f*containerSize)
     glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
@@ -488,10 +533,10 @@ void drawParticlesContainer(){
     glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
     
     // Right face (x = 1.0f*containerSize)
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
-    glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, 1.0f*containerSize, -1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, 1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, -1.0f*containerSize, 1.0f*containerSize);
+    glVertex3f(containerWidth*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     glEnd();  // End of drawing color-cube
     glPopMatrix();
     
@@ -558,7 +603,7 @@ int main(int argc, char *argv[])
     glfwInit();
     initParticles();
     
-    window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
+    window = glfwCreateWindow(1024, 1024, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 	glTranslatef(512.f, 512.f, 0.0f);
@@ -601,7 +646,8 @@ int main(int argc, char *argv[])
         glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-     
+        //glEnable(GL_DEPTH_TEST);
+        
 		glMatrixMode(GL_PROJECTION);
 
         glLoadIdentity();
@@ -618,15 +664,16 @@ int main(int argc, char *argv[])
         calculateNewGravityVec();
         //drawCoordinateAxes();
         //drawPlane();
-        //box.DrawBox();
-        
         drawParticlesContainer();
         
-        
         if(user_running){
-			
 			calculateAcceleration();
         	idle();
+        }
+        
+        if(show_grid){
+        
+            box.DrawBox();
             
         }
         

@@ -6,10 +6,14 @@
 #include "Sphere.cpp"
 
 using namespace glm;
+
 //const float dt = 1.f;
+
 bool first = true;
 const float dt = 0.0004f;
 const float particleSize = 3.5f;
+
+int Particle::maxX = 256;
 
 // Constructor for a particle.
 void Particle::CreateParticle()
@@ -25,25 +29,31 @@ void Particle::CreateParticle()
     gravity_force = glm::vec3(0);
 }
 
+
 //Evolves the particle parameters over time.
 //This method changes the vertical and horizontal position of the particle
 void Particle::EvolveParticle()
 {
+    
+    std::cout << density << std::endl;
+    
     glm::vec3 newPos = pos + dt*vel + dt*dt*((gravity_force + pressure_force + viscousity_force)/density)/2.f;
 	glm::vec3 newVel = (newPos - pos) / dt;
 
     pos = newPos;
     vel = newVel;
     
+    ///std::cout << x_bound;
+    
     if(pos.x < 1){        
         vel.x = -0.8*vel.x;
         pos.x = 1;
     }
     
-    else if(pos.x > 256){
+    else if(pos.x > maxX){
 
         vel.x = -0.8*vel.x;
-        pos.x = 256;
+        pos.x = maxX;
     }
     
     if(pos.y < 1){
@@ -78,7 +88,7 @@ void Particle::DrawObjects() {
     Sphere sphere(16/3, 6, 12);
     sphere.draw(pos[0], pos[1], pos[2]);*/
     
-    GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+    //GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
     GLfloat blue[] = {0.2, 0.6, 1.0, 1.0};
     GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
     glMaterialfv(GL_FRONT, GL_AMBIENT, blue);
@@ -150,7 +160,7 @@ const glm::vec3 Particle::getVelocity(){
 
 int Particle::getCellIndex() {
 	glm::vec3 cell = glm::vec3(glm::floor(pos[0] / 512.f * (512 / 32)), glm::floor(pos[1] / 512.f * (512 / 32)), glm::floor(pos[2] / 512.f * (512 / 32)));
-    int _cellIndex = (int)cell.x % 32 + (int)cell.y % 32 + (int)cell.z * 32;
+    int _cellIndex = (int)cell.x + (int)cell.y * 32 + (int)cell.z * 32 * 32;
 	
     //std::cout << _cellIndex << std::endl;
     

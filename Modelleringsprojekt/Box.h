@@ -16,6 +16,9 @@ private:
 	int lastFrameTime;
 	
 public:
+    
+    static int maxX;
+    
 	Box();
 	void MoveBox();
 	void RotateBox();
