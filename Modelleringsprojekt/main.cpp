@@ -386,11 +386,7 @@ void drawParticlesContainer(){
     
     
     float containerSize = 256.f / 2;
-    
-    //For transparency
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+
     glPushMatrix();
     //Move cube to right coordinates
     glTranslatef(containerSize, containerSize, containerSize);
@@ -442,6 +438,20 @@ void drawParticlesContainer(){
     glEnd();
     glPopMatrix();
     
+	glDisable(GL_LIGHTING);
+    
+   /* GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+    GLfloat red[] = {1.0, 0.6, 0.2, 1.0};
+    GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
+    glMaterialfv(GL_FRONT, GL_AMBIENT, white);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+    glMaterialf(GL_FRONT, GL_SHININESS, 60.0);*/
+    
+    //For transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     //The Walls
     glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
     // Top face (y = 1.0f)
@@ -484,6 +494,8 @@ void drawParticlesContainer(){
     glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
     glEnd();  // End of drawing color-cube
     glPopMatrix();
+    
+    glEnable(GL_LIGHTING);
 }
 
 void drawCoordinateAxes(){
@@ -519,8 +531,6 @@ void calculateNewGravityVec(){
 }
 
 void drawPlane(){
-
-	
 	
     glColor4f(0.8f, 0.8f, 0.8f, 1.f);
     glPushMatrix();
@@ -554,6 +564,31 @@ int main(int argc, char *argv[])
 	glTranslatef(512.f, 512.f, 0.0f);
 
 	bool running = true;
+    
+    // Lightning set up
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+    glShadeModel(GL_FLAT);
+    
+    // St lightning internsity and color
+    GLfloat ambient[]={0.2, 0.2, 0.2, 1.0};
+    GLfloat diffuse[]={0.8, 0.8, 0.8, 1.0};
+    GLfloat specular[] = {1.0, 1.0, 1.0, 1.0};
+    
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+    
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, specular);
+    
+    GLfloat pos[]={512.0, 512.0, 512.0, 1.0};
+    GLfloat pos1[]={-512.0, -512.0, -512.0, 1.0};
+    glLightfv(GL_LIGHT0, GL_POSITION, pos);
+    glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 
     while(!glfwWindowShouldClose(window) && running){
 
@@ -563,23 +598,22 @@ int main(int argc, char *argv[])
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float) height;
         
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
      
 		glMatrixMode(GL_PROJECTION);
 
         glLoadIdentity();
         
-		glOrtho(0.0, 1024.0, 0.0, 1024.0, -1024.0, 1024);
+		glOrtho(0.0, 1024.0, 0.0, 1024.0, 1024.0, -1024.0);
 
 		handleInputs();
         
         //std::cout << particles.size();
-        
-        
 
         // Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
-        
         
         calculateNewGravityVec();
         //drawCoordinateAxes();
