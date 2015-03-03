@@ -20,11 +20,39 @@
  * problem reports or change requests be submitted to it directly
  *****************************************************************************/
 
+typedef struct{
+	int neighbours[30];
+	float4 positions[1000];
+	int nrOfParticles;
+} Cell;
+
+int getCellIndex(float4 pos) {
+	float4 cell = (float4)(floor(pos.x / 512.f * (512 / 32)), floor(pos.y / 512.f * (512 / 32)), floor(pos.z / 512.f * (512 / 32)), 0);
+	int _cellIndex = (int)cell.x % 32 + (int)cell.y % 32 + (int)cell.z * 32;
+
+	//std::cout << _cellIndex << std::endl;
+
+	return _cellIndex;
+}
+
+
+__kernel void setCellParticles(__global float4* position,__global Cell *cell)
+{
+	const int id = get_global_id(0);
+	const int NUM_PARTICLES = get_global_size(0);
+
+	int cellInd = getCellIndex(position[id]);
+	//Insert position/particle of particle in given Cell
+	cell[cellInd].positions[cell[cellInd].nrOfParticles] = position[id];
+	cell[cellInd].nrOfParticles++;
+	//printf("NR OF PARTICLES IN CELL %i \n", cell[cellInd].nrOfParticles++);
+
+}
 
 //, __global float* velocity, __global float* viscosity_f, __global float* pressure_f,__global float* pressure,__global float* density)
 __kernel void calculateDensityAndPressure(__global float4* position, __global float4* velocity,
 	__global float4* viscosity_f, __global float4* pressure_f, __global float4* gravity_f,
-	__global float* pressure, __global float* density)
+	__global float* pressure, __global float* density, __global Cell *cell)
 {
 	const int id = get_global_id(0);
 	const int NUM_PARTICLES = get_global_size(0);
@@ -34,6 +62,11 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 	const float h = 16.f;
 	const float STIFFNESS = 500 * 3.f;
 	const float GRAVITY_CONST = 80000 * 9.82f;
+
+	int cellindex = getCellIndex(position[id]);
+
+	int neighbours = cell[cellindex].neighbours;
+	//printf("cellindex %i \n", cellindex);
 
 	float density_sum = 0;
 
@@ -81,7 +114,7 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 	const float PARTICLE_MASS = 500 * .14f;
 	const float h = 16.f;
 	const float STIFFNESS = 500 * 3.f;
-	const float GRAVITY_CONST = 50000 * 9.82f;
+	const float GRAVITY_CONST = 80000 * 9.82f;
 
 	//NOW CALCULATE FORCES 
 	float4 gravityforce = (float4)(0, -GRAVITY_CONST * density[id], 0, 0);  //(float4)(gravity_f[id].x * density[id], gravity_f[id].y * density[id], gravity_f[id].z * density[id], 0);
@@ -192,3 +225,5 @@ __kernel void moveParticles(__global float4* position, __global float4* velocity
 
 
 }
+
+
