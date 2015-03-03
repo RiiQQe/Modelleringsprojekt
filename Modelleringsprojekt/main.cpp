@@ -824,442 +824,439 @@ void idle()
 void initNeighbours(){
 
 	for (int i = 0; i < NUM_CELLS; i++){
-		std::cout << "INIT PARTICLES" << cells[i].neighbours[1] << std::endl;
+		//std::cout << "INIT PARTICLES" << cells[i].neighbours[1] << std::endl;
 		cells[i].neighbours;
 	}
 }
-//void setNeighbours(int index) {
-//	
-//	cells[index].neighbours.push_back(index);
-//	std::cout << "SETNEIGHBOUR Function" << std::endl;
-//	int x = index % W;
-//	int y = (int)((index / W)) % H;
-//	int z = floor(index / (H * W));
-//
-//	switch (index % W) {
-//	case 0: //Left side
-//		if (index == 0) { //Top left front (3*3*3) (0)
-//			cells[index].neighbours.push_back(1);          // 1
-//			cells[index].neighbours.push_back(W);          // 3
-//			cells[index].neighbours.push_back(W + 1);        // 4
-//			cells[index].neighbours.push_back(W*H);          // 9
-//			cells[index].neighbours.push_back(W*H + 1);        // 10
-//			cells[index].neighbours.push_back(W*H + W);        // 12
-//			cells[index].neighbours.push_back(W*H + W + 1);      // 13
-//		}
-//		else if (index == H * (W - 1)) { // Down left front (6)
-//			cells[index].neighbours.push_back(index + 1);      // 7
-//			cells[index].neighbours.push_back(index - W);      // 3
-//			cells[index].neighbours.push_back(index - W + 1);    // 4
-//			cells[index].neighbours.push_back(index + W*H);      // 15
-//			cells[index].neighbours.push_back(index + W*H + 1);    // 16
-//			cells[index].neighbours.push_back(index + W*H - W);    // 12
-//			cells[index].neighbours.push_back(index + W*H - W + 1);  // 13
-//		}
-//		else if (index == L * H * (W - 1)) { // Top left back (18)
-//			cells[index].neighbours.push_back(index + 1);      // 19
-//			cells[index].neighbours.push_back(index + W);      // 21
-//			cells[index].neighbours.push_back(index + W + 1);    // 22 
-//			cells[index].neighbours.push_back(index - W*H);      // 9
-//			cells[index].neighbours.push_back(index - W*H + 1);    // 10
-//			cells[index].neighbours.push_back(index - W*H + W);    // 12
-//			cells[index].neighbours.push_back(index - W*H + W + 1);  // 13
-//		}
-//		else if (index == H * L * W - W){// Down left back (24)
-//			cells[index].neighbours.push_back(index + 1);      // 25
-//			cells[index].neighbours.push_back(index - W);      // 21
-//			cells[index].neighbours.push_back(index - W + 1);    // 22
-//			cells[index].neighbours.push_back(index - W*H);      // 15
-//			cells[index].neighbours.push_back(index - W*H + 1);    // 16
-//			cells[index].neighbours.push_back(index - W*H - W);    // 12
-//			cells[index].neighbours.push_back(index - W*H - W + 1);  // 13
-//		}
-//		else{       //4*4*4     
-//
-//			if (y == H - 1 && z < H - 1 && z > 0){  // (28)
-//
-//				cells[index].neighbours.push_back(index + 1);    // 29
-//				cells[index].neighbours.push_back(index - W);    // 24
-//				cells[index].neighbours.push_back(index - W + 1);  // 25
-//				cells[index].neighbours.push_back(index + W*H);    // 44
-//				cells[index].neighbours.push_back(index + W*H + 1);  // 45
-//				cells[index].neighbours.push_back(index + W*H - W);  // 40
-//				cells[index].neighbours.push_back(index + W*H - W + 1);//41
-//				cells[index].neighbours.push_back(index - W*H);    //12
-//				cells[index].neighbours.push_back(index - W*H + 1);  //13
-//				cells[index].neighbours.push_back(index - W*H - W);  //8
-//				cells[index].neighbours.push_back(index - W*H - W + 1); //9
-//			}
-//
-//			else if (y == 0 && z < H - 1 && z > 0){//(16)
-//				cells[index].neighbours.push_back(index + 1);    //17
-//				cells[index].neighbours.push_back(index + W);    //20
-//				cells[index].neighbours.push_back(index + W + 1);  //21
-//				cells[index].neighbours.push_back(index + W*H);    //32
-//				cells[index].neighbours.push_back(index + W*H + 1);  //33
-//				cells[index].neighbours.push_back(index + W*H + W);  //36
-//				cells[index].neighbours.push_back(index + W*H + W + 1); // 37
-//				cells[index].neighbours.push_back(index - W*H);    //0
-//				cells[index].neighbours.push_back(index - W*H + 1);  //1
-//				cells[index].neighbours.push_back(index - W*H + W);  //4
-//				cells[index].neighbours.push_back(index - W*H + W + 1); //5
-//			}
-//			else if (z == 0 && y > 0 && y < H - 1){// (4)
-//				cells[index].neighbours.push_back(index + 1);    //5
-//				cells[index].neighbours.push_back(index + W);    //8
-//				cells[index].neighbours.push_back(index + W + 1);  //9
-//				cells[index].neighbours.push_back(index - W);    //0
-//				cells[index].neighbours.push_back(index - W + 1);  //1
-//				cells[index].neighbours.push_back(index + W*H);    //20
-//				cells[index].neighbours.push_back(index + W*H + 1);  //21
-//				cells[index].neighbours.push_back(index + W*H + W);  //24
-//				cells[index].neighbours.push_back(index + W*H + W + 1);//25
-//				cells[index].neighbours.push_back(index + W*H - W);  //16
-//				cells[index].neighbours.push_back(index + W*H - W + 1);//17
-//			}
-//
-//			else if (z == L - 1 && x == 0 && y < H - 1 && y > 0){ // (52)
-//				cells[index].neighbours.push_back(index + 1);      //53
-//				cells[index].neighbours.push_back(index + W);      //56
-//				cells[index].neighbours.push_back(index + W + 1);    //57
-//				cells[index].neighbours.push_back(index - W);      //48
-//				cells[index].neighbours.push_back(index - W + 1);    //49
-//				cells[index].neighbours.push_back(index - W*H);      //36
-//				cells[index].neighbours.push_back(index - W*H + 1);    //37
-//				cells[index].neighbours.push_back(index - W*H - W);    //32
-//				cells[index].neighbours.push_back(index - W*H - W + 1);  //33
-//				cells[index].neighbours.push_back(index - W*H + W);    //40
-//				cells[index].neighbours.push_back(index - W*H + W + 1);  //41
-//			}
-//
-//			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ // (20) 
-//				cells[index].neighbours.push_back(index + 1);        // 21 
-//				cells[index].neighbours.push_back(index + W);        // 24
-//				cells[index].neighbours.push_back(index + W + 1);      // 25
-//				cells[index].neighbours.push_back(index - W);        // 16
-//				cells[index].neighbours.push_back(index - W + 1);      // 17
-//				cells[index].neighbours.push_back(index + W * H);      // 36
-//				cells[index].neighbours.push_back(index + W * H + 1);    // 37
-//				cells[index].neighbours.push_back(index + W * H + W);    // 40
-//				cells[index].neighbours.push_back(index + W * H + W + 1);  //41
-//				cells[index].neighbours.push_back(index + W * H - W);    //32
-//				cells[index].neighbours.push_back(index + W * H - W + 1);    //33
-//				cells[index].neighbours.push_back(index - W * H);      //4
-//				cells[index].neighbours.push_back(index - W * H + 1);    //5
-//				cells[index].neighbours.push_back(index - W * H + W);    // 8
-//				cells[index].neighbours.push_back(index - W * H + W + 1);  //9
-//				cells[index].neighbours.push_back(index - W * H - W);    //0
-//				cells[index].neighbours.push_back(index - W * H - W + 1);  //1
-//			}
-//		}
-//		break;
-//	case (W - 1) : //Right side
-//		if (index == W - 1) { //Top right front     (2) 
-//			cells[index].neighbours.push_back(index - 1);      //1
-//			cells[index].neighbours.push_back(index + W);      //5
-//			cells[index].neighbours.push_back(index + W - 1);    //4
-//			cells[index].neighbours.push_back(index + W*H);      //11
-//			cells[index].neighbours.push_back(index + W*H - 1);    //10
-//			cells[index].neighbours.push_back(index + W*H + W);    //14
-//			cells[index].neighbours.push_back(index + W*H + W - 1);  //13
-//		}
-//		else if (index == W * H - 1) { //Down right front (8)
-//			cells[index].neighbours.push_back(index - 1);      //7
-//			cells[index].neighbours.push_back(index - W);      //5
-//			cells[index].neighbours.push_back(index - W - 1);    //4
-//			cells[index].neighbours.push_back(index + W*H);      //17
-//			cells[index].neighbours.push_back(index + W*H - 1);    //16      
-//			cells[index].neighbours.push_back(index + W*H - W);    //14
-//			cells[index].neighbours.push_back(index + W*H - W - 1);  //13
-//		}
-//		else if (index == W * H * L - W*H + W - 1){ //Top right back (20)
-//			cells[index].neighbours.push_back(index - 1);      //19
-//			cells[index].neighbours.push_back(index + W);      //23
-//			cells[index].neighbours.push_back(index + W - 1);    //22
-//			cells[index].neighbours.push_back(index - W*H);      //11
-//			cells[index].neighbours.push_back(index - W*H - 1);    //10
-//			cells[index].neighbours.push_back(index - W*H + W);    //14
-//			cells[index].neighbours.push_back(index - W*H + W - 1);  //13
-//		}
-//		else if (index == W * H * L - 1){ //Down right back (26)
-//			cells[index].neighbours.push_back(index - 1);      //25
-//			cells[index].neighbours.push_back(index - W);      //23
-//			cells[index].neighbours.push_back(index - W - 1);    //22
-//			cells[index].neighbours.push_back(index - W*H);      //17
-//			cells[index].neighbours.push_back(index - W*H - 1);    //16
-//			cells[index].neighbours.push_back(index - W*H - W);    //14
-//			cells[index].neighbours.push_back(index - W*H - W - 1); // 13
-//		}
-//		else{ // (4*4*4)
-//
-//			if (y == H - 1 && x == W - 1 && z < L - 1 && z > 0){    // (31)
-//
-//				cells[index].neighbours.push_back(index - 1);      //30
-//				cells[index].neighbours.push_back(index - W);      //27
-//				cells[index].neighbours.push_back(index - W - 1);    //26
-//				cells[index].neighbours.push_back(index + W*H);      //47
-//				cells[index].neighbours.push_back(index + W*H - 1);    //46
-//				cells[index].neighbours.push_back(index + W*H - W);    //43
-//				cells[index].neighbours.push_back(index + W*H - W - 1);  //42
-//				cells[index].neighbours.push_back(index - W*H);      //15
-//				cells[index].neighbours.push_back(index - W*H - 1);    //14
-//				cells[index].neighbours.push_back(index - W*H - W);    //11
-//				cells[index].neighbours.push_back(index - W*H - W - 1);  //10  
-//			}
-//			else if (y == 0 && z < L - 1 && z > 0){       // (19)
-//				cells[index].neighbours.push_back(index - 1);      //18
-//				cells[index].neighbours.push_back(index + W);      //23
-//				cells[index].neighbours.push_back(index + W - 1);    //22
-//				cells[index].neighbours.push_back(index - W*H);      //3
-//				cells[index].neighbours.push_back(index - W*H - 1);    //2
-//				cells[index].neighbours.push_back(index - W*H + W);    //7
-//				cells[index].neighbours.push_back(index - W*H + W - 1);  //6
-//				cells[index].neighbours.push_back(index + W*H);      //35
-//				cells[index].neighbours.push_back(index + W*H - 1);    //34
-//				cells[index].neighbours.push_back(index + W*H + W);    //39
-//				cells[index].neighbours.push_back(index + W*H + W - 1);  //38
-//			}
-//			else if (z == L - 1 && y < H - 1 && y > 0){ // (55)
-//				cells[index].neighbours.push_back(index - 1);      //54
-//				cells[index].neighbours.push_back(index - W);      //51
-//				cells[index].neighbours.push_back(index - W - 1);    //50
-//				cells[index].neighbours.push_back(index + W);      //59
-//				cells[index].neighbours.push_back(index + W - 1);    //58
-//				cells[index].neighbours.push_back(index - W*H);      //39
-//				cells[index].neighbours.push_back(index - W*H - 1);    //38
-//				cells[index].neighbours.push_back(index - W*H - W);    //35
-//				cells[index].neighbours.push_back(index - W*H - W - 1);  //34
-//				cells[index].neighbours.push_back(index - W*H + W);    //43
-//				cells[index].neighbours.push_back(index - W*H + W - 1);  //42
-//			}
-//			else if (z == 0 && y > 0 && y < H - 1){//(7)
-//				cells[index].neighbours.push_back(index - 1);    // 6
-//				cells[index].neighbours.push_back(index - W);    //3
-//				cells[index].neighbours.push_back(index - W - 1);  //2
-//				cells[index].neighbours.push_back(index + W);    //11
-//				cells[index].neighbours.push_back(index + W - 1);  //10
-//				cells[index].neighbours.push_back(index + W*H);    //23
-//				cells[index].neighbours.push_back(index + W*H - 1);  //22
-//				cells[index].neighbours.push_back(index + W*H - W);  //19
-//				cells[index].neighbours.push_back(index + W*H - W - 1); //18
-//				cells[index].neighbours.push_back(index + W*H + W);  //27
-//				cells[index].neighbours.push_back(index + W*H + W - 1); //26
-//			}
-//			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ //Right side (23)
-//				cells[index].neighbours.push_back(index - 1);          //22
-//				cells[index].neighbours.push_back(index + W);          //27
-//				cells[index].neighbours.push_back(index + W - 1);        //26
-//				cells[index].neighbours.push_back(index - W);          //20
-//				cells[index].neighbours.push_back(index - W - 1);        //19
-//				cells[index].neighbours.push_back(index + W*H);          //39
-//				cells[index].neighbours.push_back(index + W*H - 1);        //38
-//				cells[index].neighbours.push_back(index + W*H + W);        //43
-//				cells[index].neighbours.push_back(index + W*H + W - 1);      //42
-//				cells[index].neighbours.push_back(index + W*H - W);        //35
-//				cells[index].neighbours.push_back(index + W*H - W - 1);      //34
-//				cells[index].neighbours.push_back(index - W*H);          //7
-//				cells[index].neighbours.push_back(index - W*H - 1);        //6
-//				cells[index].neighbours.push_back(index - W*H + W);        //11
-//				cells[index].neighbours.push_back(index - W*H + W - 1);      //10
-//				cells[index].neighbours.push_back(index - W*H - W);        //3
-//				cells[index].neighbours.push_back(index - W*H - W - 1);      //2
-//			}
-//		}
-//		break;
-//	default:
-//		if (x > 0 && x < W - 1 && y > 0 && y < H - 1 && z > 0 && z < L - 1){ //(21) //Centralt
-//
-//			cells[index].neighbours.push_back(index - 1);          //20
-//			cells[index].neighbours.push_back(index + 1);          //22
-//			cells[index].neighbours.push_back(index + W);          //25
-//			cells[index].neighbours.push_back(index + W - 1);        //24
-//			cells[index].neighbours.push_back(index + W + 1);        //26
-//			cells[index].neighbours.push_back(index - W);          //17
-//			cells[index].neighbours.push_back(index - W - 1);        //16
-//			cells[index].neighbours.push_back(index - W + 1);        //18
-//
-//			cells[index].neighbours.push_back(index - W*H);          //5
-//			cells[index].neighbours.push_back(index - W*H - 1);        //4
-//			cells[index].neighbours.push_back(index - W*H + 1);        //6
-//			cells[index].neighbours.push_back(index - W*H - W);        //1
-//			cells[index].neighbours.push_back(index - W*H - W - 1);      //0
-//			cells[index].neighbours.push_back(index - W*H - W + 1);      //2
-//			cells[index].neighbours.push_back(index - W*H + W);        //9
-//			cells[index].neighbours.push_back(index - W*H + W - 1);      //8
-//			cells[index].neighbours.push_back(index - W*H + W + 1);      //10
-//
-//			cells[index].neighbours.push_back(index + W*H);          //37
-//			cells[index].neighbours.push_back(index + W*H - 1);        //36
-//			cells[index].neighbours.push_back(index + W*H + 1);        //38
-//			cells[index].neighbours.push_back(index + W*H - W);        //33
-//			cells[index].neighbours.push_back(index + W*H - W - 1);      //32
-//			cells[index].neighbours.push_back(index + W*H - W + 1);      //34
-//			cells[index].neighbours.push_back(index + W*H + W);        //41
-//			cells[index].neighbours.push_back(index + W*H + W - 1);      //40
-//			cells[index].neighbours.push_back(index + W*H + W + 1);      //42
-//		}
-//		else if (y == H - 1 && x > 0 && x < W - 1 && z > 0 && z < L - 1){ //(29) Bottenplatta
-//
-//			cells[index].neighbours.push_back(index - 1);          //28
-//			cells[index].neighbours.push_back(index + 1);          //30
-//			cells[index].neighbours.push_back(index - W);          //25
-//			cells[index].neighbours.push_back(index - W - 1);        //24
-//			cells[index].neighbours.push_back(index - W + 1);        //26
-//
-//			cells[index].neighbours.push_back(index - W*H);          //13
-//			cells[index].neighbours.push_back(index - W*H - 1);        //12
-//			cells[index].neighbours.push_back(index - W*H + 1);        //14
-//			cells[index].neighbours.push_back(index - W*H - W);        //9
-//			cells[index].neighbours.push_back(index - W*H - W - 1);      //8
-//			cells[index].neighbours.push_back(index - W*H - W + 1);      //10
-//
-//			cells[index].neighbours.push_back(index + W*H);          //45
-//			cells[index].neighbours.push_back(index + W*H - 1);        //44
-//			cells[index].neighbours.push_back(index + W*H + 1);        //46
-//			cells[index].neighbours.push_back(index + W*H - W);        //41
-//			cells[index].neighbours.push_back(index + W*H - W - 1);      //40
-//			cells[index].neighbours.push_back(index + W*H - W + 1);      //42
-//
-//		}
-//		else if (y == 0 && x < W - 1 && z > 0 && z < L - 1){  //(17) Topplatta
-//
-//			cells[index].neighbours.push_back(index - 1);          //16
-//			cells[index].neighbours.push_back(index + 1);          //18
-//			cells[index].neighbours.push_back(index + W);          //21
-//			cells[index].neighbours.push_back(index + W - 1);        //20
-//			cells[index].neighbours.push_back(index + W + 1);        //22
-//
-//			cells[index].neighbours.push_back(index + W*H);          //33
-//			cells[index].neighbours.push_back(index + W*H - 1);        //32
-//			cells[index].neighbours.push_back(index + W*H + 1);        //34
-//			cells[index].neighbours.push_back(index + W*H + W);        //37
-//			cells[index].neighbours.push_back(index + W*H + W - 1);      //36
-//			cells[index].neighbours.push_back(index + W*H + W + 1);      //38
-//
-//			cells[index].neighbours.push_back(index - W*H);          //1
-//			cells[index].neighbours.push_back(index - W*H - 1);        //0
-//			cells[index].neighbours.push_back(index - W*H + 1);        //2
-//			cells[index].neighbours.push_back(index - W*H + W);        //5
-//			cells[index].neighbours.push_back(index - W*H + W - 1);      //4
-//			cells[index].neighbours.push_back(index - W*H + W + 1);      //6
-//
-//		}
-//		else if (z == 0 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(5) Bortaplatta
-//
-//			cells[index].neighbours.push_back(index - 1);          //4
-//			cells[index].neighbours.push_back(index + 1);          //6
-//			cells[index].neighbours.push_back(index + W);          //9
-//			cells[index].neighbours.push_back(index + W - 1);        //8
-//			cells[index].neighbours.push_back(index + W + 1);        //10
-//			cells[index].neighbours.push_back(index - W);          //1
-//			cells[index].neighbours.push_back(index - W - 1);        //0
-//			cells[index].neighbours.push_back(index - W + 1);        //2
-//
-//			cells[index].neighbours.push_back(index + W*H);          //21
-//			cells[index].neighbours.push_back(index + W*H - 1);        //20
-//			cells[index].neighbours.push_back(index + W*H + 1);        //22
-//			cells[index].neighbours.push_back(index + W*H + W);        //25
-//			cells[index].neighbours.push_back(index + W*H + W - 1);      //24
-//			cells[index].neighbours.push_back(index + W*H + W + 1);      //26
-//			cells[index].neighbours.push_back(index + W*H - W);        //17
-//			cells[index].neighbours.push_back(index + W*H - W - 1);      //16
-//			cells[index].neighbours.push_back(index + W*H - W + 1);      //18
-//
-//		}
-//		else if (z == L - 1 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(53) //Motplattan
-//
-//			cells[index].neighbours.push_back(index - 1);          //52
-//			cells[index].neighbours.push_back(index + 1);          //54
-//			cells[index].neighbours.push_back(index + W);          //57
-//			cells[index].neighbours.push_back(index + W - 1);        //56
-//			cells[index].neighbours.push_back(index + W + 1);        //58
-//
-//			cells[index].neighbours.push_back(index - W);          //49
-//			cells[index].neighbours.push_back(index - W - 1);        //48
-//			cells[index].neighbours.push_back(index - W + 1);        //50
-//
-//			cells[index].neighbours.push_back(index - W*H);          //37
-//			cells[index].neighbours.push_back(index - W*H - 1);        //36
-//			cells[index].neighbours.push_back(index - W*H + 1);        //38
-//
-//			cells[index].neighbours.push_back(index - W*H - W);        //33
-//			cells[index].neighbours.push_back(index - W*H - W - 1);      //32
-//			cells[index].neighbours.push_back(index - W*H - W + 1);      //34
-//
-//			cells[index].neighbours.push_back(index - W*H + W);        //41
-//			cells[index].neighbours.push_back(index - W*H + W - 1);      //40
-//			cells[index].neighbours.push_back(index - W*H + W + 1);      //42
-//		}
-//		else if (y == H - 1 && z == 0 && x > 0 && x < W - 1){     //(13)
-//
-//			cells[index].neighbours.push_back(index - 1);          //12
-//			cells[index].neighbours.push_back(index + 1);          //14
-//			cells[index].neighbours.push_back(index - W);          //9
-//			cells[index].neighbours.push_back(index - W - 1);        //8
-//			cells[index].neighbours.push_back(index - W + 1);        //10
-//
-//			cells[index].neighbours.push_back(index + W*H);          //29
-//			cells[index].neighbours.push_back(index + W*H - 1);        //28
-//			cells[index].neighbours.push_back(index + W*H + 1);        //30
-//
-//			cells[index].neighbours.push_back(index + W*H - W);        //25
-//			cells[index].neighbours.push_back(index + W*H - W - 1);      //24
-//			cells[index].neighbours.push_back(index + W*H - W + 1);      //26
-//		}
-//		else if (y == H - 1 && z == L - 1 && x > 0 && x < W - 1){     //(61)
-//
-//			cells[index].neighbours.push_back(index - 1);          //60
-//			cells[index].neighbours.push_back(index + 1);          //62
-//
-//			cells[index].neighbours.push_back(index - W);          //57
-//			cells[index].neighbours.push_back(index - W - 1);        //56
-//			cells[index].neighbours.push_back(index - W + 1);        //58
-//
-//			cells[index].neighbours.push_back(index - W*H);          //45
-//			cells[index].neighbours.push_back(index - W*H - 1);        //44
-//			cells[index].neighbours.push_back(index - W*H + 1);        //46
-//
-//			cells[index].neighbours.push_back(index - W*H - W);        //41
-//			cells[index].neighbours.push_back(index - W*H - W - 1);      //40
-//			cells[index].neighbours.push_back(index - W*H - W + 1);      //42
-//		}
-//		else if (z == L - 1 && y == 0 && x > 0 && x < W - 1){     //(49)
-//
-//			cells[index].neighbours.push_back(index - 1);          //48
-//			cells[index].neighbours.push_back(index + 1);          //50
-//
-//			cells[index].neighbours.push_back(index + W);          //53
-//			cells[index].neighbours.push_back(index + W - 1);        //52
-//			cells[index].neighbours.push_back(index + W + 1);        //54
-//
-//			cells[index].neighbours.push_back(index - W*H);          //33
-//			cells[index].neighbours.push_back(index - W*H - 1);        //32
-//			cells[index].neighbours.push_back(index - W*H + 1);        //34
-//
-//			cells[index].neighbours.push_back(index - W*H + W);        //37
-//			cells[index].neighbours.push_back(index - W*H + W - 1);      //36
-//			cells[index].neighbours.push_back(index + W*H + W + 1);      //38
-//		}
-//		else if (z == 0 && y == 0 && x > 0 && x < W - 1){     //(1)
-//
-//			cells[index].neighbours.push_back(index - 1);          //0
-//			cells[index].neighbours.push_back(index + 1);          //2
-//
-//			cells[index].neighbours.push_back(index + W);          //5
-//			cells[index].neighbours.push_back(index + W - 1);        //4
-//			cells[index].neighbours.push_back(index + W + 1);        //6
-//
-//			cells[index].neighbours.push_back(index + W*H);          //17
-//			cells[index].neighbours.push_back(index + W*H - 1);        //16
-//			cells[index].neighbours.push_back(index + W*H + 1);        //18
-//
-//			cells[index].neighbours.push_back(index + W*H + W);        //21
-//			cells[index].neighbours.push_back(index + W*H + W - 1);      //20
-//			cells[index].neighbours.push_back(index + W*H + W + 1);      //22
-//		}
-//		break;
-//	}
-//}
+void setNeighbours(int index) {
+
+	cells[index].neighbours[0] = (index);
+	std::cout << "SETNEIGHBOUR Function" << std::endl;
+	int x = index % W;
+	int y = (int)((index / W)) % H;
+	int z = floor(index / (H * W));
+
+	switch (index % W) {
+	case 0: //Left side
+		if (index == 0) { //Top left front (3*3*3) (0)
+			cells[index].neighbours[1] = (1);          // 1
+			cells[index].neighbours[2] = (W);          // 3
+			cells[index].neighbours[3] = (W + 1);        // 4
+			cells[index].neighbours[4] = (W*H);          // 9
+			cells[index].neighbours[5] = (W*H + 1);        // 10
+			cells[index].neighbours[6] = (W*H + W);        // 12
+			cells[index].neighbours[7] = (W*H + W + 1);      // 13
+		}
+		else if (index == H * (W - 1)) { // Down left front (6)
+			cells[index].neighbours[1] = (index + 1);      // 7
+			cells[index].neighbours[2] = (index - W);      // 3
+			cells[index].neighbours[3] = (index - W + 1);    // 4
+			cells[index].neighbours[4] = (index + W*H);      // 15
+			cells[index].neighbours[5] = (index + W*H + 1);    // 16
+			cells[index].neighbours[6] = (index + W*H - W);    // 12
+			cells[index].neighbours[7] = (index + W*H - W + 1);  // 13
+		}
+		else if (index == L * H * (W - 1)) { // Top left back (18)
+			cells[index].neighbours[1] = (index + 1);      // 19
+			cells[index].neighbours[2] = (index + W);      // 21
+			cells[index].neighbours[3] = (index + W + 1);    // 22 
+			cells[index].neighbours[4] = (index - W*H);      // 9
+			cells[index].neighbours[5] = (index - W*H + 1);    // 10
+			cells[index].neighbours[6] = (index - W*H + W);    // 12
+			cells[index].neighbours[7] = (index - W*H + W + 1);  // 13
+		}
+		else if (index == H * L * W - W){// Down left back (24)
+			cells[index].neighbours[1] = (index + 1);      // 25
+			cells[index].neighbours[2] = (index - W);      // 21
+			cells[index].neighbours[3] = (index - W + 1);    // 22
+			cells[index].neighbours[4] = (index - W*H);      // 15
+			cells[index].neighbours[5] = (index - W*H + 1);    // 16
+			cells[index].neighbours[6] = (index - W*H - W);    // 12
+			cells[index].neighbours[7] = (index - W*H - W + 1);  // 13
+		}
+		else{       //4*4*4     
+
+			if (y == H - 1 && z < H - 1 && z > 0){  // (28)
+
+				cells[index].neighbours[1] = (index + 1);    // 29
+				cells[index].neighbours[2] = (index - W);    // 24
+				cells[index].neighbours[3] = (index - W + 1);  // 25
+				cells[index].neighbours[4] = (index + W*H);    // 44
+				cells[index].neighbours[5] = (index + W*H + 1);  // 45
+				cells[index].neighbours[6] = (index + W*H - W);  // 40
+				cells[index].neighbours[7] = (index + W*H - W + 1);//41
+				cells[index].neighbours[8] = (index - W*H);    //12
+				cells[index].neighbours[9] = (index - W*H + 1);  //13
+				cells[index].neighbours[10] = (index - W*H - W);  //8
+				cells[index].neighbours[11] = (index - W*H - W + 1); //9
+			}
+
+			else if (y == 0 && z < H - 1 && z > 0){//(16)
+				cells[index].neighbours[1] = (index + 1);    //17
+				cells[index].neighbours[2] = (index + W);    //20
+				cells[index].neighbours[3] = (index + W + 1);  //21
+				cells[index].neighbours[4] = (index + W*H);    //32
+				cells[index].neighbours[5] = (index + W*H + 1);  //33
+				cells[index].neighbours[6] = (index + W*H + W);  //36
+				cells[index].neighbours[7] = (index + W*H + W + 1); // 37
+				cells[index].neighbours[8] = (index - W*H);    //0
+				cells[index].neighbours[9] = (index - W*H + 1);  //1
+				cells[index].neighbours[10] = (index - W*H + W);  //4
+				cells[index].neighbours[11] = (index - W*H + W + 1); //5
+			}
+			else if (z == 0 && y > 0 && y < H - 1){// (4)
+				cells[index].neighbours[1] = (index + 1);    //5
+				cells[index].neighbours[2] = (index + W);    //8
+				cells[index].neighbours[3] = (index + W + 1);  //9
+				cells[index].neighbours[4] = (index - W);    //0
+				cells[index].neighbours[5] = (index - W + 1);  //1
+				cells[index].neighbours[6] = (index + W*H);    //20
+				cells[index].neighbours[7] = (index + W*H + 1);  //21
+				cells[index].neighbours[8] = (index + W*H + W);  //24
+				cells[index].neighbours[9] = (index + W*H + W + 1);//25
+				cells[index].neighbours[10] = (index + W*H - W);  //16
+				cells[index].neighbours[11] = (index + W*H - W + 1);//17
+			}
+
+			else if (z == L - 1 && x == 0 && y < H - 1 && y > 0){ // (52)
+				cells[index].neighbours[1] = (index + 1);      //53
+				cells[index].neighbours[2] = (index + W);      //56
+				cells[index].neighbours[3] = (index + W + 1);    //57
+				cells[index].neighbours[4] = (index - W);      //48
+				cells[index].neighbours[5] = (index - W + 1);    //49
+				cells[index].neighbours[6] = (index - W*H);      //36
+				cells[index].neighbours[7] = (index - W*H + 1);    //37
+				cells[index].neighbours[8] = (index - W*H - W);    //32
+				cells[index].neighbours[9] = (index - W*H - W + 1);  //33
+				cells[index].neighbours[10] = (index - W*H + W);    //40
+				cells[index].neighbours[11] = (index - W*H + W + 1);  //41
+			}
+
+			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ // (20) 
+				cells[index].neighbours[1] = (index + 1);        // 21 
+				cells[index].neighbours[2] = (index + W);        // 24
+				cells[index].neighbours[3] = (index + W + 1);      // 25
+				cells[index].neighbours[4] = (index - W);        // 16
+				cells[index].neighbours[5] = (index - W + 1);      // 17
+				cells[index].neighbours[6] = (index + W * H);      // 36
+				cells[index].neighbours[7] = (index + W * H + 1);    // 37
+				cells[index].neighbours[8] = (index + W * H + W);    // 40
+				cells[index].neighbours[9] = (index + W * H + W + 1);  //41
+				cells[index].neighbours[10] = (index + W * H - W);    //32
+				cells[index].neighbours[11] = (index + W * H - W + 1);    //33
+				cells[index].neighbours[12] = (index - W * H);      //4
+				cells[index].neighbours[13] = (index - W * H + 1);    //5
+				cells[index].neighbours[14] = (index - W * H + W);    // 8
+				cells[index].neighbours[15] = (index - W * H + W + 1);  //9
+				cells[index].neighbours[16] = (index - W * H - W);    //0
+				cells[index].neighbours[17] = (index - W * H - W + 1);  //1
+			}
+		}
+		break;
+	case (W - 1) : //Right side
+		if (index == W - 1) { //Top right front     (2) 
+			cells[index].neighbours[1] = (index - 1);      //1
+			cells[index].neighbours[2] = (index + W);      //5
+			cells[index].neighbours[3] = (index + W - 1);    //4
+			cells[index].neighbours[4] = (index + W*H);      //11
+			cells[index].neighbours[5] = (index + W*H - 1);    //10
+			cells[index].neighbours[6] = (index + W*H + W);    //14
+			cells[index].neighbours[7] = (index + W*H + W - 1);  //13
+		}
+		else if (index == W * H - 1) { //Down right front (8)
+			cells[index].neighbours[1] = (index - 1);      //7
+			cells[index].neighbours[2] = (index - W);      //5
+			cells[index].neighbours[3] = (index - W - 1);    //4
+			cells[index].neighbours[4] = (index + W*H);      //17
+			cells[index].neighbours[5] = (index + W*H - 1);    //16      
+			cells[index].neighbours[6] = (index + W*H - W);    //14
+			cells[index].neighbours[7] = (index + W*H - W - 1);  //13
+		}
+		else if (index == W * H * L - W*H + W - 1){ //Top right back (20)
+			cells[index].neighbours[1] = (index - 1);      //19
+			cells[index].neighbours[2] = (index + W);      //23
+			cells[index].neighbours[3] = (index + W - 1);    //22
+			cells[index].neighbours[4] = (index - W*H);      //11
+			cells[index].neighbours[5] = (index - W*H - 1);    //10
+			cells[index].neighbours[6] = (index - W*H + W);    //14
+			cells[index].neighbours[7] = (index - W*H + W - 1);  //13
+		}
+		else if (index == W * H * L - 1){ //Down right back (26)
+			cells[index].neighbours[1] = (index - 1);      //25
+			cells[index].neighbours[2] = (index - W);      //23
+			cells[index].neighbours[3] = (index - W - 1);    //22
+			cells[index].neighbours[4] = (index - W*H);      //17
+			cells[index].neighbours[5] = (index - W*H - 1);    //16
+			cells[index].neighbours[6] = (index - W*H - W);    //14
+			cells[index].neighbours[7] = (index - W*H - W - 1); // 13
+		}
+		else{ // (4*4*4)
+
+			if (y == H - 1 && x == W - 1 && z < L - 1 && z > 0){    // (31)
+
+				cells[index].neighbours[1] = (index - 1);      //30
+				cells[index].neighbours[2] = (index - W);      //27
+				cells[index].neighbours[3] = (index - W - 1);    //26
+				cells[index].neighbours[4] = (index + W*H);      //47
+				cells[index].neighbours[5] = (index + W*H - 1);    //46
+				cells[index].neighbours[6] = (index + W*H - W);    //43
+				cells[index].neighbours[7] = (index + W*H - W - 1);  //42
+				cells[index].neighbours[8] = (index - W*H);      //15
+				cells[index].neighbours[9] = (index - W*H - 1);    //14
+				cells[index].neighbours[10] = (index - W*H - W);    //11
+				cells[index].neighbours[11] = (index - W*H - W - 1);  //10  
+			}
+			else if (y == 0 && z < L - 1 && z > 0){       // (19)
+				cells[index].neighbours[1] = (index - 1);      //18
+				cells[index].neighbours[2] = (index + W);      //23
+				cells[index].neighbours[3] = (index + W - 1);    //22
+				cells[index].neighbours[4] = (index - W*H);      //3
+				cells[index].neighbours[5] = (index - W*H - 1);    //2
+				cells[index].neighbours[6] = (index - W*H + W);    //7
+				cells[index].neighbours[7] = (index - W*H + W - 1);  //6
+				cells[index].neighbours[8] = (index + W*H);      //35
+				cells[index].neighbours[9] = (index + W*H - 1);    //34
+				cells[index].neighbours[10] = (index + W*H + W);    //39
+				cells[index].neighbours[11] = (index + W*H + W - 1);  //38
+			}
+			else if (z == L - 1 && y < H - 1 && y > 0){ // (55)
+				cells[index].neighbours[1] = (index - 1);      //54
+				cells[index].neighbours[2] = (index - W);      //51
+				cells[index].neighbours[3] = (index - W - 1);    //50
+				cells[index].neighbours[4] = (index + W);      //59
+				cells[index].neighbours[5] = (index + W - 1);    //58
+				cells[index].neighbours[6] = (index - W*H);      //39
+				cells[index].neighbours[7] = (index - W*H - 1);    //38
+				cells[index].neighbours[8] = (index - W*H - W);    //35
+				cells[index].neighbours[9] = (index - W*H - W - 1);  //34
+				cells[index].neighbours[10] = (index - W*H + W);    //43
+				cells[index].neighbours[11] = (index - W*H + W - 1);  //42
+			}
+			else if (z == 0 && y > 0 && y < H - 1){//(7)
+				cells[index].neighbours[1] = (index - 1);    // 6
+				cells[index].neighbours[2] = (index - W);    //3
+				cells[index].neighbours[3] = (index - W - 1);  //2
+				cells[index].neighbours[4] = (index + W);    //11
+				cells[index].neighbours[5] = (index + W - 1);  //10
+				cells[index].neighbours[6] = (index + W*H);    //23
+				cells[index].neighbours[7] = (index + W*H - 1);  //22
+				cells[index].neighbours[8] = (index + W*H - W);  //19
+				cells[index].neighbours[9] = (index + W*H - W - 1); //18
+				cells[index].neighbours[10] = (index + W*H + W);  //27
+				cells[index].neighbours[11] = (index + W*H + W - 1); //26
+			}
+			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ //Right side (23)
+				cells[index].neighbours[1] = (index - 1);          //22
+				cells[index].neighbours[2] = (index + W);          //27
+				cells[index].neighbours[3] = (index + W - 1);        //26
+				cells[index].neighbours[4] = (index - W);          //20
+				cells[index].neighbours[5] = (index - W - 1);        //19
+				cells[index].neighbours[6] = (index + W*H);          //39
+				cells[index].neighbours[7] = (index + W*H - 1);        //38
+				cells[index].neighbours[8] = (index + W*H + W);        //43
+				cells[index].neighbours[9] = (index + W*H + W - 1);      //42
+				cells[index].neighbours[10] = (index + W*H - W);        //35
+				cells[index].neighbours[11] = (index + W*H - W - 1);      //34
+				cells[index].neighbours[12] = (index - W*H);          //7
+				cells[index].neighbours[13] = (index - W*H - 1);        //6
+				cells[index].neighbours[14] = (index - W*H + W);        //11
+				cells[index].neighbours[15] = (index - W*H + W - 1);      //10
+				cells[index].neighbours[16] = (index - W*H - W);        //3
+				cells[index].neighbours[17] = (index - W*H - W - 1);      //2
+			}
+		}
+		break;
+	default:
+		if (x > 0 && x < W - 1 && y > 0 && y < H - 1 && z > 0 && z < L - 1){ //(21) //Centralt
+
+			cells[index].neighbours[1] = (index - 1);          //20
+			cells[index].neighbours[2] = (index + 1);          //22
+			cells[index].neighbours[3] = (index + W);          //25
+			cells[index].neighbours[4] = (index + W - 1);        //24
+			cells[index].neighbours[5] = (index + W + 1);        //26
+			cells[index].neighbours[6] = (index - W);          //17
+			cells[index].neighbours[7] = (index - W - 1);        //16
+			cells[index].neighbours[8] = (index - W + 1);        //18
+			cells[index].neighbours[9] = (index - W*H);          //5
+			cells[index].neighbours[10] = (index - W*H - 1);        //4
+			cells[index].neighbours[11] = (index - W*H + 1);        //6
+			cells[index].neighbours[12] = (index - W*H - W);        //1
+			cells[index].neighbours[13] = (index - W*H - W - 1);      //0
+			cells[index].neighbours[14] = (index - W*H - W + 1);      //2
+			cells[index].neighbours[15] = (index - W*H + W);        //9
+			cells[index].neighbours[16] = (index - W*H + W - 1);      //8
+			cells[index].neighbours[17] = (index - W*H + W + 1);      //10
+			cells[index].neighbours[18] = (index + W*H);          //37
+			cells[index].neighbours[19] = (index + W*H - 1);        //36
+			cells[index].neighbours[20] = (index + W*H + 1);        //38
+			cells[index].neighbours[21] = (index + W*H - W);        //33
+			cells[index].neighbours[22] = (index + W*H - W - 1);      //32
+			cells[index].neighbours[23] = (index + W*H - W + 1);      //34
+			cells[index].neighbours[24] = (index + W*H + W);        //41
+			cells[index].neighbours[25] = (index + W*H + W - 1);      //40
+			cells[index].neighbours[26] = (index + W*H + W + 1);      //42
+		}
+		else if (y == H - 1 && x > 0 && x < W - 1 && z > 0 && z < L - 1){ //(29) Bottenplatta
+
+			cells[index].neighbours[1] = (index - 1);          //28
+			cells[index].neighbours[2] = (index + 1);          //30
+			cells[index].neighbours[3] = (index - W);          //25
+			cells[index].neighbours[4] = (index - W - 1);        //24
+			cells[index].neighbours[5] = (index - W + 1);        //26
+
+			cells[index].neighbours[6] = (index - W*H);          //13
+			cells[index].neighbours[7] = (index - W*H - 1);        //12
+			cells[index].neighbours[8] = (index - W*H + 1);        //14
+			cells[index].neighbours[9] = (index - W*H - W);        //9
+			cells[index].neighbours[10] = (index - W*H - W - 1);      //8
+			cells[index].neighbours[11] = (index - W*H - W + 1);      //10
+
+			cells[index].neighbours[12] = (index + W*H);          //45
+			cells[index].neighbours[13] = (index + W*H - 1);        //44
+			cells[index].neighbours[14] = (index + W*H + 1);        //46
+			cells[index].neighbours[15] = (index + W*H - W);        //41
+			cells[index].neighbours[16] = (index + W*H - W - 1);      //40
+			cells[index].neighbours[17] = (index + W*H - W + 1);      //42
+
+		}
+		else if (y == 0 && x < W - 1 && z > 0 && z < L - 1){  //(17) Topplatta
+
+			cells[index].neighbours[1] = (index - 1);          //16
+			cells[index].neighbours[2] = (index + 1);          //18
+			cells[index].neighbours[3] = (index + W);          //21
+			cells[index].neighbours[4] = (index + W - 1);        //20
+			cells[index].neighbours[5] = (index + W + 1);        //22
+
+			cells[index].neighbours[6] = (index + W*H);          //33
+			cells[index].neighbours[7] = (index + W*H - 1);        //32
+			cells[index].neighbours[8] = (index + W*H + 1);        //34
+			cells[index].neighbours[9] = (index + W*H + W);        //37
+			cells[index].neighbours[10] = (index + W*H + W - 1);      //36
+			cells[index].neighbours[11] = (index + W*H + W + 1);      //38
+
+			cells[index].neighbours[12] = (index - W*H);          //1
+			cells[index].neighbours[13] = (index - W*H - 1);        //0
+			cells[index].neighbours[14] = (index - W*H + 1);        //2
+			cells[index].neighbours[15] = (index - W*H + W);        //5
+			cells[index].neighbours[16] = (index - W*H + W - 1);      //4
+			cells[index].neighbours[17] = (index - W*H + W + 1);      //6
+
+		}
+		else if (z == 0 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(5) Bortaplatta
+
+			cells[index].neighbours[1] = (index - 1);          //4
+			cells[index].neighbours[2] = (index + 1);          //6
+			cells[index].neighbours[3] = (index + W);          //9
+			cells[index].neighbours[4] = (index + W - 1);        //8
+			cells[index].neighbours[5] = (index + W + 1);        //10
+			cells[index].neighbours[6] = (index - W);          //1
+			cells[index].neighbours[7] = (index - W - 1);        //0
+			cells[index].neighbours[8] = (index - W + 1);        //2
+
+			cells[index].neighbours[9] = (index + W*H);          //21
+			cells[index].neighbours[10] = (index + W*H - 1);        //20
+			cells[index].neighbours[11] = (index + W*H + 1);        //22
+			cells[index].neighbours[12] = (index + W*H + W);        //25
+			cells[index].neighbours[13] = (index + W*H + W - 1);      //24
+			cells[index].neighbours[14] = (index + W*H + W + 1);      //26
+			cells[index].neighbours[15] = (index + W*H - W);        //17
+			cells[index].neighbours[16] = (index + W*H - W - 1);      //16
+			cells[index].neighbours[17] = (index + W*H - W + 1);      //18
+
+		}
+		else if (z == L - 1 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(53) //Motplattan
+
+			cells[index].neighbours[1] = (index - 1);          //52
+			cells[index].neighbours[2] = (index + 1);          //54
+			cells[index].neighbours[3] = (index + W);          //57
+			cells[index].neighbours[4] = (index + W - 1);        //56
+			cells[index].neighbours[5] = (index + W + 1);        //58
+
+			cells[index].neighbours[6] = (index - W);          //49
+			cells[index].neighbours[7] = (index - W - 1);        //48
+			cells[index].neighbours[8] = (index - W + 1);        //50
+
+			cells[index].neighbours[9] = (index - W*H);          //37
+			cells[index].neighbours[10] = (index - W*H - 1);        //36
+			cells[index].neighbours[11] = (index - W*H + 1);        //38
+
+			cells[index].neighbours[12] = (index - W*H - W);        //33
+			cells[index].neighbours[13] = (index - W*H - W - 1);      //32
+			cells[index].neighbours[14] = (index - W*H - W + 1);      //34
+
+			cells[index].neighbours[15] = (index - W*H + W);        //41
+			cells[index].neighbours[16] = (index - W*H + W - 1);      //40
+			cells[index].neighbours[17] = (index - W*H + W + 1);      //42
+		}
+		else if (y == H - 1 && z == 0 && x > 0 && x < W - 1){     //(13)
+
+			cells[index].neighbours[1] = (index - 1);          //12
+			cells[index].neighbours[2] = (index + 1);          //14
+			cells[index].neighbours[3] = (index - W);          //9
+			cells[index].neighbours[4] = (index - W - 1);        //8
+			cells[index].neighbours[5] = (index - W + 1);        //10
+
+			cells[index].neighbours[6] = (index + W*H);          //29
+			cells[index].neighbours[7] = (index + W*H - 1);        //28
+			cells[index].neighbours[8] = (index + W*H + 1);        //30
+			cells[index].neighbours[9] = (index + W*H - W);        //25
+			cells[index].neighbours[10] = (index + W*H - W - 1);      //24
+			cells[index].neighbours[11] = (index + W*H - W + 1);      //26
+		}
+		else if (y == H - 1 && z == L - 1 && x > 0 && x < W - 1){     //(61)
+
+			cells[index].neighbours[1] = (index - 1);          //60
+			cells[index].neighbours[2] = (index + 1);          //62
+
+			cells[index].neighbours[3] = (index - W);          //57
+			cells[index].neighbours[4] = (index - W - 1);        //56
+			cells[index].neighbours[5] = (index - W + 1);        //58
+
+			cells[index].neighbours[6] = (index - W*H);          //45
+			cells[index].neighbours[7] = (index - W*H - 1);        //44
+			cells[index].neighbours[8] = (index - W*H + 1);        //46
+
+			cells[index].neighbours[9] = (index - W*H - W);        //41
+			cells[index].neighbours[10] = (index - W*H - W - 1);      //40
+			cells[index].neighbours[11] = (index - W*H - W + 1);      //42
+		}
+		else if (z == L - 1 && y == 0 && x > 0 && x < W - 1){     //(49)
+
+			cells[index].neighbours[1] = (index - 1);          //48
+			cells[index].neighbours[2] = (index + 1);          //50
+
+			cells[index].neighbours[3] = (index + W);          //53
+			cells[index].neighbours[4] = (index + W - 1);        //52
+			cells[index].neighbours[5] = (index + W + 1);        //54
+
+			cells[index].neighbours[6] = (index - W*H);          //33
+			cells[index].neighbours[7] = (index - W*H - 1);        //32
+			cells[index].neighbours[8] = (index - W*H + 1);        //34
+
+			cells[index].neighbours[9] = (index - W*H + W);        //37
+			cells[index].neighbours[10] = (index - W*H + W - 1);      //36
+			cells[index].neighbours[11] = (index + W*H + W + 1);      //38
+		}
+		else if (z == 0 && y == 0 && x > 0 && x < W - 1){     //(1)
+
+			cells[index].neighbours[1] = (index - 1);          //0
+			cells[index].neighbours[2] = (index + 1);          //2
+
+			cells[index].neighbours[3] = (index + W);          //5
+			cells[index].neighbours[4] = (index + W - 1);        //4
+			cells[index].neighbours[5] = (index + W + 1);        //6
+
+			cells[index].neighbours[6] = (index + W*H);          //17
+			cells[index].neighbours[7] = (index + W*H - 1);        //16
+			cells[index].neighbours[8] = (index + W*H + 1);        //18
+
+			cells[index].neighbours[9] = (index + W*H + W);        //21
+			cells[index].neighbours[10] = (index + W*H + W - 1);      //20
+			cells[index].neighbours[11] = (index + W*H + W + 1);      //22
+		}
+		break;
+	}
+}
 
 const char* TranslateOpenCLError(cl_int errorCode)
 {
@@ -2608,10 +2605,10 @@ int _tmain(int argc, TCHAR* argv[])
 
 	initNeighbours();
 	////Set Neighbours
-	//for (int i = 0; i < NUM_CELLS; i++){
-	//	std::cout << "HEEEL O" << std::endl;
-	//	setNeighbours(i);
-	//}
+	for (int i = 0; i < NUM_CELLS; i++){
+		std::cout << "HEEEL O" << std::endl;
+		setNeighbours(i);
+	}
 	//Execute Kernels on GPU
 	executeOnGPU(&ocl);
 	
