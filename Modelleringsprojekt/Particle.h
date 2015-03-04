@@ -7,7 +7,7 @@ class Particle
 {
     private:
 		glm::vec3 pos, vel, pressure_force, viscousity_force, gravity_force;
-		float mass, gravity, pressure, density, radius = 3.f/3.f;
+		float mass, gravity, pressure, density, radius = 0.9f;
 		int cellIndex;
 
     public:

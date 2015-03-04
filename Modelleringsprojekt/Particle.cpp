@@ -39,10 +39,10 @@ void Particle::EvolveParticle()
         pos.x = 1;
     }
     
-    else if(pos.x > 256){
+    else if(pos.x > 512){
 
         vel.x = -0.8*vel.x;
-        pos.x = 256;
+        pos.x = 512;
     }
     
     if(pos.y < 1){
@@ -61,17 +61,17 @@ void Particle::EvolveParticle()
 		vel.z = -0.8*vel.z;
 		pos.z = 1;
 	}
-	else if(pos.z > 256){
+	else if(pos.z > 512){
 		vel.z = -0.8*vel.z;
-		pos.z = 256;
+		pos.z = 512;
 	}
 }
 
 //Draw all the particles
 void Particle::DrawObjects() {
     
-    glColor3f(0.2,0.2,1);
-    Sphere sphere(16/3, 6, 12);
+    glColor3f(1.0,0.0,0.0);
+    Sphere sphere(32, 6, 12);
     sphere.draw(pos[0], pos[1], pos[2]);
     
 }
