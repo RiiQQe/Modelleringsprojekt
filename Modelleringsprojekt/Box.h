@@ -20,6 +20,6 @@ public:
 	void MoveBox();
 	void RotateBox();
 	void TranslateBox(int key);
-	void DrawBox();
+	void DrawBox(int size, int colwidth);
 	
 };
