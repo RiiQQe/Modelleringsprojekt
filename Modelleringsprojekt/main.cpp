@@ -67,18 +67,21 @@
 
 typedef struct{
 	int neighbours[30];
-	int positions[1000];
+	int particleIDs[2000];
 	int nrOfParticles;
+	int nrOfNeighbours;
 } Cell;
 
 
 
 using namespace glm;
 
+int frameCounterSpecialName = 0;
+
 const int W = 32, H = 32, L = 32;
-const int NUM_CELLS = W * H * L;
+const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 200;
+const cl_uint BEGIN_PARTICLES = 2500;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -113,7 +116,7 @@ GLfloat model[16];
 double newTime, currTime = 0, deltaTime = 0, phi = 0, theta = 0;
 
 //3D Cubes
-const float particleSize = 3.0f;
+const float particleSize = 3.f;
 
 
 
@@ -267,6 +270,15 @@ void drawParticlesContainer(){
 	glEnd();
 	glPopMatrix();
 
+	GLfloat white[] = { 0.7, 0.7, 0.7, 1.0 };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, white);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+	glMaterialf(GL_FRONT, GL_SHININESS, 30.0);
+
+	glDisable(GL_LIGHTING);
+
+
 	//The Walls
 	glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
 	// Top face (y = 1.0f)
@@ -309,6 +321,8 @@ void drawParticlesContainer(){
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
 	glEnd();  // End of drawing color-cube
 	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
 }
 void drawCoordinateAxes(){
 
@@ -387,40 +401,55 @@ void drawCubeParticles(){
 	handleFps();
 
 	for (int i = 0; i < NUM_PARTICLES; i++){
+
+		GLfloat blue[] = { 0.2, 0.6, 1.0, 1.0 };
+		GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
+		glMaterialfv(GL_FRONT, GL_AMBIENT, blue);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+		glMaterialf(GL_FRONT, GL_SHININESS, 60.0);
+
+		//printf("Particle pos Y %4.8f \n ", particle_pos[i].y);
 		glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
 		// Top face (y = 1.0f)
 		// Define vertices in counter-clockwise (CCW) order with normal pointing out
-		glColor3f( 0.0f, 1.0f, 0.0f);     // Green
+		//glColor3f( 0.0f, 1.0f, 0.0f);     // Green
+		glNormal3f(0.f, 1.f, 0.f);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z - 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 
 		// Bottom face (y = -1.0f)
+		glNormal3f(0.f, -1.f, 0.f);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 
 		// Front face  (z = 1.0f)
+		glNormal3f(0.f, 0.f, 1.f);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 
 		// Back face (z = -1.0f)
+		glNormal3f(0.f, 0.f, -1.f);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 
 		// Left face (x = -1.0f)
+		glNormal3f(-1.f, 0.f, 0.f);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + -1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 
 		// Right face (x = 1.0f)
+		glNormal3f(1.f, 0.f, 0.f);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + -1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + 1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
 		glVertex3f(particle_pos[i].x + 1.0f*particleSize, particle_pos[i].y + -1.0f*particleSize, particle_pos[i].z + 1.0f*particleSize);
@@ -823,15 +852,23 @@ void idle()
 }
 void initNeighbours(){
 
-	for (int i = 0; i < NUM_CELLS; i++){
-		//std::cout << "INIT PARTICLES" << cells[i].neighbours[1] << std::endl;
-		cells[i].neighbours;
+	for (long long int i = 0; i < NUM_CELLS; i++){
+
+		//Fill array of particle IDS with unvalid default value -1
+		std::fill(cells[i].particleIDs, cells[i].particleIDs + 2000, -1);
+
+		cells[i].nrOfParticles = 0;
+		setNeighbours(i);
 	}
+}
+void resetValues(){
+
+
 }
 void setNeighbours(int index) {
 
 	cells[index].neighbours[0] = (index);
-	std::cout << "SETNEIGHBOUR Function" << std::endl;
+	
 	int x = index % W;
 	int y = (int)((index / W)) % H;
 	int z = floor(index / (H * W));
@@ -846,6 +883,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (W*H + 1);        // 10
 			cells[index].neighbours[6] = (W*H + W);        // 12
 			cells[index].neighbours[7] = (W*H + W + 1);      // 13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else if (index == H * (W - 1)) { // Down left front (6)
 			cells[index].neighbours[1] = (index + 1);      // 7
@@ -855,6 +893,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index + W*H + 1);    // 16
 			cells[index].neighbours[6] = (index + W*H - W);    // 12
 			cells[index].neighbours[7] = (index + W*H - W + 1);  // 13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else if (index == L * H * (W - 1)) { // Top left back (18)
 			cells[index].neighbours[1] = (index + 1);      // 19
@@ -864,6 +903,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index - W*H + 1);    // 10
 			cells[index].neighbours[6] = (index - W*H + W);    // 12
 			cells[index].neighbours[7] = (index - W*H + W + 1);  // 13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else if (index == H * L * W - W){// Down left back (24)
 			cells[index].neighbours[1] = (index + 1);      // 25
@@ -873,6 +913,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index - W*H + 1);    // 16
 			cells[index].neighbours[6] = (index - W*H - W);    // 12
 			cells[index].neighbours[7] = (index - W*H - W + 1);  // 13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else{       //4*4*4     
 
@@ -889,6 +930,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index - W*H + 1);  //13
 				cells[index].neighbours[10] = (index - W*H - W);  //8
 				cells[index].neighbours[11] = (index - W*H - W + 1); //9
+				cells[index].nrOfNeighbours = 12;
 			}
 
 			else if (y == 0 && z < H - 1 && z > 0){//(16)
@@ -903,6 +945,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index - W*H + 1);  //1
 				cells[index].neighbours[10] = (index - W*H + W);  //4
 				cells[index].neighbours[11] = (index - W*H + W + 1); //5
+				cells[index].nrOfNeighbours = 12;
 			}
 			else if (z == 0 && y > 0 && y < H - 1){// (4)
 				cells[index].neighbours[1] = (index + 1);    //5
@@ -916,6 +959,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index + W*H + W + 1);//25
 				cells[index].neighbours[10] = (index + W*H - W);  //16
 				cells[index].neighbours[11] = (index + W*H - W + 1);//17
+				cells[index].nrOfNeighbours = 12;
 			}
 
 			else if (z == L - 1 && x == 0 && y < H - 1 && y > 0){ // (52)
@@ -930,6 +974,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index - W*H - W + 1);  //33
 				cells[index].neighbours[10] = (index - W*H + W);    //40
 				cells[index].neighbours[11] = (index - W*H + W + 1);  //41
+				cells[index].nrOfNeighbours = 12;
 			}
 
 			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ // (20) 
@@ -950,6 +995,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[15] = (index - W * H + W + 1);  //9
 				cells[index].neighbours[16] = (index - W * H - W);    //0
 				cells[index].neighbours[17] = (index - W * H - W + 1);  //1
+				cells[index].nrOfNeighbours = 18;
 			}
 		}
 		break;
@@ -962,6 +1008,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index + W*H - 1);    //10
 			cells[index].neighbours[6] = (index + W*H + W);    //14
 			cells[index].neighbours[7] = (index + W*H + W - 1);  //13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else if (index == W * H - 1) { //Down right front (8)
 			cells[index].neighbours[1] = (index - 1);      //7
@@ -971,6 +1018,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index + W*H - 1);    //16      
 			cells[index].neighbours[6] = (index + W*H - W);    //14
 			cells[index].neighbours[7] = (index + W*H - W - 1);  //13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else if (index == W * H * L - W*H + W - 1){ //Top right back (20)
 			cells[index].neighbours[1] = (index - 1);      //19
@@ -980,6 +1028,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index - W*H - 1);    //10
 			cells[index].neighbours[6] = (index - W*H + W);    //14
 			cells[index].neighbours[7] = (index - W*H + W - 1);  //13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else if (index == W * H * L - 1){ //Down right back (26)
 			cells[index].neighbours[1] = (index - 1);      //25
@@ -989,6 +1038,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[5] = (index - W*H - 1);    //16
 			cells[index].neighbours[6] = (index - W*H - W);    //14
 			cells[index].neighbours[7] = (index - W*H - W - 1); // 13
+			cells[index].nrOfNeighbours = 8;
 		}
 		else{ // (4*4*4)
 
@@ -1005,6 +1055,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index - W*H - 1);    //14
 				cells[index].neighbours[10] = (index - W*H - W);    //11
 				cells[index].neighbours[11] = (index - W*H - W - 1);  //10  
+				cells[index].nrOfNeighbours = 12;
 			}
 			else if (y == 0 && z < L - 1 && z > 0){       // (19)
 				cells[index].neighbours[1] = (index - 1);      //18
@@ -1018,6 +1069,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index + W*H - 1);    //34
 				cells[index].neighbours[10] = (index + W*H + W);    //39
 				cells[index].neighbours[11] = (index + W*H + W - 1);  //38
+				cells[index].nrOfNeighbours = 12;
 			}
 			else if (z == L - 1 && y < H - 1 && y > 0){ // (55)
 				cells[index].neighbours[1] = (index - 1);      //54
@@ -1031,6 +1083,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index - W*H - W - 1);  //34
 				cells[index].neighbours[10] = (index - W*H + W);    //43
 				cells[index].neighbours[11] = (index - W*H + W - 1);  //42
+				cells[index].nrOfNeighbours = 12;
 			}
 			else if (z == 0 && y > 0 && y < H - 1){//(7)
 				cells[index].neighbours[1] = (index - 1);    // 6
@@ -1044,6 +1097,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[9] = (index + W*H - W - 1); //18
 				cells[index].neighbours[10] = (index + W*H + W);  //27
 				cells[index].neighbours[11] = (index + W*H + W - 1); //26
+				cells[index].nrOfNeighbours = 12;
 			}
 			else if (y != 0 && y != H - 1 && z != 0 && z != L - 1){ //Right side (23)
 				cells[index].neighbours[1] = (index - 1);          //22
@@ -1063,6 +1117,7 @@ void setNeighbours(int index) {
 				cells[index].neighbours[15] = (index - W*H + W - 1);      //10
 				cells[index].neighbours[16] = (index - W*H - W);        //3
 				cells[index].neighbours[17] = (index - W*H - W - 1);      //2
+				cells[index].nrOfNeighbours = 18;
 			}
 		}
 		break;
@@ -1095,6 +1150,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[24] = (index + W*H + W);        //41
 			cells[index].neighbours[25] = (index + W*H + W - 1);      //40
 			cells[index].neighbours[26] = (index + W*H + W + 1);      //42
+			cells[index].nrOfNeighbours =27;
 		}
 		else if (y == H - 1 && x > 0 && x < W - 1 && z > 0 && z < L - 1){ //(29) Bottenplatta
 
@@ -1117,6 +1173,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[15] = (index + W*H - W);        //41
 			cells[index].neighbours[16] = (index + W*H - W - 1);      //40
 			cells[index].neighbours[17] = (index + W*H - W + 1);      //42
+			cells[index].nrOfNeighbours = 18;
 
 		}
 		else if (y == 0 && x < W - 1 && z > 0 && z < L - 1){  //(17) Topplatta
@@ -1140,6 +1197,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[15] = (index - W*H + W);        //5
 			cells[index].neighbours[16] = (index - W*H + W - 1);      //4
 			cells[index].neighbours[17] = (index - W*H + W + 1);      //6
+			cells[index].nrOfNeighbours = 18;
 
 		}
 		else if (z == 0 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(5) Bortaplatta
@@ -1162,6 +1220,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[15] = (index + W*H - W);        //17
 			cells[index].neighbours[16] = (index + W*H - W - 1);      //16
 			cells[index].neighbours[17] = (index + W*H - W + 1);      //18
+			cells[index].nrOfNeighbours = 18;
 
 		}
 		else if (z == L - 1 && x > 0 && x < W - 1 && y > 0 && y < H - 1){ //(53) //Motplattan
@@ -1187,6 +1246,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[15] = (index - W*H + W);        //41
 			cells[index].neighbours[16] = (index - W*H + W - 1);      //40
 			cells[index].neighbours[17] = (index - W*H + W + 1);      //42
+			cells[index].nrOfNeighbours = 18;
 		}
 		else if (y == H - 1 && z == 0 && x > 0 && x < W - 1){     //(13)
 
@@ -1202,6 +1262,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[9] = (index + W*H - W);        //25
 			cells[index].neighbours[10] = (index + W*H - W - 1);      //24
 			cells[index].neighbours[11] = (index + W*H - W + 1);      //26
+			cells[index].nrOfNeighbours = 12;
 		}
 		else if (y == H - 1 && z == L - 1 && x > 0 && x < W - 1){     //(61)
 
@@ -1219,6 +1280,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[9] = (index - W*H - W);        //41
 			cells[index].neighbours[10] = (index - W*H - W - 1);      //40
 			cells[index].neighbours[11] = (index - W*H - W + 1);      //42
+			cells[index].nrOfNeighbours = 12;
 		}
 		else if (z == L - 1 && y == 0 && x > 0 && x < W - 1){     //(49)
 
@@ -1236,6 +1298,7 @@ void setNeighbours(int index) {
 			cells[index].neighbours[9] = (index - W*H + W);        //37
 			cells[index].neighbours[10] = (index - W*H + W - 1);      //36
 			cells[index].neighbours[11] = (index + W*H + W + 1);      //38
+			cells[index].nrOfNeighbours = 12;
 		}
 		else if (z == 0 && y == 0 && x > 0 && x < W - 1){     //(1)
 
@@ -1253,9 +1316,11 @@ void setNeighbours(int index) {
 			cells[index].neighbours[9] = (index + W*H + W);        //21
 			cells[index].neighbours[10] = (index + W*H + W - 1);      //20
 			cells[index].neighbours[11] = (index + W*H + W + 1);      //22
+			cells[index].nrOfNeighbours = 12;
 		}
 		break;
 	}
+	//std::cout << "SETNEIGHBOUR Function" << cells[index].neighbours[3] << std::endl;
 }
 
 const char* TranslateOpenCLError(cl_int errorCode)
@@ -1792,8 +1857,7 @@ void initParticles()
 
 		x++;
 		
-
-		particle_pos[i] = (vec4(10.0 + x*16.f / 2.0, 19.0 * 16.f + y*16.f / 2, 10 + z*16.f / 2, 0));
+		particle_pos[i] = (vec4(10.0 + x*16.f / 2.0, 4.0 * 4.f + y*16.f / 2, 10.0 + z*16.f / 2, 0));
 	}
 
 }
@@ -2220,8 +2284,25 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 		return err;
 	}
 
-	//Cell Arg kernel
+	//Cell Arg Density and Pressure kernel
 	err = clSetKernelArg(ocl->kernel, 7, sizeof(cl_mem), (void *)&ocl->cells_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument cells_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
+	//Cell Arg Acceleration kernel
+	err = clSetKernelArg(ocl->kernel2, 7, sizeof(cl_mem), (void *)&ocl->cells_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument cells_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+
+
+	//Cell Arg Move Particles kernel
+	err = clSetKernelArg(ocl->kernel3, 7, sizeof(cl_mem), (void *)&ocl->cells_b);
 	if (CL_SUCCESS != err)
 	{
 		LogError("Error: Failed to set argument cells_b, returned %s\n", TranslateOpenCLError(err));
@@ -2388,7 +2469,7 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
 	vec4 *resultParticle_grav_f = (vec4*)clEnqueueMapBuffer(ocl->commandQueue, ocl->gravity_force_b, true, CL_MAP_READ, 0, sizeof(vec4) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	cl_float *resultParticle_pressure = (cl_float*)clEnqueueMapBuffer(ocl->commandQueue, ocl->pressure_b, true, CL_MAP_READ, 0, sizeof(cl_float) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	cl_float *resultParticle_density = (cl_float*)clEnqueueMapBuffer(ocl->commandQueue, ocl->density_b, true, CL_MAP_READ, 0, sizeof(cl_float) * NUM_PARTICLES, 0, NULL, NULL, &err);
-	Cell* resultCell = (Cell*)clEnqueueMapBuffer(ocl->commandQueue, ocl->cells_b, true, CL_MAP_READ, 0, sizeof(Cell) * NUM_PARTICLES, 0, NULL, NULL, &err);
+	Cell* resultCell = (Cell*)clEnqueueMapBuffer(ocl->commandQueue, ocl->cells_b, true, CL_MAP_READ, 0, sizeof(Cell) * NUM_CELLS, 0, NULL, NULL, &err);
 
 
 	particle_pos = resultParticle_pos;
@@ -2403,6 +2484,8 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
 	particle_pressure = resultParticle_pressure;
 	particle_density = resultParticle_density;
 
+	cells = resultCell;
+	
 
 
 	
@@ -2438,6 +2521,7 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
 	err = clEnqueueUnmapMemObject(ocl->commandQueue, ocl->gravity_force_b, resultParticle_grav_f, 0, NULL, NULL);
 	err = clEnqueueUnmapMemObject(ocl->commandQueue, ocl->pressure_b, resultParticle_pressure, 0, NULL, NULL);
 	err = clEnqueueUnmapMemObject(ocl->commandQueue, ocl->density_b, resultParticle_density, 0, NULL, NULL);
+	err = clEnqueueUnmapMemObject(ocl->commandQueue, ocl->cells_b, resultCell, 0, NULL, NULL);
     if (CL_SUCCESS != err)
     {
         LogError("Error: clEnqueueUnmapMemObject returned %s\n", TranslateOpenCLError(err));
@@ -2466,7 +2550,7 @@ int executeOnGPU(ocl_args_d_t *ocl){
 	{
 		return -1;
 	}
-	//Get values from Dens and pressure kernel
+	//Get values from Set cell particle kernel
 	ReadAndVerify(ocl);
 
 	//EXECUTE DENSITY AND PRESSURE KERNEL
@@ -2554,6 +2638,8 @@ int _tmain(int argc, TCHAR* argv[])
     //Initialize particles , In this order!
     initParticles(); //particle_pos, particle_vel, particle_visc_f, particle_press_f, particle_grav_f,  particle_density, particle_pressure
     
+	////Set Cells and neighbours
+	initNeighbours();
 
     // Create OpenCL buffers from host memory
     // These buffers will be used later by the OpenCL kernel
@@ -2603,12 +2689,8 @@ int _tmain(int argc, TCHAR* argv[])
         return -1;
     }
 
-	initNeighbours();
-	////Set Neighbours
-	for (int i = 0; i < NUM_CELLS; i++){
-		std::cout << "HEEEL O" << std::endl;
-		setNeighbours(i);
-	}
+	
+	
 	//Execute Kernels on GPU
 	executeOnGPU(&ocl);
 	
@@ -2621,25 +2703,53 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 	//DEFAULT CAMERA ROTATE and TRANSLATE
-	//glMatrixMode(GL_MODELVIEW);
-	//float angle = 0.0;
-	//angle += 360. / 10.;
+	glMatrixMode(GL_MODELVIEW);
+	float angle = 0.0;
+	angle += 360. / 10.;
 
-	//// set camera parameters
-	//GLdouble eyeX = .5*cos(angle);
-	//GLdouble eyeY = .5*sin(angle);
-	//GLdouble eyeZ = 0.;
-	//GLdouble centerX = 128.f;
-	//GLdouble centerY = 128.f;
-	//GLdouble centerZ = 128.f;
-	//GLdouble upX = 0.;
-	//GLdouble upY = 1.;
-	//GLdouble upZ = 0.;
+	// set camera parameters
+	GLdouble eyeX = .5*cos(angle);
+	GLdouble eyeY = .5*sin(angle);
+	GLdouble eyeZ = 0.;
+	GLdouble centerX = 128.f;
+	GLdouble centerY = 128.f;
+	GLdouble centerZ = 128.f;
+	GLdouble upX = 0.;
+	GLdouble upY = 1.;
+	GLdouble upZ = 0.;
 
-	//gluLookAt(eyeX, eyeY, eyeZ,
-	//	centerX, centerY, centerZ,
-	//	upX, upY, upZ);
-	//glTranslatef(-256.f, 128.f, 0);
+	gluLookAt(eyeX, eyeY, eyeZ,
+		centerX, centerY, centerZ,
+		upX, upY, upZ);
+	glTranslatef(-256.f, 128.f, 0);
+
+
+	// Lightning set up
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glShadeModel(GL_FLAT);
+
+	// St lightning internsity and color
+	GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+	GLfloat diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
+	GLfloat specular[] = { 1.0, 1.0, 1.0, 1.0 };
+
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, specular);
+
+	GLfloat pos[] = { 512.0, 512.0, 512.0, 1.0 };
+	GLfloat pos1[] = { -512.0, -512.0, -512.0, 1.0 };
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
+
+
 
 	while (!glfwWindowShouldClose(window)){
 
@@ -2654,8 +2764,8 @@ int _tmain(int argc, TCHAR* argv[])
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//For transparency
-		/*glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -2673,12 +2783,24 @@ int _tmain(int argc, TCHAR* argv[])
 
 		//GPU STUFF
 		executeOnGPU(&ocl);
+
+		//for (int i = 0; i < NUM_CELLS; i++){
+		//	printf("NUMBEROF PARTICLE %i \n " , cells[i].nrOfParticles);
+		//	//Fill array of particle IDS with unvalid default value -1
+		//	//std::fill(cells[i].particleIDs, cells[i].particleIDs + 1000, -1);
+		//}
+		/*if (frameCounterSpecialName++ % 10 != 0) {
+			continue;
+		}*/
+
 		//END GPU STUFF
 		//drawParticles();
-		//drawCubeParticles();
-		drawParticlesContainer();
+		
+			drawCubeParticles();
+			drawParticlesContainer();
+		
 		//drawSphereParticles();
-		drawBetaBalls();
+		//drawBetaBalls();
 
 		//Swap front and back buffers
 		glfwSetWindowSizeCallback(window, reshape_window);
