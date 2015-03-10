@@ -77,11 +77,10 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 	const int NUM_PARTICLES = get_global_size(0);
 	const int NUM_CELLS = get_global_size(1);
 
-	const float VISCOUSITY = 500 * 5.f;
 	const float PARTICLE_MASS = 500 * .14f;
-	const float h = 16.f;
+	const float h = 13.f;
 	const float STIFFNESS = 500 * 5.f;
-	const float GRAVITY_CONST = 80000 * 9.82f;
+
 
 	//int neighbours = cell[cellindex].neighbours;
 	int cellInd = getCellIndex(position[id]);
@@ -125,11 +124,7 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 							//printf("Density_sum %4.8f \n", density_sum);
 						}
 					}
-					else{
-						//printf("DIFFVEC = 0 , id =  %i and particleId = %i \n", id, particleID);
-						/*printf("NR of particles %i \n", cell[neighbourCellInd].nrOfParticles);
-						printf("ABS DIFFVEC %4.8f \n", abs_diffvec);*/
-					}
+				
 				}
 				
 
@@ -138,29 +133,6 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 		}
 	
 
-	//for (uint j = 0; j < NUM_PARTICLES; j++){
-	//	//printf("ABS DIFFVEC");
-	//	//Calculate on same particle!!! No if(id != j)
-	//	float4 diffvec = position[id] - position[j];
-	//	//Absvec 
-	//	float abs_diffvec = sqrt(pow(diffvec.x, 2.0f) + pow(diffvec.y, 2.0f) + pow(diffvec.z, 2.0f));
-
-
-	//	if (abs_diffvec < h){
-	//		//printf("ABS DIFFVEC %4.8f \n", abs_diffvec);
-	//		density_sum += PARTICLE_MASS* (315.0f / (64.0f * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(abs_diffvec, 2.0f)), 3.f);
-
-	//	}
-	//
-
-	//}
-	//if (cellInd == 0){
-	//	position[id].x = 128.f;
-	//	position[id].y = 128.f;
-	//	position[id].z = 128.f;
-	//	/*printf(" particle pos x  %4.5f pos y %4.5f pos z %4.5f \n ", position[id].x, position[id].y, position[id].z);
-	//	printf(" getCellIndex(position[id]) %i \n ", getCellIndex(position[id]));*/
-	//}
 	if (density_sum == 0)
 	{
 		density_sum += PARTICLE_MASS* (315.0f / (64.0f * M_PI * pow(h, 9.0f))) * pow((pow(h, 2.0f) - pow(0, 2.0f)), 3.0f);
@@ -174,22 +146,9 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
 		//		printf("particle Id in CELL = %i  THIS partilce ID = %i \n ", cell[cellInd].particleIDs[i], id);
 		//	}
 		//}
-		//printf("cell[cellInd].nrOfNeighbours %i \n ", cell[cellInd].nrOfNeigh bours);*/
-		/*if(cellInd == 2003)
-		printf(" cell[cell[cellInd].neighbours[2]].nrOfParticles %i \n ", cell[cell[cellInd].neighbours[2]].nrOfParticles);*/
-		/*for (int i = 0; i < cell[cellInd].nrOfNeighbours; i++){
-			int neighbourCellInd = cell[cellInd].neighbours[i];
-			for (int k = 0; k < cell[neighbourCellInd].nrOfParticles; k++){
-				int particleID = cell[neighbourCellInd].particleIDs[k];
-				printf("Particle  ID THE SAME ?? %i andra %i \n", particleID, id);
-			}
-		}*/
 		
-		//density_sum = 0.000998f;
 	}
-	//else { 
-	//	//printf("Density SUM = 0 %4.8f \n ", density_sum);
-	//}
+	
 
 
 	density[id] = density_sum;
@@ -206,21 +165,20 @@ __kernel void calculateDensityAndPressure(__global float4* position, __global fl
  
 __kernel void calculateAccelerations(__global float4* position, __global float4* velocity,
 	__global float4* viscosity_f, __global float4* pressure_f, __global float4* gravity_f,
-	__global float* pressure, __global float* density, __global Cell *cell)
+	__global float* pressure, __global float* density, __global Cell *cell, __global float* gravity_d)
 {
 	const int id = get_global_id(0);
 	const int NUM_PARTICLES = get_global_size(0);
 
-
+	//printf("gravity Dir %f3.3 \n", gravity_d[0]);
 	const float VISCOUSITY = 500 * 5.0f;
 	const float PARTICLE_MASS = 500 * .14f;
-	const float h = 16.f;
-	const float STIFFNESS = 500 * 5.f;
+	const float h = 13.f;
 	const float GRAVITY_CONST = 80000 * 9.82f;
 
 
 	//NOW CALCULATE FORCES 
-	float4 gravityforce = (float4)(0, -GRAVITY_CONST * density[id], 0, 0);  //(float4)(gravity_f[id].x * density[id], gravity_f[id].y * density[id], gravity_f[id].z * density[id], 0);
+	float4 gravityforce = (float4)(gravity_d[0] * GRAVITY_CONST * density[id], gravity_d[1] * GRAVITY_CONST * density[id], gravity_d[2] * GRAVITY_CONST * density[id], 0);  //(float4)(gravity_f[id].x * density[id], gravity_f[id].y * density[id], gravity_f[id].z * density[id], 0);
 
 	float4 pressureforce = (float4)(0, 0, 0, 0);
 	float4 viscosityforce = (float4)(0, 0, 0, 0);
@@ -264,33 +222,6 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 		}
 	}
 
-	//for (int k = 0; k < NUM_PARTICLES; k++){
-
-
-	//	//Dont calculate same particle
-	//	if (id != k){
-	//		float4 diffvec = position[id] - position[k];
-
-	//		//Absvec 
-	//		float abs_diffvec = sqrt(pow(diffvec.x, 2.0f) + pow(diffvec.y, 2.0f) + pow(diffvec.z, 2.0f));
-
-	//		if (abs_diffvec < h){
-
-	//			float W_const_pressure = 45.0f / (M_PI * pow(h, 6.0f)) * pow(h - abs_diffvec, 3.0f) / abs_diffvec;
-	//			//printf("W_const_pressure :   %4.8f \n", W_const_pressure);
-	//			float4 W_pressure_gradient = (float4)(W_const_pressure * diffvec.x, W_const_pressure * diffvec.y, W_const_pressure * diffvec.z, 0);
-	//			//printf("W_pressure_gradient :   %4.8f \n", W_pressure_gradient.x);
-	//			float visc_gradient = (45.f / (M_PI* pow(h, 6.0f)))*(h - abs_diffvec);
-	//			//printf("visc_gradient :   %4.8f \n", visc_gradient);
-	//			pressureforce += -PARTICLE_MASS * ((pressure[id] + pressure[k]) / (2.0 * density[k])) * W_pressure_gradient;
-
-	//			viscosityforce += VISCOUSITY * PARTICLE_MASS * ((velocity[k] - velocity[id]) / (density[k])) * visc_gradient;
-
-	//		}
-	//	}
-
-
-	//}
 
 
 	//printf("Particle Pressure Force:   %4.8f \n", pressureforce.x);
@@ -301,10 +232,10 @@ __kernel void calculateAccelerations(__global float4* position, __global float4*
 
 
 
-	for (int i = 0; i < cell[cellInd].nrOfNeighbours; i++){
+	/*for (int i = 0; i < cell[cellInd].nrOfNeighbours; i++){
 
 		cell[cellInd].particleIDs[i] = -1;
-	}
+	}*/
 
 	cell[cellInd].nrOfParticles = 0;
 	
@@ -357,7 +288,6 @@ __kernel void moveParticles(__global float4* position, __global float4* velocity
 	else if (position[id].y > 248){
 		velocity[id].y = -0.6f*velocity[id].y;
 		position[id].y = 248.f;
-
 	}
 
 	if (position[id].z < 8){

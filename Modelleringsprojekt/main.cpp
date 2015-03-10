@@ -81,7 +81,7 @@ int frameCounterSpecialName = 0;
 const int W = 32, H = 32, L = 32;
 const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 1000;
+const cl_uint BEGIN_PARTICLES = 3000;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -105,18 +105,18 @@ Cell *cells;
 
 
 //BETA BALLS
-const int TEMPSIZE = 64;
+const int TEMPSIZE = 32;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
 
 //For 3D version
-GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
-GLfloat model[16];
+cl_float gravity_dir[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+cl_float down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
+cl_float model[16];
 // Rotating vars
 double newTime, currTime = 0, deltaTime = 0, phi = 0, theta = 0;
 
 //3D Cubes
-const float particleSize = 3.f;
+const float particleSize = 3.0f;
 
 
 
@@ -131,6 +131,10 @@ GLFWwindow* window;
 void initParticles();
 int generateNewParticles();
 void setNeighbours(int index);
+
+
+
+
 
 // Neat way of displaying FPS
 void handleFps() {
@@ -216,6 +220,9 @@ void handleInputs(){
 }
 void drawParticlesContainer(){
 	
+	//For transparency
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	float containerSize = 256.f / 2;
 
@@ -289,13 +296,14 @@ void drawParticlesContainer(){
 	glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize); 
 	
-
+	glDisable(GL_BLEND);
 	// Bottom face (y = -1.0f*containerSize)
+	glColor4f(1.0f, 0.0f, 0.f,1.f);
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
-
+	glColor4f(0.2f, .2f, .2f, 0.2f);
 	// Front face  (z = 1.0f*containerSize)
 	glVertex3f(1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize);
@@ -349,11 +357,9 @@ void drawCoordinateAxes(){
 
 //Calculates the gravity vector based on the current position of the box
 void calculateNewGravityVec(){
-
-	newDown[0] = model[0] * down[0] + model[1] * down[1] + model[2] * down[2] + model[3] * down[3];
-	newDown[1] = model[4] * down[0] + model[5] * down[1] + model[6] * down[2] + model[7] * down[3];
-	newDown[2] = model[8] * down[0] + model[9] * down[1] + model[10] * down[2] + model[11] * down[3];
-
+	gravity_dir[0] = model[0] * down[0] + model[1] * down[1] + model[2] * down[2] + model[3] * down[3];
+	gravity_dir[1] = model[4] * down[0] + model[5] * down[1] + model[6] * down[2] + model[7] * down[3];
+	gravity_dir[2] = model[8] * down[0] + model[9] * down[1] + model[10] * down[2] + model[11] * down[3];
 }
 
 
@@ -362,7 +368,6 @@ void calculateNewGravityVec(){
 
 void drawParticles(){
 	handleFps();
-
 
 	for (int i = 0; i < NUM_PARTICLES; i++){
 
@@ -471,7 +476,7 @@ void drawBetaBalls(){
 	//
 
 	// Needed for scaling
-	int kSize = 512 / TEMPSIZE;
+	int kSize = 256 / TEMPSIZE;
 
 	// Iterate through all cells
 	for (int k = 0; k < TEMPSIZE * TEMPSIZE; k++) {
@@ -483,7 +488,7 @@ void drawBetaBalls(){
 		for (int i = 0; i < NUM_PARTICLES; i++) {
 			// calculate height map, sum
 
-			squares[k] += (8.0f*8.0f) / ((x - particle_pos[i].x) * (x - particle_pos[i].x) + (y - particle_pos[i].y) * (y - particle_pos[i].y));
+			squares[k] += (4.f*4.0f) / ((x - particle_pos[i].x) * (x - particle_pos[i].x) + (y - particle_pos[i].y) * (y - particle_pos[i].y));
 		}
 	}
 
@@ -1432,6 +1437,7 @@ struct ocl_args_d_t
 	cl_mem			 pressure_b;
 	cl_mem			 density_b;
 	cl_mem			 cells_b;
+	cl_mem			 grav_dir_b;
 };
 
 ocl_args_d_t::ocl_args_d_t():
@@ -1453,7 +1459,8 @@ ocl_args_d_t::ocl_args_d_t():
 		gravity_force_b(NULL),
         pressure_b(NULL),
 		density_b(NULL),
-		cells_b(NULL)
+		cells_b(NULL),
+		grav_dir_b(NULL)
 {
 }
 
@@ -1572,6 +1579,14 @@ ocl_args_d_t::~ocl_args_d_t()
 	if (cells_b)
 	{
 		err = clReleaseMemObject(cells_b);
+		if (CL_SUCCESS != err)
+		{
+			LogError("Error: clReleaseMemObject returned '%s'.\n", TranslateOpenCLError(err));
+		}
+	}
+	if (grav_dir_b)
+	{
+		err = clReleaseMemObject(grav_dir_b);
 		if (CL_SUCCESS != err)
 		{
 			LogError("Error: clReleaseMemObject returned '%s'.\n", TranslateOpenCLError(err));
@@ -1862,7 +1877,7 @@ void initParticles()
 
 
 
-		particle_pos[i] = (vec4(20.0 + x*8.0f, 20.f + y*8.f, 20.0 + z*8.f, 0));
+		particle_pos[i] = (vec4(20.0 + x*0.1f, 100.f + y*0.1f, 20.0 + z*0.1f, 0));
 	}
 
 }
@@ -1983,7 +1998,7 @@ int CreateAndBuildProgram(ocl_args_d_t *ocl)
     // The size of the C program is returned in sourceSize
     char* source = NULL;
     size_t src_size = 0;
-    err = ReadSourceFromFile("Template.cl", &source, &src_size);
+    err = ReadSourceFromFile("ParticleKernels.cl", &source, &src_size);
     if (CL_SUCCESS != err)
     {
         LogError("Error: ReadSourceFromFile returned %s.\n", TranslateOpenCLError(err));
@@ -2105,6 +2120,12 @@ int CreateBufferArguments(ocl_args_d_t *ocl, vec4* particle_pos, vec4* particle_
 	if (CL_SUCCESS != err)
 	{
 		LogError("Error: clCreateBuffer for cells_b returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
+	ocl->grav_dir_b = clCreateBuffer(ocl->context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, sizeof(cl_float) * 4, gravity_dir, &err);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: clCreateBuffer for grav_dir_b returned %s\n", TranslateOpenCLError(err));
 		return err;
 	}
 
@@ -2314,6 +2335,14 @@ cl_uint SetKernelArguments(ocl_args_d_t *ocl)
 		return err;
 	}
 
+
+	//Gravity Direction Arg acceleretion Kernel
+	err = clSetKernelArg(ocl->kernel2, 8, sizeof(cl_mem), (void *)&ocl->grav_dir_b);
+	if (CL_SUCCESS != err)
+	{
+		LogError("Error: Failed to set argument grav_dir_b, returned %s\n", TranslateOpenCLError(err));
+		return err;
+	}
     return err;
 }
 
@@ -2475,13 +2504,13 @@ bool ReadAndVerify(ocl_args_d_t *ocl)
 	cl_float *resultParticle_pressure = (cl_float*)clEnqueueMapBuffer(ocl->commandQueue, ocl->pressure_b, true, CL_MAP_READ, 0, sizeof(cl_float) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	cl_float *resultParticle_density = (cl_float*)clEnqueueMapBuffer(ocl->commandQueue, ocl->density_b, true, CL_MAP_READ, 0, sizeof(cl_float) * NUM_PARTICLES, 0, NULL, NULL, &err);
 	Cell* resultCell = (Cell*)clEnqueueMapBuffer(ocl->commandQueue, ocl->cells_b, true, CL_MAP_READ, 0, sizeof(Cell) * NUM_CELLS, 0, NULL, NULL, &err);
+	//GLfloat resultGravDir = (GLfloat)clEnqueueMapBuffer(ocl->commandQueue, ocl->grav_dir_b, true, CL_MAP_READ, 0, sizeof(GLfloat) * 4, 0, NULL, NULL, &err);
 
 
 	particle_pos = resultParticle_pos;
 	particle_vel = resultParticle_vel;
 	particle_visc_f = resultParticle_visc_f;
 	particle_press_f = resultParticle_press_f;
-	
 	particle_grav_f = resultParticle_grav_f;
 
 	//particle_grav_f = resultParticle_grav_f;
@@ -2587,7 +2616,7 @@ int executeOnGPU(ocl_args_d_t *ocl){
 	ReadAndVerify(ocl);
 
 	/*for (int i = 0; i < NUM_PARTICLES; i++){
-		particle_grav_f[i] = vec4(particle_grav_f[i][0] * newDown[0], particle_grav_f[i][1] * newDown[1], particle_grav_f[i][2] * newDown[2], 0)*GRAVITY_CONST;
+		particle_grav_f[i] = vec4(particle_grav_f[i][0] * gravity_dir[0], particle_grav_f[i][1] * gravity_dir[1], particle_grav_f[i][2] * gravity_dir[2], 0)*GRAVITY_CONST;
 	}*/
 	
 }
@@ -2702,8 +2731,9 @@ int _tmain(int argc, TCHAR* argv[])
 	//From main projekt
 	glfwInit();
 
-	window = glfwCreateWindow(1024, 1024, "OpenGL", nullptr, nullptr); // Windowed
+	window = glfwCreateWindow(700, 700, "OpenGL", nullptr, nullptr); // Windowed
 	glfwMakeContextCurrent(window);
+	glfwSetWindowPos(window, 100, 20);
 	glfwSwapInterval(1);
 
 
@@ -2726,7 +2756,7 @@ int _tmain(int argc, TCHAR* argv[])
 	gluLookAt(eyeX, eyeY, eyeZ,
 		centerX, centerY, centerZ,
 		upX, upY, upZ);
-	glTranslatef(-256.f, 128.f, 0);
+	glTranslatef(-512.f, 128.f, 0);
 
 
 	// Lightning set up
@@ -2749,15 +2779,17 @@ int _tmain(int argc, TCHAR* argv[])
 	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, specular);
 
-	GLfloat pos[] = { 512.0, 512.0, 512.0, 1.0 };
-	GLfloat pos1[] = { -512.0, -512.0, -512.0, 1.0 };
+	GLfloat pos[] = { 1024.0, 1024.0, 1024.0, 1.0 };
+	GLfloat pos1[] = { -1024.0, -1024.0, -1024.0, 1.0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 
 
 
+
 	while (!glfwWindowShouldClose(window)){
 
+		
 
 		float ratio;
 		int width, height;
@@ -2768,9 +2800,7 @@ int _tmain(int argc, TCHAR* argv[])
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//For transparency
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -2779,11 +2809,13 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 1024, 0.0, 1024, -1024.0, 1024);
+		glOrtho(0.0, 600, 0.0, 600, -1024.0, 1024);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
 		calculateNewGravityVec();
+		//printf("NUMBEROF PARTICLE %3.4f \n", gravity_dir[0]);
+		
 		//drawCoordinateAxes();
 
 		//GPU STUFF
@@ -2800,10 +2832,13 @@ int _tmain(int argc, TCHAR* argv[])
 
 		//END GPU STUFF
 		//drawParticles();
+		drawParticlesContainer();
+		drawCubeParticles();
 		
-			drawCubeParticles();
-			drawParticlesContainer();
 		
+		
+			
+			
 		//drawSphereParticles();
 		//drawBetaBalls();
 
@@ -2832,4 +2867,3 @@ int _tmain(int argc, TCHAR* argv[])
 
     return 0;
 }
-
