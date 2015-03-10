@@ -39,10 +39,10 @@ void Particle::EvolveParticle()
         pos.x = 1;
     }
     
-    else if(pos.x > 512){
+    else if(pos.x > 256){
 
         vel.x = -0.8*vel.x;
-        pos.x = 512;
+        pos.x = 256;
     }
     
     if(pos.y < 1){
@@ -51,19 +51,19 @@ void Particle::EvolveParticle()
         pos.y = 1;
     }
     
-    else if(pos.y > 512){
+    else if(pos.y > 256){
         
         vel.y = -0.8*vel.y;
-        pos.y = 512;
+        pos.y = 256;
     }
 
 	if (pos.z < 1){
 		vel.z = -0.8*vel.z;
 		pos.z = 1;
 	}
-	else if(pos.z > 512){
+	else if(pos.z > 256){
 		vel.z = -0.8*vel.z;
-		pos.z = 512;
+		pos.z = 256;
 	}
 }
 

@@ -566,9 +566,8 @@ int triTable[256][13] =
 //{ 0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
 //{ 0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
 //{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 } };
-//
 
-int z;
+
 
 
 
@@ -586,17 +585,23 @@ const int TEMPSIZE = 64;
 
 float squares[TEMPSIZE * TEMPSIZE * TEMPSIZE];
 
-const float isolevel = 1.f ;	
+const float isolevel = 1.5f ;	
 
 float vertlist[12][3];
+float normVertList[12][3];
 
-int ntriang;
+float triangleList[120000][8];
 
+float squares2[64][64][64] = { 0.f, 0.f, 0.f };
 
-GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+int ntriangs;
+
+GLfloat newDown[4] = { 0.0f, -1.0f, 0.0f, 0.0f };
 
 GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f }; 
 GLfloat model[16];
+
+glm::vec3 gravity;
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -660,7 +665,7 @@ void init()
         
         x++;
 
-        particles[i].setPos(glm::vec3(10+x*h/2, 100 + y*h/2, 80 - z*h/2));
+        particles[i].setPos(glm::vec3(100+x*h/2, 200 + y*h/2, 80 - z*h/2));
 
     }
 
@@ -728,7 +733,7 @@ void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-		glm::vec3 gravity = glm::vec3(newDown[0],newDown[1],newDown[2])*GRAVITY_CONST;
+		gravity = glm::vec3(newDown[0],newDown[1],newDown[2])*GRAVITY_CONST;
 		glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
@@ -808,7 +813,11 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 
 	glm::vec3 temp;
 	double mu;
+	/*if(val1 > 2.4 || val2 > 2.4){
+		cout << "val1 : " << val1 << endl;
 
+		cout << "val2 : " << val2 << endl;
+	}*/
 	if (abs(isolevel - val1) < 1.00001)
 		return xyz;
 	if (abs(isolevel - val2) < 1.00001)
@@ -816,7 +825,9 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 	if (abs(val1 - val2) < 1.00001)
 		return xyz;
 
-	mu = (isolevel - val1) / (val2 - val1);
+	mu = ((isolevel - val1) / (val2 - val1));
+
+	//if (mu > 1) mu = 0.5;
 
 	temp.x = xyz.x + mu * (dxyz.x - xyz.x);
 	temp.y = xyz.y + mu * (dxyz.y - xyz.y);
@@ -824,6 +835,8 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 
 	return temp;
 }
+
+
 
 void displayWithoutMarching(){
 	for(int i = 0; i < NUM_PARTICLES; i++){
@@ -836,416 +849,228 @@ void display()
 {
     handleFps();
 
-
-	int kSize = 512 / TEMPSIZE;
-    
-	for (int k = 0; k < TEMPSIZE * TEMPSIZE * TEMPSIZE; k++) {
-		int x = kSize * (k % TEMPSIZE);
-		
-		int y = kSize * ((k / TEMPSIZE) % TEMPSIZE);
-		int z = (k / (TEMPSIZE * TEMPSIZE)) * kSize;
-
-		// for each cell, check
-		for (int i = 0; i < NUM_PARTICLES; i++) {
-
-			// calculate height map, sum
-			// squares contains the radius to the particle
-
-			//Just nu tror ja att denna fuckar upp, orkar inte kolla på det just nu dock
-			squares[k] += (particles[i].getRadius()*particles[i].getRadius())  / (
-			(x - particles[i].getPos().x) * (x - particles[i].getPos().x) +
-			(y - particles[i].getPos().y) * (y - particles[i].getPos().y) + 
-			(z - particles[i].getPos().z) * (z - particles[i].getPos().z));
-
-			/*cout << "x: " <<
-				(x - particles[i].getPos().x) * (x - particles[i].getPos().x) << endl;
-
-			cout << "y: " <<
-				(y - particles[i].getPos().y) * (y - particles[i].getPos().y) << endl;
+	
+	int kSize = 256 / TEMPSIZE;
+		for (int a = 0; a < 64; a++){
+			for (int b = 0; b < 64; b++){
+				for (int c = 0; c < 64; c++){
+					int x = kSize * a + kSize / 2;
+					int y = kSize * b + kSize / 2;
+					int z = kSize * c + kSize / 2;
 
 
-			cout << "z: " << 
-				(z - particles[i].getPos().z) * (z - particles[i].getPos().z) << endl;
+					for (int i = 0; i < NUM_PARTICLES; i++){
 
-			cout << "z : " << z << endl;
-			
-
-			*/
-			//if (squares[k] > 1)
-			//cout << "squares[k]:  " << squares[k] << " z:"  << z << endl;
-
-			//particles[i].DrawObjects();
-
+						squares2[a][b][c] += (particles[i].getRadius()*particles[i].getRadius()) / (
+											(x - particles[i].getPos().x) * (x - particles[i].getPos().x) +
+											(y - particles[i].getPos().y) * (y - particles[i].getPos().y) +
+											(z - particles[i].getPos().z) * (z - particles[i].getPos().z));
+					}
+				}
+			}
 		}
-		//cout << "squares["<<k << "] = " << squares[k] << endl;
-	}
-
-	ntriang = 0;
-	for (int i = 0; i < TEMPSIZE - 1; i++) {
-		for (int j = 0; j < TEMPSIZE - 1; j++) {
-			for (int k = 0; k < TEMPSIZE - 1; k++){
-				
-				float a, b, c, d, e, f, g, h;
-
-				//Bottom
-				//a,b,c,d,e,f,g,h innehåller bidraget typ..
-
-				a = squares[i			+ (j + 1) * TEMPSIZE			 + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper left			
-				b = squares[i + 1		+ (j + 1) * TEMPSIZE		     + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper right
-				c = squares[i + 1		+ (j + 1) * TEMPSIZE			 + k			* TEMPSIZE * TEMPSIZE]; // lower left
-				d = squares[i			+ (j + 1) * TEMPSIZE			 + k			* TEMPSIZE * TEMPSIZE]; // lower right
-
-				//Top
-				e = squares[i			+ j		  * TEMPSIZE			 + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper left
-				f = squares[i + 1		+ j		  * TEMPSIZE			 + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper right
-				g = squares[i + 1		+ j		  * TEMPSIZE	 		 + k			* TEMPSIZE * TEMPSIZE]; // lower left
-				h = squares[i			+ j		  * TEMPSIZE			 + k			* TEMPSIZE * TEMPSIZE]; // lower right
-
-				//Bottom
-				glm::vec3 avec = glm::vec3(i	   * kSize + kSize / 2,			(j + 1)		* kSize + kSize / 2,		(k + 1)		* kSize + kSize / 2);			// Left far
-				glm::vec3 bvec = glm::vec3((i + 1) * kSize + kSize / 2,			(j + 1)		* kSize + kSize / 2,		(k + 1)		* kSize + kSize / 2);			// Right far
-				glm::vec3 cvec = glm::vec3((i + 1) * kSize + kSize / 2,			(j + 1)		* kSize + kSize / 2,		 k			* kSize + kSize / 2);			// Bot right
-				glm::vec3 dvec = glm::vec3(i       * kSize + kSize / 2,			(j + 1)		* kSize + kSize / 2,		 k 			* kSize + kSize / 2);			// Bot left
-
-				//Top
-				glm::vec3 evec = glm::vec3(i	   * kSize + kSize / 2,			 j			* kSize + kSize / 2,		(k + 1)		* kSize + kSize / 2);			// Top left
-				glm::vec3 fvec = glm::vec3((i + 1) * kSize + kSize / 2,			 j			* kSize + kSize / 2,		(k + 1)		* kSize + kSize / 2);			// Top right
-				glm::vec3 gvec = glm::vec3((i + 1) * kSize + kSize / 2,			 j			* kSize + kSize / 2,		k			* kSize + kSize / 2);			// Top left
-				glm::vec3 hvec = glm::vec3(i	   * kSize + kSize / 2,			 j			* kSize + kSize / 2,		k			* kSize + kSize / 2);			// Top right
-				
-				int bitwiseSum = 0;
-
-				//cout << "a : " << a << " isolevel: " << isolevel << endl;
-
-				if (a > isolevel)   { bitwiseSum |= 1; } // upper left corner
-				if (b > isolevel)   { bitwiseSum |= 2; } // upper right corner
-				if (d > isolevel)   { bitwiseSum |= 4; } // lower right corner
-				if (c > isolevel)   { bitwiseSum |= 8; } // lower left corner
-
-				if (e > isolevel)   { bitwiseSum |= 16; } // upper left corner
-				if (f > isolevel)   { bitwiseSum |= 32; } // upper right corner
-				if (g > isolevel)   { bitwiseSum |= 64; } // lower right corner
-				if (h > isolevel)   { bitwiseSum |= 128; } // lower left corner
-
-				bool bolesk = true;
-				int cunt = 0;
-				/* Cube is entirely in/out of the surface */
-				//cout << "bitwiseSum: " << bitwiseSum << endl;
-				if (edgeTable[bitwiseSum] == 0){
-					bolesk = false;
-				}
-
-
-				/* Find the vertices where the surface intersects the cube */
-				// & Works as an %-sign
-				if (edgeTable[bitwiseSum] & 1){
-				
-					glm::vec3 temp = VertexInterp(avec, bvec, a, b);
-
-//					cout << "0" << endl;
-
-					vertlist[0][0] = temp.x;
-					vertlist[0][1] = temp.y;
-					vertlist[0][2] = temp.z;
-
+		
+		for (int ia = 0; ia < 63; ia++){
+			for (int ib = 0; ib < 63; ib++){
+				for (int ic = 0; ic < 63; ic++){
 					
-				}
-				if (edgeTable[bitwiseSum] & 2 ){
-									
-					glm::vec3 temp = VertexInterp(bvec, cvec, b, c);
-	//				cout << "1" << endl;
-					vertlist[1][0] = temp.x;
-					vertlist[1][1] = temp.y;
-					vertlist[1][2] = temp.z;
-					
-				}
+					float a, b, c, d, e, f, g, h;
+					//Bottom
+					//a,b,c,d,e,f,g,h innehåller bidraget typ..
+					a = squares2[ia][ib][ic]; // upper left			
+					b = squares2[ia + 1][ib][ic]; // upper right
+					c = squares2[ia + 1][ib][ic + 1]; // lower left
+					d = squares2[ia][ib][ic + 1]; // lower right
 
-				if (edgeTable[bitwiseSum] & 4 ){
+					//a,b,c,d,e,f,g,h innehåller bidraget typ..
+					e = squares2[ia][ib + 1][ic]; // upper left			
+					f = squares2[ia + 1][ib + 1][ic]; // upper right
+					g = squares2[ia + 1][ib + 1][ic + 1]; // lower left
+					h = squares2[ia][ib + 1][ic + 1]; // lower right
+					
+					//Bottom
+					glm::vec3 avec = glm::vec3(ia		* kSize + kSize / 2, ib		* kSize + kSize / 2, ic			* kSize + kSize / 2);			// Left far
+					glm::vec3 bvec = glm::vec3((ia + 1) * kSize + kSize / 2, ib		* kSize + kSize / 2, ic			* kSize + kSize / 2);			// Right far
+					glm::vec3 cvec = glm::vec3((ia + 1) * kSize + kSize / 2, ib		* kSize + kSize / 2, (ic + 1)	* kSize + kSize / 2);			// Bot right
+					glm::vec3 dvec = glm::vec3(ia       * kSize + kSize / 2, ib		* kSize + kSize / 2, (ic + 1)	* kSize + kSize / 2);			// Bot left
 
-					glm::vec3 temp = VertexInterp(cvec, dvec, c, d);
-		//			cout << "2" << endl;
-					vertlist[2][0] = temp.x;
-					vertlist[2][1] = temp.y;
-					vertlist[2][2] = temp.z;
 
-					
-				}
-				if (edgeTable[bitwiseSum] & 8 ){
-					glm::vec3 temp = VertexInterp(dvec, evec, d, e); 
-			//		cout << "3" << endl;
-					vertlist[3][0] = temp.x;
-					vertlist[3][1] = temp.y;
-					vertlist[3][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 16 ){
-					glm::vec3 temp = VertexInterp(evec, fvec, e, f);
-				//	cout << "4" << endl;
-					vertlist[4][0] = temp.x;
-					vertlist[4][1] = temp.y;
-					vertlist[4][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 32 ){
-					glm::vec3 temp = VertexInterp(fvec, gvec, f, g);
-//					cout << "5" << endl;
-					vertlist[5][0] = temp.x;
-					vertlist[5][1] = temp.y;
-					vertlist[5][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 64 ){
-					glm::vec3 temp = VertexInterp(gvec, hvec, g, h);
-	//				cout << "6" << endl;
-					vertlist[6][0] = temp.x;
-					vertlist[6][1] = temp.y;
-					vertlist[6][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 128 ){
-					glm::vec3 temp = VertexInterp(gvec, evec, g, e);
-		//			cout << "7" << endl;
+					//Top
+					glm::vec3 evec = glm::vec3(ia	    * kSize + kSize / 2, (ib + 1)		* kSize + kSize / 2, ic			* kSize + kSize / 2);				// Left far
+					glm::vec3 fvec = glm::vec3((ia + 1) * kSize + kSize / 2, (ib + 1)		* kSize + kSize / 2, ic			* kSize + kSize / 2);			// Right far
+					glm::vec3 gvec = glm::vec3((ia + 1) * kSize + kSize / 2, (ib + 1)		* kSize + kSize / 2, (ic + 1)	* kSize + kSize / 2);			// Bot right
+					glm::vec3 hvec = glm::vec3(ia       * kSize + kSize / 2, (ib + 1)		* kSize + kSize / 2, (ic + 1)	* kSize + kSize / 2);			// Bot left
+						
 
-					vertlist[7][0] = temp.x;
-					vertlist[7][1] = temp.y;
-					vertlist[7][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 256 ){
-					glm::vec3 temp = VertexInterp(avec, evec, a, e);
-			//		cout << "8" << endl;
-					vertlist[8][0] = temp.x;
-					vertlist[8][1] = temp.y;
-					vertlist[8][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 512 ){
-					glm::vec3 temp = VertexInterp(bvec, fvec, b, f);
-					//cout << "9" << endl;
-					
-					vertlist[9][0] = temp.x;
-					vertlist[9][1] = temp.y;
-					vertlist[9][2] = temp.z;
-					
-					
-				}
-				if (edgeTable[bitwiseSum] & 1024 ){
-					glm::vec3 temp = VertexInterp(cvec, gvec, c, g);
-					//cout << "10" << endl;
+					int bitwiseSum = 0;
 
-					vertlist[10][0] = temp.x;
-					vertlist[10][1] = temp.y;
-					vertlist[10][2] = temp.z;
-					
-				}
-				if (edgeTable[bitwiseSum] & 2048 ){
-					glm::vec3 temp = VertexInterp(dvec, hvec, d, h);
-					//cout << "11" << endl;
-					////cout << "temp.x = " << temp.x << " temp.y = " << temp.y << " temp.z = " << temp.z << endl;
+					if (a > isolevel)    bitwiseSum |= 1;  // upper left corner
+					if (b > isolevel)    bitwiseSum |= 2;  // upper right corner
+					if (d > isolevel)    bitwiseSum |= 4;  // lower right corner
+					if (c > isolevel)    bitwiseSum |= 8;  // lower left corner
 
-					vertlist[11][0] = temp.x;		//vertlist[11][0] kommer vara x-värdet för en vertex
-					vertlist[11][1] = temp.y;
-					vertlist[11][2] = temp.z;
-					
-				}
+					if (e > isolevel)    bitwiseSum |= 16;  // upper left corner
+					if (f > isolevel)    bitwiseSum |= 32;  // upper right corner
+					if (g > isolevel)    bitwiseSum |= 64;  // lower right corner
+					if (h > isolevel)    bitwiseSum |= 128;  // lower left corner
 
-				
-				//if (bolesk){
-					
-					//cout << "cunt : " << cunt << endl;
-				
-					/*cout << "This should be one body" << endl;
-					cout << "===========================================================" << endl;*/
-					for (int i = 0; triTable[bitwiseSum][i] != -1; i += 3) {
-						//Det ligger tre vertexes i p1, p2, p3 just nu
-						int p1 = triTable[bitwiseSum][i + 0];
-						int p2 = triTable[bitwiseSum][i + 1];
-						int p3 = triTable[bitwiseSum][i + 2];
+					int ab = 0, bc = 0, cd = 0, de = 0, ef = 0, fg = 0, gh = 0, hj = 0, jk = 0, kl = 0,lm = 0, mn = 0;
 
-						/*if (   ((vertlist[p1][ 0] == 0) && (vertlist[p1][ 1] == 0) && (vertlist[p1][2] == 0))
-							|| ((vertlist[p2][ 0] == 0) && (vertlist[p2][ 1] == 0) && (vertlist[p2][2] == 0))
-							|| ((vertlist[p3][ 0] == 0) && (vertlist[p3][ 1] == 0) && (vertlist[p3][2] == 0))
+					bool bolesk = true;
+					int cunt = 0;
+					/* Cube is entirely in/out of the surface */
+					//cout << "bitwiseSum: " << bitwiseSum << endl;
+					if (edgeTable[bitwiseSum] == 0){
+						bolesk = false;
+					}
+
+					if (bolesk){
+						/* Find the vertices where the surface intersects the cube */
+						// & Works as an %-sign
+						if (edgeTable[bitwiseSum] & 1){
+							glm::vec3 temp = VertexInterp(avec, bvec, a, b);
+							vertlist[0][0] = temp.x;
+							vertlist[0][1] = temp.y;
+							vertlist[0][2] = temp.z;
+							ab++;
+							cunt++;
+
+						}
+						if (edgeTable[bitwiseSum] & 2){
+							glm::vec3 temp = VertexInterp(bvec, cvec, b, c);
+							vertlist[1][0] = temp.x;
+							vertlist[1][1] = temp.y;
+							vertlist[1][2] = temp.z;
+							bc++;
+						}
+
+						if (edgeTable[bitwiseSum] & 4){
+							glm::vec3 temp = VertexInterp(cvec, dvec, c, d);
+							cunt++;
+							vertlist[2][0] = temp.x;
+							vertlist[2][1] = temp.y;
+							vertlist[2][2] = temp.z;
+							cd++;
+
+						}
+						if (edgeTable[bitwiseSum] & 8){
+
+							glm::vec3 temp = VertexInterp(dvec, evec, d, e);
+							cunt++;
+							vertlist[3][0] = temp.x;
+							vertlist[3][1] = temp.y;
+							vertlist[3][2] = temp.z;
+							de++;
+						}
+						if (edgeTable[bitwiseSum] & 16){ // Denna verkar fungera
+							glm::vec3 temp = VertexInterp(evec, fvec, e, f);
+							cunt++;
+							vertlist[4][0] = temp.x;
+							vertlist[4][1] = temp.y;
+							vertlist[4][2] = temp.z;
+							ef++;
+						}
+						if (edgeTable[bitwiseSum] & 32){
+							glm::vec3 temp = VertexInterp(fvec, gvec, f, g);
+							cunt++;
+							vertlist[5][0] = temp.x;
+							vertlist[5][1] = temp.y;
+							vertlist[5][2] = temp.z;
+							fg++;
+						}
+						if (edgeTable[bitwiseSum] & 64){ // Denna verkar fungera
+							glm::vec3 temp = VertexInterp(gvec, hvec, g, h);
+
+							vertlist[6][0] = temp.x;
+							vertlist[6][1] = temp.y;
+							vertlist[6][2] = temp.z;
+							gh++;
+						}
+						if (edgeTable[bitwiseSum] & 128){
+							glm::vec3 temp = VertexInterp(hvec, evec, h, e); /////////////////////////////////////////////////////////////////HÄR ÄR FUCKAT
+							cunt++;
+							vertlist[7][0] = temp.x;
+							vertlist[7][1] = temp.y;
+							vertlist[7][2] = temp.z;
+							hj++;
+						}
+						if (edgeTable[bitwiseSum] & 256){
+							cunt++;
+							glm::vec3 temp = VertexInterp(avec, evec, a, e);
+							vertlist[8][0] = temp.x;
+							vertlist[8][1] = temp.y;
+							vertlist[8][2] = temp.z;
+							jk++;
+						}
+						if (edgeTable[bitwiseSum] & 512){
+							glm::vec3 temp = VertexInterp(bvec, fvec, b, f);
+							cunt++;
+							vertlist[9][0] = temp.x;
+							vertlist[9][1] = temp.y;
+							vertlist[9][2] = temp.z;
+							kl++;
+						}
+						if (edgeTable[bitwiseSum] & 1024){
+							glm::vec3 temp = VertexInterp(cvec, gvec, c, g);
+							cunt++;
+							vertlist[10][0] = temp.x;
+							vertlist[10][1] = temp.y;
+							vertlist[10][2] = temp.z;
+							lm++;
+						}
+						if (edgeTable[bitwiseSum] & 2048){
+							glm::vec3 temp = VertexInterp(dvec, hvec, d, h);
 							
-							){
-							cout << "This is fucked" << endl;
+							vertlist[11][0] = temp.x;		//vertlist[11][0] kommer vara x-värdet för en vertex
+							vertlist[11][1] = temp.y;
+							vertlist[11][2] = temp.z;
+							mn++;
+						}
 
-							cout << "This should be one triangle: " << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "vertlist[" << p1 << "][0] = " << vertlist[p1][0] << endl;
-							cout << "vertlist[" << p1 << "][1] = " << vertlist[p1][1] << endl;
-							cout << "vertlist[" << p1 << "][2] = " << vertlist[p1][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "vertlist[" << p2 << "][0] = " << vertlist[p2][0] << endl;
-							cout << "vertlist[" << p2 << "][1] = " << vertlist[p2][1] << endl;
-							cout << "vertlist[" << p2 << "][2] = " << vertlist[p2][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "vertlist[" << p3 << "][0] = " << vertlist[p3][0] << endl;
-							cout << "vertlist[" << p3 << "][1] = " << vertlist[p3][1] << endl;
-							cout << "vertlist[" << p3 << "][2] = " << vertlist[p3][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-
-							cout << "TJABBA" << endl;
-
-						}*/
-						//else{
-
-							//cout << "p1 : " << p1 << " p2 : " << p2 << " p3 " << p3 << endl;
-
-
-							/*triangles[ntriang][0] = vertlist[p1][i + 0];
-							triangles[ntriang][1] = vertlist[p1][i + 1];
-							triangles[ntriang][2] = vertlist[p1][i + 2];
-
-							triangles[ntriang][3] = vertlist[p2][i + 0];
-							triangles[ntriang][4] = vertlist[p2][i + 1];
-							triangles[ntriang][5] = vertlist[p2][i + 2];
-
-							triangles[ntriang][6] = vertlist[p3][i + 0];
-							triangles[ntriang][7] = vertlist[p3][i + 1];
-							triangles[ntriang][8] = vertlist[p3][i + 2];*/
+						//cout << "cunt : " << cunt << endl;
+						
+						glPolygonMode( GL_FRONT_AND_BACK , GL_FILL );
+						//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						glBegin(GL_TRIANGLE_STRIP);
+						int cunt2 = 0;
+						for (int i = 0; triTable[bitwiseSum][i] != -1; i += 3) {
+							//Det ligger tre vertexes i p1, p2, p3 just nu
+							int p1 = triTable[bitwiseSum][i + 0];
+							int p2 = triTable[bitwiseSum][i + 1];
+							int p3 = triTable[bitwiseSum][i + 2];
 							
-//							glEnable(GL_CULL_FACE);
-//							glBegin(GL_TRIANGLE_STRIP);
-//							
-//							glColor4f(0.2, 0.2, 1.0, 0.0f);
-//
-//							/*glVertex3f(vertlist[p1][0], vertlist[p1][1], vertlist[p1][2]);
-//							glVertex3f(vertlist[p2][0], vertlist[p2][1], vertlist[p2][2]);
-//							glVertex3f(vertlist[p3][0], vertlist[p3][1], vertlist[p3][2]);
-//*/
-//							glVertex3f(vertlist[p1][0], vertlist[p1][1], vertlist[p1][2]);
-//							glVertex3f(vertlist[p2][0], vertlist[p2][1], vertlist[p2][2]);
-//							glVertex3f(vertlist[p3][0], vertlist[p3][1], vertlist[p3][2]);
-//
-//							glEnd();
-
-							/*cout << " vertlist[p1][0], vertlist[p1][1], vertlist[p1][2] = " << vertlist[p1][0] <<" " << vertlist[p1][1] << " " << vertlist[p1][2] << endl;
-							cout << " vertlist[p2][0], vertlist[p1][1], vertlist[p1][2] = " << vertlist[p2][0] << " " << vertlist[p2][1] << " " << vertlist[p2][2] << endl;
-							cout << " vertlist[p3][0], vertlist[p1][1], vertlist[p1][2] = " << vertlist[p3][0] << " " << vertlist[p3][1] << " " << vertlist[p3][2] << endl;
-
-							cout << "------------------------------------------------------" << endl;
-*/
-							glm::vec3 tempo = glm::vec3(vertlist[p1][0] - vertlist[p2][0], vertlist[p1][1] - vertlist[p2][1], vertlist[p1][2] - vertlist[p2][2]);
-							glm::vec3 temp2 = glm::vec3(vertlist[p2][0] - vertlist[p3][0], vertlist[p2][1] - vertlist[p3][1], vertlist[p2][2] - vertlist[p3][2]);
-
-							glm::vec3 norm = glm::cross(tempo,temp2);
-
+								glColor3f(.0, .0, 1.0);
 							
-								glBegin(GL_TRIANGLE_STRIP);
-								// Draw Front faces
-								//cout << "fucj" << endl;
-								glColor4f(0.0, 0.2, 1.0, 0.0f);
+							
+							
 								glVertex3f(vertlist[p1][0], vertlist[p1][1], vertlist[p1][2]);
 								glVertex3f(vertlist[p2][0], vertlist[p2][1], vertlist[p2][2]);
 								glVertex3f(vertlist[p3][0], vertlist[p3][1], vertlist[p3][2]);
 
-								glEnd();
-							
-							
-							
-							
-							/*cout << "This should be one triangle: " << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "triangles[" << ntriang << "][0] = " << triangles[ntriang][0] << endl;
-							cout << "triangles[" << ntriang << "][1] = " << triangles[ntriang][1] << endl;
-							cout << "triangles[" << ntriang << "][2] = " << triangles[ntriang][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "triangles[" << ntriang << "][3] = " << triangles[ntriang][3] << endl;
-							cout << "triangles[" << ntriang << "][4] = " << triangles[ntriang][4] << endl;
-							cout << "triangles[" << ntriang << "][5] = " << triangles[ntriang][5] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "triangles[" << ntriang << "][6] = " << triangles[ntriang][6] << endl;
-							cout << "triangles[" << ntriang << "][7] = " << triangles[ntriang][7] << endl;
-							cout << "triangles[" << ntriang << "][8] = " << triangles[ntriang][8] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-*/
-							/*cout << "This should be one triangle: " << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "vertlist[" << p1 << "][0] = " << vertlist[p1][0] << endl;
-							cout << "vertlist[" << p1 << "][1] = " << vertlist[p1][1] << endl;
-							cout << "vertlist[" << p1 << "][2] = " << vertlist[p1][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "vertlist[" << p2 << "][0] = " << vertlist[p2][0] << endl;
-							cout << "vertlist[" << p2 << "][1] = " << vertlist[p2][1] << endl;
-							cout << "vertlist[" << p2 << "][2] = " << vertlist[p2][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							cout << "vertlist[" << p3 << "][0] = " << vertlist[p3][0] << endl;
-							cout << "vertlist[" << p3 << "][1] = " << vertlist[p3][1] << endl;
-							cout << "vertlist[" << p3 << "][2] = " << vertlist[p3][2] << endl;
-							cout << endl;
-							cout << "--------------------------------------------------------" << endl;
-							*/
-
-							ntriang++;
-						//}
-
-
+							cunt2++;
+						}
+						glEnd();
 						
 
 
-						
 
-						//Draw one triangle
-						
-						//ntriang++;
+
 					}
-					
-					//cout << "Nr of triangles: " << ntriang << endl;
-					
 				}
-
-				//cout << " - -- - - - - - -- - -- - - -- -- - -" << endl;
-
-				//glBegin(GL_TRIANGLE_STRIP);
-				//glColor3f(0.0f,0.0f,1.0f);
-				//int kalle = 0;
-				////Den kan tydligen gå in i flera av if-satserna ovanför, måste ändra bitwiseSum
-				////Fast de verkar den ta hand om, om man kollar loggarna
-				//for (int kalle = 0; triTable[bitwiseSum][kalle] != -1; kalle++){
-				//	int p1 = triTable[bitwiseSum][kalle];
-
-				//	cout << "p1 = " << p1 << endl;
-
-				///*cout << "vertlist.x: " << vertlist[p1][0] << endl;
-				//	cout << "vertlist.y: " << vertlist[p1][1] << endl;
-				//	cout << "vertlist.z: " << vertlist[p1][2] << endl;
-				//	cout << endl;*/
-
-				//	triangles[kalle][1] = vertlist[p1][0];
-				//	triangles[kalle][2] = vertlist[p1][1];
-				//	triangles[kalle][3] = vertlist[p1][2];
-				//	ntriang++;
-				//	glTexCoord2f(0.0, 1.0); glVertex3f(vertlist[p1][0], vertlist[p1][1], vertlist[p1][2]);
-				//}
-				/*if (kalle > 0){
-					cout << "------------------------" << endl;
-					cout << "------------------------" << endl;
-					cout << "i : " << kalle << endl;
-				}*/
-				
-				//glEnd();
-
 			}
 		}
-	//}
-		
 
-
-	for (int i = 0; i < TEMPSIZE * TEMPSIZE * TEMPSIZE; ++i) {
-		squares[i] = 0.f;
+	for (int i = 0; i < 64; i++) {
+		for (int k = 0; k < 64; k++) {
+			for (int c = 0; c < 64; c++) {
+				squares2[i][k][c] = 0.f;
+			}
+		}
 	}
-
 	
 
 }
+
 
 void reshape_window(GLFWwindow* window, int width, int height)
 {
@@ -1318,13 +1143,13 @@ void drawCoordinateAxes(){
     glColor3f(1.f, 1.f, 1.f);
     
     glVertex3f(0.f,0.f,0.f);
-    glVertex3f(512.f,0.f,0.f);
+    glVertex3f(256.f,0.f,0.f);
     
     glVertex3f(0.f,0.f,0.f);
-    glVertex3f(0.f,512.f,0.f);
+    glVertex3f(0.f,256.f,0.f);
 
     glVertex3f(0.f,0.f,0.f);
-    glVertex3f(0.f, 0.f, 512.f);
+    glVertex3f(0.f, 0.f, 256.f);
     
     glEnd();
     glPopMatrix();
@@ -1372,78 +1197,20 @@ int main(int argc, char *argv[])
         // Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
         
-        //calculateNewGravityVec();
+       // calculateNewGravityVec();
         drawCoordinateAxes();
-        box.DrawBox((int)512, TEMPSIZE);
+        box.DrawBox((int)256, TEMPSIZE);
 			
 		calculateAcceleration();
         display();
-		displayWithoutMarching();
-        idle();
-		//cout << "ntriang: " << ntriang <<endl;
-		//glBegin(GL_TRIANGLE_STRIP);
-		//for (int i = 0; i < ntriang; i++){
-		//	
-		//	glColor4f(0.0,1.0,0.0,0.0f);
-
-		//	/*cout << "This should be one triangle: " << endl;
-		//	cout << "--------------------------------------------------------" << endl;
-		//	cout << "triangles[" << i << "][0] = " << triangles[i][0] << endl;
-		//	cout << "triangles[" << i << "][1] = " << triangles[i][1] << endl;
-		//	cout << "triangles[" << i << "][2] = " << triangles[i][2] << endl;
-		//	cout << endl;
-		//	cout << "--------------------------------------------------------" << endl;
-		//	cout << "triangles[" << i << "][3] = " << triangles[i][3] << endl;
-		//	cout << "triangles[" << i << "][4] = " << triangles[i][4] << endl;
-		//	cout << "triangles[" << i << "][5] = " << triangles[i][5] << endl;
-		//	cout << endl;
-		//	cout << "--------------------------------------------------------" << endl;
-		//	cout << "triangles[" << i << "][6] = " << triangles[i][6] << endl;
-		//	cout << "triangles[" << i << "][7] = " << triangles[i][7] << endl;
-		//	cout << "triangles[" << i << "][8] = " << triangles[i][8] << endl;
-		//	cout << endl;
-		//	cout << "--------------------------------------------------------" << endl;*/
-		//	
-		//	
-		//	
-		//	/*glTexCoord2f(0.0, 1.0); */glVertex3f(triangles[i][0], triangles[i][1], triangles[i][2]);
-		//	/*glTexCoord2f(0.0, 1.0);*/ glVertex3f(triangles[i][3], triangles[i][4], triangles[i][5]);
-		//	/*glTexCoord2f(0.0, 1.0);*/ glVertex3f(triangles[i][6], triangles[i][7], triangles[i][8]);
-		//	
-		//}
-		//glEnd();
 		
-		//Used to draw just the lines
-		/*glBegin(GL_LINE_STRIP);
-		for (int i = 0; i < ntriang; i++){
-
-			if (i % 2 == 0) glColor4f(1.0, 0.0f, 0.0f, 0.0f);
-			if (i % 3 == 0) glColor4f(0.0, 1.0f, 0.0f, 0.0f);
-			if (i % 5 == 0) glColor4f(0.0, 0.0f, 1.0f, 0.0f);
-			glVertex3f(triangles[i][0], triangles[i][1], triangles[i][2]);
-			glVertex3f(triangles[i][3], triangles[i][4], triangles[i][5]);
-			glVertex3f(triangles[i][6], triangles[i][7], triangles[i][8]);
-		}
-		glEnd();
-		*/
-
-		//glBegin(GL_TRIANGLE_STRIP);
-		//for (int i = 0; i < z; i++){
-
-		//	//cout << endl;
-		//	//cout << endl;
-		//	glColor3f(1.0f,0.0f,0.0f);
-		//	glTexCoord2f(0.0, 1.0); glVertex3f(triangles[i][0], triangles[i][1], triangles[i][2]);
-		//}
-		//glEnd();
-		//if (z>0)
-		//	cout << "z: " << z << endl;
-
+        idle();
 
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);
+
 		glfwSwapBuffers(window);
-        
+
         //Poll for and process events
         glfwPollEvents();
 
