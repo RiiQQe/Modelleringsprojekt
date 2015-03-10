@@ -7,16 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1E22BE271AA5FE3800E42EC9 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95B17A6D1A7F6B8E00A0D807 /* Particle.cpp */; };
 		1E66A23A1A78D2B0009B9388 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E66A2391A78D2B0009B9388 /* GLUT.framework */; };
+		1E9564731AAEE5CC00D87BEE /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E9564721AAEE5CC00D87BEE /* OpenCL.framework */; };
+		1EA826281AAEF77600E0CE30 /* Box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA8261C1AAEF77600E0CE30 /* Box.cpp */; };
+		1EA826291AAEF77600E0CE30 /* Cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA8261E1AAEF77600E0CE30 /* Cell.cpp */; };
+		1EA8262A1AAEF77600E0CE30 /* libglfw3.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EA826201AAEF77600E0CE30 /* libglfw3.3.0.dylib */; };
+		1EA8262B1AAEF77600E0CE30 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA826211AAEF77600E0CE30 /* main.cpp */; };
+		1EA8262C1AAEF77600E0CE30 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA826221AAEF77600E0CE30 /* Particle.cpp */; };
+		1EA8262D1AAEF77600E0CE30 /* ParticleKernels.cl in Sources */ = {isa = PBXBuildFile; fileRef = 1EA826241AAEF77600E0CE30 /* ParticleKernels.cl */; };
+		1EA8262E1AAEF77600E0CE30 /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA826251AAEF77600E0CE30 /* Sphere.cpp */; };
+		1EB665961AAF07E5002019F5 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EA826261AAEF77600E0CE30 /* utils.cpp */; };
+		1EB665971AAF07E9002019F5 /* utils.h in Sources */ = {isa = PBXBuildFile; fileRef = 1EA826271AAEF77600E0CE30 /* utils.h */; };
 		1ED472F51A7780DF0065D12B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472F41A7780DF0065D12B /* Cocoa.framework */; };
 		1ED472F71A7780FB0065D12B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472F61A7780FB0065D12B /* CoreVideo.framework */; };
 		1ED472FB1A7785950065D12B /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ED472FA1A7785950065D12B /* IOKit.framework */; };
-		953CFBAE1A7687B000FBC979 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 953CFBAD1A7687B000FBC979 /* main.cpp */; };
 		953CFBB51A7687F700FBC979 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 953CFBB41A7687F700FBC979 /* OpenGL.framework */; };
 		95B17A751A7F6CF900A0D807 /* libglfw3.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 95B17A741A7F6CF900A0D807 /* libglfw3.3.0.dylib */; };
-		95B17A771A7F717700A0D807 /* Box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95B17A6F1A7F6BB100A0D807 /* Box.cpp */; };
-		95B17A7C1A80CB1A00A0D807 /* Cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95B17A7A1A80CB1A00A0D807 /* Cell.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,21 +39,26 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1E1F367B1A9B5AA40003A27B /* Sphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
 		1E66A2391A78D2B0009B9388 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		1E9564721AAEE5CC00D87BEE /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
+		1EA8261C1AAEF77600E0CE30 /* Box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box.cpp; sourceTree = "<group>"; };
+		1EA8261D1AAEF77600E0CE30 /* Box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box.h; sourceTree = "<group>"; };
+		1EA8261E1AAEF77600E0CE30 /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cell.cpp; sourceTree = "<group>"; };
+		1EA8261F1AAEF77600E0CE30 /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cell.h; sourceTree = "<group>"; };
+		1EA826201AAEF77600E0CE30 /* libglfw3.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libglfw3.3.0.dylib; sourceTree = "<group>"; };
+		1EA826211AAEF77600E0CE30 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		1EA826221AAEF77600E0CE30 /* Particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Particle.cpp; sourceTree = "<group>"; };
+		1EA826231AAEF77600E0CE30 /* Particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
+		1EA826241AAEF77600E0CE30 /* ParticleKernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = ParticleKernels.cl; sourceTree = "<group>"; };
+		1EA826251AAEF77600E0CE30 /* Sphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
+		1EA826261AAEF77600E0CE30 /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
+		1EA826271AAEF77600E0CE30 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
 		1ED472F41A7780DF0065D12B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		1ED472F61A7780FB0065D12B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		1ED472FA1A7785950065D12B /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		953CFBAA1A7687B000FBC979 /* Modelleringsprojekt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Modelleringsprojekt; sourceTree = BUILT_PRODUCTS_DIR; };
-		953CFBAD1A7687B000FBC979 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		953CFBB41A7687F700FBC979 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		95B17A6D1A7F6B8E00A0D807 /* Particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Particle.cpp; sourceTree = "<group>"; };
-		95B17A6F1A7F6BB100A0D807 /* Box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box.cpp; sourceTree = "<group>"; };
-		95B17A701A7F6BB100A0D807 /* Box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box.h; sourceTree = "<group>"; };
-		95B17A711A7F6BB100A0D807 /* Particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
 		95B17A741A7F6CF900A0D807 /* libglfw3.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw3.3.0.dylib; path = Modelleringsprojekt/libglfw3.3.0.dylib; sourceTree = "<group>"; };
-		95B17A7A1A80CB1A00A0D807 /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cell.cpp; sourceTree = "<group>"; };
-		95B17A7B1A80CB1A00A0D807 /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cell.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,10 +66,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E9564731AAEE5CC00D87BEE /* OpenCL.framework in Frameworks */,
 				95B17A751A7F6CF900A0D807 /* libglfw3.3.0.dylib in Frameworks */,
 				1E66A23A1A78D2B0009B9388 /* GLUT.framework in Frameworks */,
 				1ED472FB1A7785950065D12B /* IOKit.framework in Frameworks */,
 				1ED472F71A7780FB0065D12B /* CoreVideo.framework in Frameworks */,
+				1EA8262A1AAEF77600E0CE30 /* libglfw3.3.0.dylib in Frameworks */,
 				1ED472F51A7780DF0065D12B /* Cocoa.framework in Frameworks */,
 				953CFBB51A7687F700FBC979 /* OpenGL.framework in Frameworks */,
 			);
@@ -70,6 +83,7 @@
 		953CFBA11A7687B000FBC979 = {
 			isa = PBXGroup;
 			children = (
+				1E9564721AAEE5CC00D87BEE /* OpenCL.framework */,
 				95B17A741A7F6CF900A0D807 /* libglfw3.3.0.dylib */,
 				1E66A2391A78D2B0009B9388 /* GLUT.framework */,
 				1ED472FA1A7785950065D12B /* IOKit.framework */,
@@ -92,14 +106,18 @@
 		953CFBAC1A7687B000FBC979 /* Modelleringsprojekt */ = {
 			isa = PBXGroup;
 			children = (
-				95B17A6F1A7F6BB100A0D807 /* Box.cpp */,
-				1E1F367B1A9B5AA40003A27B /* Sphere.cpp */,
-				95B17A701A7F6BB100A0D807 /* Box.h */,
-				95B17A7A1A80CB1A00A0D807 /* Cell.cpp */,
-				95B17A7B1A80CB1A00A0D807 /* Cell.h */,
-				95B17A711A7F6BB100A0D807 /* Particle.h */,
-				95B17A6D1A7F6B8E00A0D807 /* Particle.cpp */,
-				953CFBAD1A7687B000FBC979 /* main.cpp */,
+				1EA8261C1AAEF77600E0CE30 /* Box.cpp */,
+				1EA8261D1AAEF77600E0CE30 /* Box.h */,
+				1EA8261E1AAEF77600E0CE30 /* Cell.cpp */,
+				1EA8261F1AAEF77600E0CE30 /* Cell.h */,
+				1EA826201AAEF77600E0CE30 /* libglfw3.3.0.dylib */,
+				1EA826211AAEF77600E0CE30 /* main.cpp */,
+				1EA826221AAEF77600E0CE30 /* Particle.cpp */,
+				1EA826231AAEF77600E0CE30 /* Particle.h */,
+				1EA826241AAEF77600E0CE30 /* ParticleKernels.cl */,
+				1EA826251AAEF77600E0CE30 /* Sphere.cpp */,
+				1EA826261AAEF77600E0CE30 /* utils.cpp */,
+				1EA826271AAEF77600E0CE30 /* utils.h */,
 			);
 			path = Modelleringsprojekt;
 			sourceTree = "<group>";
@@ -160,10 +178,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1E22BE271AA5FE3800E42EC9 /* Particle.cpp in Sources */,
-				95B17A771A7F717700A0D807 /* Box.cpp in Sources */,
-				95B17A7C1A80CB1A00A0D807 /* Cell.cpp in Sources */,
-				953CFBAE1A7687B000FBC979 /* main.cpp in Sources */,
+				1EB665971AAF07E9002019F5 /* utils.h in Sources */,
+				1EB665961AAF07E5002019F5 /* utils.cpp in Sources */,
+				1EA826281AAEF77600E0CE30 /* Box.cpp in Sources */,
+				1EA8262C1AAEF77600E0CE30 /* Particle.cpp in Sources */,
+				1EA8262D1AAEF77600E0CE30 /* ParticleKernels.cl in Sources */,
+				1EA826291AAEF77600E0CE30 /* Cell.cpp in Sources */,
+				1EA8262E1AAEF77600E0CE30 /* Sphere.cpp in Sources */,
+				1EA8262B1AAEF77600E0CE30 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +269,7 @@
 		953CFBB21A7687B000FBC979 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -256,6 +279,8 @@
 					/usr/local/lib,
 					"$(PROJECT_DIR)/Modelleringsprojekt",
 				);
+				OPENCL_AUTO_VECTORIZE_ENABLE = YES;
+				OPENCL_COMPILER_VERSION = CL1.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -263,6 +288,7 @@
 		953CFBB31A7687B000FBC979 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -272,6 +298,8 @@
 					/usr/local/lib,
 					"$(PROJECT_DIR)/Modelleringsprojekt",
 				);
+				OPENCL_AUTO_VECTORIZE_ENABLE = YES;
+				OPENCL_COMPILER_VERSION = CL1.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
