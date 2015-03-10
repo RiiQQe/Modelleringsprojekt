@@ -812,29 +812,29 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 
 	glm::vec3 temp;
 	double mu;
-	
-	if (abs(isolevel - val1) < 1.00001){
+
+	if (abs(isolevel - val1) > .3){
 		//cout << "1 = " << abs(isolevel - val1) << endl;
-		//xyz.x = 10000;
-		//xyz.y = 10000;
-		//xyz.z = 10000;
+		/*xyz.x = 10000;
+		xyz.y = 10000;
+		xyz.z = 10000;*/
 		return xyz;
 	}
-		
-	if (abs(isolevel - val2) < 1.00001){
+
+	if (abs(isolevel - val2) > .3){
 		//cout << "2 = " << abs(isolevel - val2) << endl;
-		//dxyz.x = 20000;
-		//dxyz.y = 20000;
-		//dxyz.z = 20000;
+		/*dxyz.x = 20000;
+		dxyz.y = 20000;
+		dxyz.z = 20000;*/
 
 		return dxyz;
 	}
-		
-	if (abs(val1 - val2) < 1.00001){
+				
+	if (abs(val1 - val2) > .00001){
 		//cout << "3 = " << abs(val1 - val2) << endl;
-		//xyz.x = 30000;
-		//xyz.y = 30000;
-		//xyz.z = 30000;
+		/*xyz.x = 30000;
+		xyz.y = 30000;
+		xyz.z = 30000;*/
 		return xyz;
 	}
 		
@@ -946,9 +946,9 @@ void display()
 
 
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "1  " << endl;
+								cout << "1  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "1  " << endl;
+								cout << "1  val2" << endl;
 							}
 
 							vertlist[0][0] = temp.x;
@@ -964,10 +964,10 @@ void display()
 							vertlist[1][1] = temp.y;
 							vertlist[1][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "2  " << endl;
+								cout << "2  val1" << endl;
 							}
 							if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "2  " << endl;
+								cout << "2  val2" << endl;
 							}
 							bc++;
 						}
@@ -979,24 +979,24 @@ void display()
 							vertlist[2][1] = temp.y;
 							vertlist[2][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "4  " << endl;
+								cout << "4  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "4 " << endl;
+								cout << "4 val2" << endl;
 							}
 							cd++;
 
 						}
 						if (edgeTable[bitwiseSum] & 8){
 
-							glm::vec3 temp = VertexInterp(dvec, evec, d, e);
+							glm::vec3 temp = VertexInterp(dvec, avec, d, a);
 							cunt++;
 							vertlist[3][0] = temp.x;
 							vertlist[3][1] = temp.y;
 							vertlist[3][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "8  " << endl;
+								cout << "8  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "8 " << endl;
+								cout << "8  val2" << endl;
 							}
 							de++;
 						}
@@ -1007,9 +1007,9 @@ void display()
 							vertlist[4][1] = temp.y;
 							vertlist[4][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "16  " << endl;
+								cout << "16  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "16  " << endl;
+								cout << "16  val2" << endl;
 							}
 							ef++;
 						}
@@ -1020,9 +1020,9 @@ void display()
 							vertlist[5][1] = temp.y;
 							vertlist[5][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "32  " << endl;
+								cout << "32  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "32  " << endl;
+								cout << "32  val2" << endl;
 							}
 							fg++;
 						}
@@ -1033,9 +1033,9 @@ void display()
 							vertlist[6][1] = temp.y;
 							vertlist[6][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "64  " << endl;
+								cout << "64  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "64  " << endl;
+								cout << "64  val2 " << endl;
 							}
 							gh++;
 						}
@@ -1047,9 +1047,9 @@ void display()
 							vertlist[7][2] = temp.z;
 							hj++;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "128  " << endl;
+								cout << "128  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "128  " << endl;
+								cout << "128  val2" << endl;
 							}
 						}
 						if (edgeTable[bitwiseSum] & 256){
@@ -1060,9 +1060,9 @@ void display()
 							vertlist[8][2] = temp.z;
 							jk++;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "256  " << endl;
+								cout << "256  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "256  " << endl;
+								cout << "256  val2" << endl;
 							}
 						}
 						if (edgeTable[bitwiseSum] & 512){
@@ -1073,9 +1073,9 @@ void display()
 							vertlist[9][2] = temp.z;
 							kl++;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "512  " << endl;
+								cout << "512  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "512  " << endl;
+								cout << "512  val2" << endl;
 							}
 						}
 						if (edgeTable[bitwiseSum] & 1024){
@@ -1086,9 +1086,9 @@ void display()
 							vertlist[10][2] = temp.z;
 							lm++;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "1024  " << endl;
+								cout << "1024  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "1024  " << endl;
+								cout << "1024  val2" << endl;
 							}
 						}
 						if (edgeTable[bitwiseSum] & 2048){
@@ -1098,9 +1098,9 @@ void display()
 							vertlist[11][1] = temp.y;
 							vertlist[11][2] = temp.z;
 							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "2048  " << endl;
+								cout << "2048  val1" << endl;
 							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "2048  " << endl;
+								cout << "2048  val2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
 							}
 							mn++;
 						}
