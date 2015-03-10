@@ -581,7 +581,7 @@ const double h = 16.f;
 const float STIFFNESS = 500 * 5.f;
 const float GRAVITY_CONST = 8000 * 9.82f;
 
-const int TEMPSIZE = 32;
+const int TEMPSIZE = 64;
 
 float squares[TEMPSIZE * TEMPSIZE * TEMPSIZE];
 
@@ -592,7 +592,7 @@ float normVertList[12][3];
 
 float triangleList[120000][8];
 
-float squares2[64][64][64] = { 0.f, 0.f, 0.f };
+float squares2[TEMPSIZE][TEMPSIZE][TEMPSIZE] = { 0.f, 0.f, 0.f };
 
 int ntriangs;
 
@@ -865,9 +865,9 @@ void display()
 
 	
 	int kSize = 256 / TEMPSIZE;
-		for (int a = 0; a < 64; a++){
-			for (int b = 0; b < 64; b++){
-				for (int c = 0; c < 64; c++){
+		for (int a = 0; a < TEMPSIZE; a++){
+			for (int b = 0; b < TEMPSIZE; b++){
+				for (int c = 0; c < TEMPSIZE; c++){
 					int x = kSize * a + kSize / 2;
 					int y = kSize * b + kSize / 2;
 					int z = kSize * c + kSize / 2;
@@ -884,9 +884,9 @@ void display()
 			}
 		}
 		
-		for (int ia = 0; ia < 63; ia++){
-			for (int ib = 0; ib < 63; ib++){
-				for (int ic = 0; ic < 63; ic++){
+		for (int ia = 0; ia < TEMPSIZE - 1; ia++){
+			for (int ib = 0; ib < TEMPSIZE - 1; ib++){
+				for (int ic = 0; ic < TEMPSIZE - 1; ic++){
 					
 					float a, b, c, d, e, f, g, h;
 					//Bottom
@@ -959,7 +959,7 @@ void display()
 
 						}
 						if (edgeTable[bitwiseSum] & 2){
-							glm::vec3 temp = VertexInterp(cvec, bvec, c, b);
+							glm::vec3 temp = VertexInterp(bvec, cvec, b, c);
 							vertlist[1][0] = temp.x;
 							vertlist[1][1] = temp.y;
 							vertlist[1][2] = temp.z;
@@ -1107,8 +1107,8 @@ void display()
 
 						//cout << "cunt : " << cunt << endl;
 						
-						/*glPolygonMode( GL_FRONT_AND_BACK , GL_FILL );*/
-						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						glPolygonMode( GL_FRONT_AND_BACK , GL_FILL );
+						//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 						glBegin(GL_TRIANGLE_STRIP);
 						int cunt2 = 0;
 						for (int i = 0; triTable[bitwiseSum][i] != -1; i += 3) {
@@ -1136,9 +1136,9 @@ void display()
 			}
 		}
 
-	for (int i = 0; i < 64; i++) {
-		for (int k = 0; k < 64; k++) {
-			for (int c = 0; c < 64; c++) {
+	for (int i = 0; i < TEMPSIZE; i++) {
+		for (int k = 0; k < TEMPSIZE; k++) {
+			for (int c = 0; c < TEMPSIZE; c++) {
 				squares2[i][k][c] = 0.f;
 			}
 		}
