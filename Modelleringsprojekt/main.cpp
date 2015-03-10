@@ -30,8 +30,9 @@
 #include <memory.h>
 #include <vector>
 
+
 //Foldername modified in CUDA library for OpenCL
-#include "CL_nvidia\cl.h"
+#include "CL\cl.h"
 #include "utils.h"
 
 #include <GL/glew.h>
@@ -39,14 +40,15 @@
 
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include <GL/glut.h>;
 //for perf. counters
 #include <Windows.h>
-#include "Sphere.cpp"
+//#include "Sphere.cpp"
 
 
 // Macros for OpenCL versions
-#define OPENCL_VERSION_1_2  1.1f
-#define OPENCL_VERSION_2_0  1.1f
+#define OPENCL_VERSION_1_2  1.2f
+#define OPENCL_VERSION_2_0  2.0f
 
 /* This function helps to create informative messages in
  * case when OpenCL errors occur. It returns a string
@@ -81,7 +83,7 @@ int frameCounterSpecialName = 0;
 const int W = 32, H = 32, L = 32;
 const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 1000;
+const cl_uint BEGIN_PARTICLES = 3000;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -387,7 +389,7 @@ void drawParticles(){
 
 }
 //Draw all the particles
-void drawSphereParticles() {
+/*void drawSphereParticles() {
 	handleFps();
 	for (int i = 0; i < NUM_PARTICLES; i++){
 		glColor3f(0.2, 0.2, 1);
@@ -395,7 +397,7 @@ void drawSphereParticles() {
 		sphere.draw(particle_pos[i].x, particle_pos[i].y, particle_pos[i].z);
 		
 	}
-}
+}*/
 //Draw particles as Cubes
 void drawCubeParticles(){
 	handleFps();
@@ -1640,6 +1642,8 @@ bool CheckPreferredPlatformMatch(cl_platform_id platform, const char* preferredP
         LogError("Error: clGetplatform_ids() to get CL_PLATFORM_NAME returned %s.\n", TranslateOpenCLError(err));
         return false;
     }
+
+	std::cout << &platformName[0] << std::endl; 
     
     // Now check if the platform's name is the required one
     if (strstr(&platformName[0], preferredPlatform) != 0)
@@ -2592,6 +2596,20 @@ int executeOnGPU(ocl_args_d_t *ocl){
 	
 }
 
+void renderString(void * font, std::string k, int posx, int posy){
+
+	glRasterPos2i(posx, posy);
+
+	for (std::string::iterator i = k.begin(); i != k.end(); i++){
+		char c = *i;
+
+		glutBitmapCharacter(font, c);
+		
+
+		//std::cout << "heeej" << std::endl;
+	}
+}
+
 
 /*
  * main execution routine
@@ -2754,8 +2772,8 @@ int _tmain(int argc, TCHAR* argv[])
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 
-
-
+	
+	void * font = GLUT_BITMAP_9_BY_15;
 	while (!glfwWindowShouldClose(window)){
 
 
@@ -2775,9 +2793,35 @@ int _tmain(int argc, TCHAR* argv[])
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
+		//glDisable(GL_LIGHT0);
+		//glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHTING);
+		//Display text
+		glPushMatrix();
+			glLoadIdentity();
+			gluOrtho2D(0.0, 1024, 0.0, 1024);
+
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+				glLoadIdentity();
+
+				glColor3f(1.0, 1.0, 1.0); 
+
+				renderString(font, "Move box with arrows", 750, 1000);
+				renderString(font, "Rotate box with: A, S, D and W", 750, 980);
+				renderString(font, "Carl Bildt this city", 750, 960);
+
+				//glutBitmapLength(font, c);
+
+				glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+
+			glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 		
-
-
+		//glEnable(GL_LIGHT0);
+		//glEnable(GL_LIGHT1);
+		glEnable(GL_LIGHTING);
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
 		glOrtho(0.0, 1024, 0.0, 1024, -1024.0, 1024);
 		handleInputs();
@@ -2807,7 +2851,7 @@ int _tmain(int argc, TCHAR* argv[])
 		//drawSphereParticles();
 		//drawBetaBalls();
 
-		//Swap front and back buffers
+		//Swap front and back buffers	
 		glfwSetWindowSizeCallback(window, reshape_window);
 		glfwSwapBuffers(window);
 

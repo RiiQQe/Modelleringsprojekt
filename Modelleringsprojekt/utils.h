@@ -22,7 +22,7 @@
 
 
 //Foldername modified in CUDA library for OpenCL
-#include "CL_nvidia\cl.h"
+#include "CL\cl.h"
 #include <d3d9.h>
 
 
