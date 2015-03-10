@@ -581,11 +581,11 @@ const double h = 16.f;
 const float STIFFNESS = 500 * 5.f;
 const float GRAVITY_CONST = 8000 * 9.82f;
 
-const int TEMPSIZE = 64;
+const int TEMPSIZE = 32;
 
 float squares[TEMPSIZE * TEMPSIZE * TEMPSIZE];
 
-const float isolevel = 1.5f ;	
+const float isolevel = 1.9f ;	
 
 float vertlist[12][3];
 float normVertList[12][3];
@@ -669,7 +669,6 @@ void init()
 
     }
 
-	
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT * Cell::GRID_LENGTH; j++) {
         
         cells[j].CreateCell(j);
@@ -813,17 +812,32 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 
 	glm::vec3 temp;
 	double mu;
-	/*if(val1 > 2.4 || val2 > 2.4){
-		cout << "val1 : " << val1 << endl;
+	
+	if (abs(isolevel - val1) < 1.00001){
+		//cout << "1 = " << abs(isolevel - val1) << endl;
+		//xyz.x = 10000;
+		//xyz.y = 10000;
+		//xyz.z = 10000;
+		return xyz;
+	}
+		
+	if (abs(isolevel - val2) < 1.00001){
+		//cout << "2 = " << abs(isolevel - val2) << endl;
+		//dxyz.x = 20000;
+		//dxyz.y = 20000;
+		//dxyz.z = 20000;
 
-		cout << "val2 : " << val2 << endl;
-	}*/
-	if (abs(isolevel - val1) < 1.00001)
-		return xyz;
-	if (abs(isolevel - val2) < 1.00001)
 		return dxyz;
-	if (abs(val1 - val2) < 1.00001)
+	}
+		
+	if (abs(val1 - val2) < 1.00001){
+		//cout << "3 = " << abs(val1 - val2) << endl;
+		//xyz.x = 30000;
+		//xyz.y = 30000;
+		//xyz.z = 30000;
 		return xyz;
+	}
+		
 
 	mu = ((isolevel - val1) / (val2 - val1));
 
@@ -929,6 +943,14 @@ void display()
 						// & Works as an %-sign
 						if (edgeTable[bitwiseSum] & 1){
 							glm::vec3 temp = VertexInterp(avec, bvec, a, b);
+
+
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "1  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "1  " << endl;
+							}
+
 							vertlist[0][0] = temp.x;
 							vertlist[0][1] = temp.y;
 							vertlist[0][2] = temp.z;
@@ -937,10 +959,16 @@ void display()
 
 						}
 						if (edgeTable[bitwiseSum] & 2){
-							glm::vec3 temp = VertexInterp(bvec, cvec, b, c);
+							glm::vec3 temp = VertexInterp(cvec, bvec, c, b);
 							vertlist[1][0] = temp.x;
 							vertlist[1][1] = temp.y;
 							vertlist[1][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "2  " << endl;
+							}
+							if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "2  " << endl;
+							}
 							bc++;
 						}
 
@@ -950,6 +978,11 @@ void display()
 							vertlist[2][0] = temp.x;
 							vertlist[2][1] = temp.y;
 							vertlist[2][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "4  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "4 " << endl;
+							}
 							cd++;
 
 						}
@@ -960,6 +993,11 @@ void display()
 							vertlist[3][0] = temp.x;
 							vertlist[3][1] = temp.y;
 							vertlist[3][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "8  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "8 " << endl;
+							}
 							de++;
 						}
 						if (edgeTable[bitwiseSum] & 16){ // Denna verkar fungera
@@ -968,6 +1006,11 @@ void display()
 							vertlist[4][0] = temp.x;
 							vertlist[4][1] = temp.y;
 							vertlist[4][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "16  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "16  " << endl;
+							}
 							ef++;
 						}
 						if (edgeTable[bitwiseSum] & 32){
@@ -976,6 +1019,11 @@ void display()
 							vertlist[5][0] = temp.x;
 							vertlist[5][1] = temp.y;
 							vertlist[5][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "32  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "32  " << endl;
+							}
 							fg++;
 						}
 						if (edgeTable[bitwiseSum] & 64){ // Denna verkar fungera
@@ -984,6 +1032,11 @@ void display()
 							vertlist[6][0] = temp.x;
 							vertlist[6][1] = temp.y;
 							vertlist[6][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "64  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "64  " << endl;
+							}
 							gh++;
 						}
 						if (edgeTable[bitwiseSum] & 128){
@@ -993,6 +1046,11 @@ void display()
 							vertlist[7][1] = temp.y;
 							vertlist[7][2] = temp.z;
 							hj++;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "128  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "128  " << endl;
+							}
 						}
 						if (edgeTable[bitwiseSum] & 256){
 							cunt++;
@@ -1001,6 +1059,11 @@ void display()
 							vertlist[8][1] = temp.y;
 							vertlist[8][2] = temp.z;
 							jk++;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "256  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "256  " << endl;
+							}
 						}
 						if (edgeTable[bitwiseSum] & 512){
 							glm::vec3 temp = VertexInterp(bvec, fvec, b, f);
@@ -1009,6 +1072,11 @@ void display()
 							vertlist[9][1] = temp.y;
 							vertlist[9][2] = temp.z;
 							kl++;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "512  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "512  " << endl;
+							}
 						}
 						if (edgeTable[bitwiseSum] & 1024){
 							glm::vec3 temp = VertexInterp(cvec, gvec, c, g);
@@ -1017,6 +1085,11 @@ void display()
 							vertlist[10][1] = temp.y;
 							vertlist[10][2] = temp.z;
 							lm++;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "1024  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "1024  " << endl;
+							}
 						}
 						if (edgeTable[bitwiseSum] & 2048){
 							glm::vec3 temp = VertexInterp(dvec, hvec, d, h);
@@ -1024,13 +1097,18 @@ void display()
 							vertlist[11][0] = temp.x;		//vertlist[11][0] kommer vara x-värdet för en vertex
 							vertlist[11][1] = temp.y;
 							vertlist[11][2] = temp.z;
+							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
+								cout << "2048  " << endl;
+							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
+								cout << "2048  " << endl;
+							}
 							mn++;
 						}
 
 						//cout << "cunt : " << cunt << endl;
 						
-						glPolygonMode( GL_FRONT_AND_BACK , GL_FILL );
-						//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						/*glPolygonMode( GL_FRONT_AND_BACK , GL_FILL );*/
+						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 						glBegin(GL_TRIANGLE_STRIP);
 						int cunt2 = 0;
 						for (int i = 0; triTable[bitwiseSum][i] != -1; i += 3) {
@@ -1040,9 +1118,7 @@ void display()
 							int p3 = triTable[bitwiseSum][i + 2];
 							
 								glColor3f(.0, .0, 1.0);
-							
-							
-							
+
 								glVertex3f(vertlist[p1][0], vertlist[p1][1], vertlist[p1][2]);
 								glVertex3f(vertlist[p2][0], vertlist[p2][1], vertlist[p2][2]);
 								glVertex3f(vertlist[p3][0], vertlist[p3][1], vertlist[p3][2]);
