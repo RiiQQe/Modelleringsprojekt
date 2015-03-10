@@ -81,7 +81,7 @@ int frameCounterSpecialName = 0;
 const int W = 32, H = 32, L = 32;
 const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 2500;
+const cl_uint BEGIN_PARTICLES = 1000;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -1857,7 +1857,12 @@ void initParticles()
 
 		x++;
 		
-		particle_pos[i] = (vec4(10.0 + x*16.f / 2.0, 4.0 * 4.f + y*16.f / 2, 10.0 + z*16.f / 2, 0));
+		//		k * x < 256, l * y < 256, m * z < 256 -> 
+		//	->	k > 256 / x
+
+
+
+		particle_pos[i] = (vec4(20.0 + x*8.0f, 20.f + y*8.f, 20.0 + z*8.f, 0));
 	}
 
 }
@@ -2697,7 +2702,7 @@ int _tmain(int argc, TCHAR* argv[])
 	//From main projekt
 	glfwInit();
 
-	window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
+	window = glfwCreateWindow(1024, 1024, "OpenGL", nullptr, nullptr); // Windowed
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
@@ -2774,7 +2779,7 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 512, 0.0, 512, -512.0, 512);
+		glOrtho(0.0, 1024, 0.0, 1024, -1024.0, 1024);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
