@@ -1983,7 +1983,7 @@ int CreateAndBuildProgram(ocl_args_d_t *ocl)
     // The size of the C program is returned in sourceSize
     char* source = NULL;
     size_t src_size = 0;
-    err = ReadSourceFromFile("Template.cl", &source, &src_size);
+    err = ReadSourceFromFile("ParticleKernels.cl", &source, &src_size);
     if (CL_SUCCESS != err)
     {
         LogError("Error: ReadSourceFromFile returned %s.\n", TranslateOpenCLError(err));
@@ -2702,7 +2702,7 @@ int _tmain(int argc, TCHAR* argv[])
 	//From main projekt
 	glfwInit();
 
-	window = glfwCreateWindow(1024, 1024, "OpenGL", nullptr, nullptr); // Windowed
+	window = glfwCreateWindow(600, 600, "OpenGL", nullptr, nullptr); // Windowed
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
@@ -2779,7 +2779,7 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 1024, 0.0, 1024, -1024.0, 1024);
+		glOrtho(0.0, 600, 0.0, 600, -600.0, 600);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
