@@ -34,6 +34,8 @@
 #include "CL_nvidia\cl.h"
 #include "utils.h"
 
+#include "Marchingcubes.h"
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
@@ -81,7 +83,7 @@ int frameCounterSpecialName = 0;
 const int W = 32, H = 32, L = 32;
 const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 1000;
+const cl_uint BEGIN_PARTICLES = 5;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -104,9 +106,14 @@ Cell *cells;
 
 
 
-//BETA BALLS
+//BETA CUBES
 const int TEMPSIZE = 64;
-float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
+
+float squares[TEMPSIZE * TEMPSIZE * TEMPSIZE];
+
+const float isolevel = 1.f;
+
+float vertlist[12][3];
 
 //For 3D version
 GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -153,6 +160,27 @@ void handleFps() {
 	}
 }
 
+
+glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
+
+	glm::vec3 temp;
+	double mu;
+
+	if (abs(isolevel - val1) < 1.00001)
+		return xyz;
+	if (abs(isolevel - val2) < 1.00001)
+		return dxyz;
+	if (abs(val1 - val2) < 1.00001)
+		return xyz;
+
+	mu = (isolevel - val1) / (val2 - val1);
+
+	temp.x = xyz.x + mu * (dxyz.x - xyz.x);
+	temp.y = xyz.y + mu * (dxyz.y - xyz.y);
+	temp.z = xyz.z + mu * (dxyz.z - xyz.z);
+
+	return temp;
+}
 
 
 void handleInputs(){
@@ -226,7 +254,7 @@ void drawParticlesContainer(){
 	//The Borders
 	glPushMatrix();
 	glBegin(GL_LINES);
-	glColor3f(1.f, 1.f, 1.f);
+	glColor4f(1.f, 1.f, 1.f, 0.f);
 	//Top
 	glVertex3f(1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize);
@@ -322,7 +350,7 @@ void drawParticlesContainer(){
 	glEnd();  // End of drawing color-cube
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 }
 void drawCoordinateAxes(){
 
@@ -357,6 +385,257 @@ void calculateNewGravityVec(){
 }
 
 
+
+void drawMarchingCubes(){
+	handleFps();
+
+
+	int kSize = 256 / TEMPSIZE;
+
+	for (int k = 0; k < TEMPSIZE * TEMPSIZE * TEMPSIZE; k++) {
+		int x = kSize * (k % TEMPSIZE);
+
+		int y = kSize * ((k / TEMPSIZE) % TEMPSIZE);
+		int z = (k / (TEMPSIZE * TEMPSIZE)) * kSize;
+
+		// for each cell, check
+		for (int i = 0; i < NUM_PARTICLES - MAX_ADDED_PARTICLES; i++) {
+
+			// calculate height map, sum
+			// squares contains the radius to the particle
+
+			//Just nu tror ja att denna fuckar upp, orkar inte kolla pĺ det just nu dock
+			squares[k] += (70.f*70.f) / (
+				(x - particle_pos[i].x) * (x - particle_pos[i].x) +
+				(y - particle_pos[i].y) * (y - particle_pos[i].y) +
+				(z - particle_pos[i].z) * (z - particle_pos[i].z));
+
+
+
+		}
+
+	}
+
+	for (int i = 0; i < TEMPSIZE - 1; i++) {
+		for (int j = 0; j < TEMPSIZE - 1; j++) {
+			for (int k = 0; k < TEMPSIZE - 1; k++){
+
+				float a, b, c, d, e, f, g, h;
+
+				//Bottom
+				//a,b,c,d,e,f,g,h innehĺller bidraget typ..
+
+				a = squares[i + (j + 1) * TEMPSIZE + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper left			
+				b = squares[i + 1 + (j + 1) * TEMPSIZE + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper right
+				c = squares[i + 1 + (j + 1) * TEMPSIZE + k			* TEMPSIZE * TEMPSIZE]; // lower left
+				d = squares[i + (j + 1) * TEMPSIZE + k			* TEMPSIZE * TEMPSIZE]; // lower right
+
+				//Top
+				e = squares[i + j		  * TEMPSIZE + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper left
+				f = squares[i + 1 + j		  * TEMPSIZE + (k + 1)		* TEMPSIZE * TEMPSIZE]; // upper right
+				g = squares[i + 1 + j		  * TEMPSIZE + k			* TEMPSIZE * TEMPSIZE]; // lower left
+				h = squares[i + j		  * TEMPSIZE + k			* TEMPSIZE * TEMPSIZE]; // lower right
+
+				//Bottom
+				glm::vec3 avec = glm::vec3(i	   * kSize + kSize / 2, (j + 1)		* kSize + kSize / 2, (k + 1)		* kSize + kSize / 2);			// Left far
+				glm::vec3 bvec = glm::vec3((i + 1) * kSize + kSize / 2, (j + 1)		* kSize + kSize / 2, (k + 1)		* kSize + kSize / 2);			// Right far
+				glm::vec3 cvec = glm::vec3((i + 1) * kSize + kSize / 2, (j + 1)		* kSize + kSize / 2, k			* kSize + kSize / 2);			// Bot right
+				glm::vec3 dvec = glm::vec3(i       * kSize + kSize / 2, (j + 1)		* kSize + kSize / 2, k 			* kSize + kSize / 2);			// Bot left
+
+				//Top
+				glm::vec3 evec = glm::vec3(i	   * kSize + kSize / 2, j			* kSize + kSize / 2, (k + 1)		* kSize + kSize / 2);			// Top left
+				glm::vec3 fvec = glm::vec3((i + 1) * kSize + kSize / 2, j			* kSize + kSize / 2, (k + 1)		* kSize + kSize / 2);			// Top right
+				glm::vec3 gvec = glm::vec3((i + 1) * kSize + kSize / 2, j			* kSize + kSize / 2, k			* kSize + kSize / 2);			// Top left
+				glm::vec3 hvec = glm::vec3(i	   * kSize + kSize / 2, j			* kSize + kSize / 2, k			* kSize + kSize / 2);			// Top right
+
+				int bitwiseSum = 0;
+
+				//cout << "a : " << a << " isolevel: " << isolevel << endl;
+
+				if (a > isolevel)   { bitwiseSum |= 1; } // upper left corner
+				if (b > isolevel)   { bitwiseSum |= 2; } // upper right corner
+				if (d > isolevel)   { bitwiseSum |= 4; } // lower right corner
+				if (c > isolevel)   { bitwiseSum |= 8; } // lower left corner
+
+				if (e > isolevel)   { bitwiseSum |= 16; } // upper left corner
+				if (f > isolevel)   { bitwiseSum |= 32; } // upper right corner
+				if (g > isolevel)   { bitwiseSum |= 64; } // lower right corner
+				if (h > isolevel)   { bitwiseSum |= 128; } // lower left corner
+
+				bool bolesk = true;
+				int cunt = 0;
+				/* Cube is entirely in/out of the surface */
+				//cout << "bitwiseSum: " << bitwiseSum << endl;
+				if (edgeTable[bitwiseSum] == 0){
+					bolesk = false;
+				}
+
+
+				/* Find the vertices where the surface intersects the cube */
+				// & Works as an %-sign
+				if (edgeTable[bitwiseSum] & 1){
+
+					glm::vec3 temp = VertexInterp(avec, bvec, a, b);
+
+					//					cout << "0" << endl;
+
+					vertlist[0][0] = temp.x;
+					vertlist[0][1] = temp.y;
+					vertlist[0][2] = temp.z;
+
+
+				}
+				if (edgeTable[bitwiseSum] & 2){
+
+					glm::vec3 temp = VertexInterp(bvec, cvec, b, c);
+					//				cout << "1" << endl;
+					vertlist[1][0] = temp.x;
+					vertlist[1][1] = temp.y;
+					vertlist[1][2] = temp.z;
+
+				}
+
+				if (edgeTable[bitwiseSum] & 4){
+
+					glm::vec3 temp = VertexInterp(cvec, dvec, c, d);
+					//			cout << "2" << endl;
+					vertlist[2][0] = temp.x;
+					vertlist[2][1] = temp.y;
+					vertlist[2][2] = temp.z;
+
+
+				}
+				if (edgeTable[bitwiseSum] & 8){
+					glm::vec3 temp = VertexInterp(dvec, evec, d, e);
+					//		cout << "3" << endl;
+					vertlist[3][0] = temp.x;
+					vertlist[3][1] = temp.y;
+					vertlist[3][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 16){
+					glm::vec3 temp = VertexInterp(evec, fvec, e, f);
+					//	cout << "4" << endl;
+					vertlist[4][0] = temp.x;
+					vertlist[4][1] = temp.y;
+					vertlist[4][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 32){
+					glm::vec3 temp = VertexInterp(fvec, gvec, f, g);
+					//					cout << "5" << endl;
+					vertlist[5][0] = temp.x;
+					vertlist[5][1] = temp.y;
+					vertlist[5][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 64){
+					glm::vec3 temp = VertexInterp(gvec, hvec, g, h);
+					//				cout << "6" << endl;
+					vertlist[6][0] = temp.x;
+					vertlist[6][1] = temp.y;
+					vertlist[6][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 128){
+					glm::vec3 temp = VertexInterp(gvec, evec, g, e);
+					//			cout << "7" << endl;
+
+					vertlist[7][0] = temp.x;
+					vertlist[7][1] = temp.y;
+					vertlist[7][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 256){
+					glm::vec3 temp = VertexInterp(avec, evec, a, e);
+					//		cout << "8" << endl;
+					vertlist[8][0] = temp.x;
+					vertlist[8][1] = temp.y;
+					vertlist[8][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 512){
+					glm::vec3 temp = VertexInterp(bvec, fvec, b, f);
+					//cout << "9" << endl;
+
+					vertlist[9][0] = temp.x;
+					vertlist[9][1] = temp.y;
+					vertlist[9][2] = temp.z;
+
+
+				}
+				if (edgeTable[bitwiseSum] & 1024){
+					glm::vec3 temp = VertexInterp(cvec, gvec, c, g);
+					//cout << "10" << endl;
+
+					vertlist[10][0] = temp.x;
+					vertlist[10][1] = temp.y;
+					vertlist[10][2] = temp.z;
+
+				}
+				if (edgeTable[bitwiseSum] & 2048){
+					glm::vec3 temp = VertexInterp(dvec, hvec, d, h);
+					//cout << "11" << endl;
+					////cout << "temp.x = " << temp.x << " temp.y = " << temp.y << " temp.z = " << temp.z << endl;
+
+					vertlist[11][0] = temp.x;		//vertlist[11][0] kommer vara x-värdet för en vertex
+					vertlist[11][1] = temp.y;
+					vertlist[11][2] = temp.z;
+
+				}
+
+
+			
+				for (int i = 0; triTable[bitwiseSum][i] != -1; i += 3) {
+					//Det ligger tre vertexes i p1, p2, p3 just nu
+					int p1 = triTable[bitwiseSum][i + 0];
+					int p2 = triTable[bitwiseSum][i + 1];
+					int p3 = triTable[bitwiseSum][i + 2];
+
+				
+					glm::vec3 tempo = glm::vec3(vertlist[p1][0] - vertlist[p2][0], vertlist[p1][1] - vertlist[p2][1], vertlist[p1][2] - vertlist[p2][2]);
+					glm::vec3 temp2 = glm::vec3(vertlist[p2][0] - vertlist[p3][0], vertlist[p2][1] - vertlist[p3][1], vertlist[p2][2] - vertlist[p3][2]);
+
+					glm::vec3 norm = glm::cross(tempo, temp2);
+
+
+					glBegin(GL_TRIANGLE_STRIP);
+					// Draw Front faces
+					glColor4f(0.0, 0.2, 1.0, 0.0f);
+					glVertex3f(vertlist[p1][0], vertlist[p1][1], vertlist[p1][2]);
+					glVertex3f(vertlist[p2][0], vertlist[p2][1], vertlist[p2][2]);
+					glVertex3f(vertlist[p3][0], vertlist[p3][1], vertlist[p3][2]);
+
+					//printf("Vertlist[p1][0] %4.8f ", vertlist[p1][0]);
+					glEnd();
+
+
+				}
+
+
+
+			}
+
+			
+
+		}
+	}
+	//}
+
+
+
+	for (int i = 0; i < TEMPSIZE * TEMPSIZE * TEMPSIZE; ++i) {
+		squares[i] = 0.f;
+	}
+
+
+
+
+
+
+
+
+}
 
 
 
@@ -2712,7 +2991,7 @@ int _tmain(int argc, TCHAR* argv[])
 	float angle = 0.0;
 	angle += 360. / 10.;
 
-	// set camera parameters
+	 //set camera parameters
 	GLdouble eyeX = .5*cos(angle);
 	GLdouble eyeY = .5*sin(angle);
 	GLdouble eyeZ = 0.;
@@ -2769,8 +3048,8 @@ int _tmain(int argc, TCHAR* argv[])
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//For transparency
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/*glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -2779,7 +3058,7 @@ int _tmain(int argc, TCHAR* argv[])
 
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 600, 0.0, 600, -600.0, 600);
+		glOrtho(0.0, 512, 0.0, 512, -512.0, 512);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
@@ -2800,9 +3079,10 @@ int _tmain(int argc, TCHAR* argv[])
 
 		//END GPU STUFF
 		//drawParticles();
+		drawParticlesContainer();
+		drawMarchingCubes();
+		//drawCubeParticles();
 		
-			drawCubeParticles();
-			drawParticlesContainer();
 		
 		//drawSphereParticles();
 		//drawBetaBalls();
