@@ -2743,8 +2743,6 @@ int _tmain(int argc, TCHAR* argv[])
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		//glDisable(GL_LIGHT0);
-		//glDisable(GL_LIGHT1);
 		glDisable(GL_LIGHTING);
 		//Display text
 		glPushMatrix();
@@ -2760,37 +2758,24 @@ int _tmain(int argc, TCHAR* argv[])
 				renderString(font, "Move box with arrows", 750, 1000);
 				renderString(font, "Rotate box with: A, S, D and W", 750, 980);
 				renderString(font, "Carl Bildt this city", 750, 960);
-
-				//glutBitmapLength(font, c);
-
+		
 				glMatrixMode(GL_MODELVIEW);
 			glPopMatrix();
 
 			glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		
-		//glEnable(GL_LIGHT0);
-		//glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHTING);
-		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
+		
 		glOrtho(0.0, 1024, 0.0, 1024, -1024.0, 1024);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
 		calculateNewGravityVec();
-		//drawCoordinateAxes();
 
 		//GPU STUFF
 		executeOnGPU(&ocl);
 
-		//for (int i = 0; i < NUM_CELLS; i++){
-		//	printf("NUMBEROF PARTICLE %i \n " , cells[i].nrOfParticles);
-		//	//Fill array of particle IDS with unvalid default value -1
-		//	//std::fill(cells[i].particleIDs, cells[i].particleIDs + 1000, -1);
-		//}
-		/*if (frameCounterSpecialName++ % 10 != 0) {
-			continue;
-		}*/
 
 		//END GPU STUFF
 		//drawParticles();
