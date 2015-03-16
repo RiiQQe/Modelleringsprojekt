@@ -39,6 +39,7 @@
 
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include <GL/glut.h>;
 //for perf. counters
 #include <Windows.h>
 #include "Sphere.cpp"
@@ -2621,6 +2622,19 @@ int executeOnGPU(ocl_args_d_t *ocl){
 	
 }
 
+/*void renderString(void * font, std::string k, int posx, int posy){
+
+	glRasterPos2i(posx, posy);
+
+	for (std::string::iterator i = k.begin(); i != k.end(); i++){
+		char c = *i;
+
+		glutBitmapCharacter(font, c);
+
+
+	}
+}*/
+
 
 /*
  * main execution routine
@@ -2785,11 +2799,9 @@ int _tmain(int argc, TCHAR* argv[])
 	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 
 
-
-
+	//GLUT font 
+	void * font = GLUT_BITMAP_9_BY_15;
 	while (!glfwWindowShouldClose(window)){
-
-		
 
 		float ratio;
 		int width, height;
@@ -2805,11 +2817,35 @@ int _tmain(int argc, TCHAR* argv[])
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		
+		//Display 
+		/*glDisable(GL_LIGHTING);
+		glPushMatrix();
+			glLoadIdentity();
+			gluOrtho2D(0.0, 1024, 0.0, 1024);
+
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+				glLoadIdentity();
+
+				glColor3f(1.0, 1.0, 1.0);
+
+				renderString(font, "Move box with arrows", 750, 1000);
+				renderString(font, "Rotate box with: A, S, D and W", 750, 980);
+				renderString(font, "Carl Bildt this city", 750, 960);
+
+
+
+				glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+
+			glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_LIGHTING);*/
 
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 600, 0.0, 600, -1024.0, 1024);
+		glOrtho(0.0, 1024.0, 0.0, 1024.0, -1024.0, 1024.0);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
