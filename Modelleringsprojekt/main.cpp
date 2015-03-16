@@ -1,25 +1,3 @@
-/***************************************************************************** 
- * Copyright (c) 2013-2014 Intel Corporation
- * All rights reserved.
- *
- * WARRANTY DISCLAIMER
- *
- * THESE MATERIALS ARE PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL INTEL OR ITS
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THESE
- * MATERIALS, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * Intel Corporation is the author of the Materials, and requests that all
- * problem reports or change requests be submitted to it directly
- *****************************************************************************/
-
 #define GLEW_STATIC
 #define _USE_MATH_DEFINES
 
@@ -180,12 +158,15 @@ void handleInputs(){
 		phi = fmod(phi, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
 		if (phi < 0.0) phi += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
 		glRotatef(-phi, 0, 1, 0);
+		phi = 0.0;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A))
 	{
 		phi += deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
 		phi = fmod(phi, M_PI*2.0);
+		if (phi < 0.0) phi -= M_PI*2.0;
 		glRotatef(phi, 0, 1, 0);
+		//phi = 0.0;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_S)) {
@@ -193,12 +174,15 @@ void handleInputs(){
 		theta = fmod(theta, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
 		if (theta < 0.0) theta += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
 		glRotatef(-theta, 1, 0, 0);
+		theta = 0.0;
 	}
 	if (glfwGetKey(window, GLFW_KEY_W))
 	{
 		theta += deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
 		theta = fmod(theta, M_PI*2.0);
+		if (theta < M_PI) theta -= M_PI*2.0;
 		glRotatef(theta, 1, 0, 0);
+		//theta = 0.0;
 	}
 
 
@@ -464,13 +448,6 @@ void drawCubeParticles(){
 void drawBetaBalls(){
 
 	handleFps();
-	// Beta balls begins
-
-	// Marching cubes algorithm -
-	// bitwise tiling (Jonsson, 2015)
-	// Using ..
-	// f(x,y) = sum(i = 1 -> n) ri^2 / ((x - xi)^2 + (y - yi)^2)
-	//
 
 	// Needed for scaling
 	int kSize = 512 / TEMPSIZE;
@@ -793,13 +770,6 @@ void drawBetaBalls(){
 	}
 
 	// Beta balls ends
-
-	/*for(int i = 0; i < NUM_PARTICLES; i++){
-
-	particles[i].DrawObjects();
-
-	}*/
-
 
 }
 
@@ -1344,11 +1314,6 @@ const char* TranslateOpenCLError(cl_int errorCode)
     case CL_MAP_FAILURE:                        return "CL_MAP_FAILURE";
     case CL_MISALIGNED_SUB_BUFFER_OFFSET:       return "CL_MISALIGNED_SUB_BUFFER_OFFSET";                          //-13
     case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:    return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";   //-14
-    //case CL_COMPILE_PROGRAM_FAILURE:            return "CL_COMPILE_PROGRAM_FAILURE";                               //-15
-    //case CL_LINKER_NOT_AVAILABLE:               return "CL_LINKER_NOT_AVAILABLE";                                  //-16
-    //case CL_LINK_PROGRAM_FAILURE:               return "CL_LINK_PROGRAM_FAILURE";                                  //-17
-    //case CL_DEVICE_PARTITION_FAILED:            return "CL_DEVICE_PARTITION_FAILED";                               //-18
-    //case CL_KERNEL_ARG_INFO_NOT_AVAILABLE:      return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";                         //-19
     case CL_INVALID_VALUE:                      return "CL_INVALID_VALUE";
     case CL_INVALID_DEVICE_TYPE:                return "CL_INVALID_DEVICE_TYPE";
     case CL_INVALID_PLATFORM:                   return "CL_INVALID_PLATFORM";
@@ -1384,12 +1349,7 @@ const char* TranslateOpenCLError(cl_int errorCode)
     case CL_INVALID_MIP_LEVEL:                  return "CL_INVALID_MIP_LEVEL";
     case CL_INVALID_GLOBAL_WORK_SIZE:           return "CL_INVALID_GLOBAL_WORK_SIZE";                           //-63
     case CL_INVALID_PROPERTY:                   return "CL_INVALID_PROPERTY";                                   //-64
-    //case CL_INVALID_IMAGE_DESCRIPTOR:           return "CL_INVALID_IMAGE_DESCRIPTOR";                           //-65
-    //case CL_INVALID_COMPILER_OPTIONS:           return "CL_INVALID_COMPILER_OPTIONS";                           //-66
-    //case CL_INVALID_LINKER_OPTIONS:             return "CL_INVALID_LINKER_OPTIONS";                             //-67
-    //case CL_INVALID_DEVICE_PARTITION_COUNT:     return "CL_INVALID_DEVICE_PARTITION_COUNT";                     //-68
-//    case CL_INVALID_PIPE_SIZE:                  return "CL_INVALID_PIPE_SIZE";                                  //-69
-//    case CL_INVALID_DEVICE_QUEUE:               return "CL_INVALID_DEVICE_QUEUE";                               //-70    
+  
 
     default:
         return "UNKNOWN ERROR CODE";
@@ -1397,16 +1357,6 @@ const char* TranslateOpenCLError(cl_int errorCode)
 }
 
 
-/* Convenient container for all OpenCL specific objects used in the sample
- *
- * It consists of two parts:
- *   - regular OpenCL objects which are used in almost each normal OpenCL applications
- *   - several OpenCL objects that are specific for this particular sample
- *
- * You collect all these objects in one structure for utility purposes
- * only, there is no OpenCL specific here: just to avoid global variables
- * and make passing all these arguments in functions easier.
- */
 struct ocl_args_d_t
 {
     ocl_args_d_t();
