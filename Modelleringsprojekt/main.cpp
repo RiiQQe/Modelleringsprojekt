@@ -698,7 +698,7 @@ void calculateDensityAndPressure(){
         float density_sum = 0;
         int cellIndex = particles[i].getCellIndex();
     	
-		//Hämtar neighbouring celler
+		//Hï¿½mtar neighbouring celler
         vector<int> current_cells = cells[cellIndex].getNeighbours();
 	    for(int j = 0; j < current_cells.size(); j++){
 
@@ -813,28 +813,15 @@ glm::vec3 VertexInterp(glm::vec3 xyz, glm::vec3 dxyz, float val1, float val2){
 	glm::vec3 temp;
 	double mu;
 
-	if (abs(isolevel - val1) > .3){
-		//cout << "1 = " << abs(isolevel - val1) << endl;
-		/*xyz.x = 10000;
-		xyz.y = 10000;
-		xyz.z = 10000;*/
+	if (abs(isolevel - val1) > .00001){
 		return xyz;
 	}
 
-	if (abs(isolevel - val2) > .3){
-		//cout << "2 = " << abs(isolevel - val2) << endl;
-		/*dxyz.x = 20000;
-		dxyz.y = 20000;
-		dxyz.z = 20000;*/
-
+	if (abs(isolevel - val2) > .00001){
 		return dxyz;
 	}
 				
 	if (abs(val1 - val2) > .00001){
-		//cout << "3 = " << abs(val1 - val2) << endl;
-		/*xyz.x = 30000;
-		xyz.y = 30000;
-		xyz.z = 30000;*/
 		return xyz;
 	}
 		
@@ -890,13 +877,13 @@ void display()
 					
 					float a, b, c, d, e, f, g, h;
 					//Bottom
-					//a,b,c,d,e,f,g,h innehåller bidraget typ..
+					//a,b,c,d,e,f,g,h innehï¿½ller bidraget typ..
 					a = squares2[ia][ib][ic]; // upper left			
 					b = squares2[ia + 1][ib][ic]; // upper right
 					c = squares2[ia + 1][ib][ic + 1]; // lower left
 					d = squares2[ia][ib][ic + 1]; // lower right
 
-					//a,b,c,d,e,f,g,h innehåller bidraget typ..
+					//a,b,c,d,e,f,g,h innehï¿½ller bidraget typ..
 					e = squares2[ia][ib + 1][ic]; // upper left			
 					f = squares2[ia + 1][ib + 1][ic]; // upper right
 					g = squares2[ia + 1][ib + 1][ic + 1]; // lower left
@@ -944,31 +931,17 @@ void display()
 						if (edgeTable[bitwiseSum] & 1){
 							glm::vec3 temp = VertexInterp(avec, bvec, a, b);
 
-
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "1  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "1  val2" << endl;
-							}
-
 							vertlist[0][0] = temp.x;
 							vertlist[0][1] = temp.y;
 							vertlist[0][2] = temp.z;
 							ab++;
-							cunt++;
-
 						}
 						if (edgeTable[bitwiseSum] & 2){
 							glm::vec3 temp = VertexInterp(bvec, cvec, b, c);
 							vertlist[1][0] = temp.x;
 							vertlist[1][1] = temp.y;
 							vertlist[1][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "2  val1" << endl;
-							}
-							if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "2  val2" << endl;
-							}
+							
 							bc++;
 						}
 
@@ -978,11 +951,7 @@ void display()
 							vertlist[2][0] = temp.x;
 							vertlist[2][1] = temp.y;
 							vertlist[2][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "4  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "4 val2" << endl;
-							}
+						
 							cd++;
 
 						}
@@ -993,11 +962,7 @@ void display()
 							vertlist[3][0] = temp.x;
 							vertlist[3][1] = temp.y;
 							vertlist[3][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "8  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "8  val2" << endl;
-							}
+						
 							de++;
 						}
 						if (edgeTable[bitwiseSum] & 16){ // Denna verkar fungera
@@ -1006,11 +971,7 @@ void display()
 							vertlist[4][0] = temp.x;
 							vertlist[4][1] = temp.y;
 							vertlist[4][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "16  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "16  val2" << endl;
-							}
+							
 							ef++;
 						}
 						if (edgeTable[bitwiseSum] & 32){
@@ -1019,11 +980,7 @@ void display()
 							vertlist[5][0] = temp.x;
 							vertlist[5][1] = temp.y;
 							vertlist[5][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "32  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "32  val2" << endl;
-							}
+							
 							fg++;
 						}
 						if (edgeTable[bitwiseSum] & 64){ // Denna verkar fungera
@@ -1032,25 +989,17 @@ void display()
 							vertlist[6][0] = temp.x;
 							vertlist[6][1] = temp.y;
 							vertlist[6][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "64  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "64  val2 " << endl;
-							}
+							
 							gh++;
 						}
 						if (edgeTable[bitwiseSum] & 128){
-							glm::vec3 temp = VertexInterp(hvec, evec, h, e); /////////////////////////////////////////////////////////////////HÄR ÄR FUCKAT
+							glm::vec3 temp = VertexInterp(hvec, evec, h, e); /////////////////////////////////////////////////////////////////Hï¿½R ï¿½R FUCKAT
 							cunt++;
 							vertlist[7][0] = temp.x;
 							vertlist[7][1] = temp.y;
 							vertlist[7][2] = temp.z;
 							hj++;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "128  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "128  val2" << endl;
-							}
+							
 						}
 						if (edgeTable[bitwiseSum] & 256){
 							cunt++;
@@ -1059,11 +1008,7 @@ void display()
 							vertlist[8][1] = temp.y;
 							vertlist[8][2] = temp.z;
 							jk++;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "256  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "256  val2" << endl;
-							}
+							
 						}
 						if (edgeTable[bitwiseSum] & 512){
 							glm::vec3 temp = VertexInterp(bvec, fvec, b, f);
@@ -1072,11 +1017,7 @@ void display()
 							vertlist[9][1] = temp.y;
 							vertlist[9][2] = temp.z;
 							kl++;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "512  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "512  val2" << endl;
-							}
+							
 						}
 						if (edgeTable[bitwiseSum] & 1024){
 							glm::vec3 temp = VertexInterp(cvec, gvec, c, g);
@@ -1085,23 +1026,15 @@ void display()
 							vertlist[10][1] = temp.y;
 							vertlist[10][2] = temp.z;
 							lm++;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "1024  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "1024  val2" << endl;
-							}
+							
 						}
 						if (edgeTable[bitwiseSum] & 2048){
 							glm::vec3 temp = VertexInterp(dvec, hvec, d, h);
 							
-							vertlist[11][0] = temp.x;		//vertlist[11][0] kommer vara x-värdet för en vertex
+							vertlist[11][0] = temp.x;		//vertlist[11][0] kommer vara x-vï¿½rdet fï¿½r en vertex
 							vertlist[11][1] = temp.y;
 							vertlist[11][2] = temp.z;
-							if (temp.x == 10000 && temp.y == 10000 && temp.z == 10000){
-								cout << "2048  val1" << endl;
-							}if (temp.x == 20000 && temp.y == 20000 && temp.z == 20000){
-								cout << "2048  val2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-							}
+							
 							mn++;
 						}
 
@@ -1273,7 +1206,7 @@ int main(int argc, char *argv[])
         // Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
         
-       // calculateNewGravityVec();
+        calculateNewGravityVec();
         drawCoordinateAxes();
         box.DrawBox((int)256, TEMPSIZE);
 			
