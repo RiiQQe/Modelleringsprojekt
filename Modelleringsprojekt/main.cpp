@@ -20,7 +20,7 @@
  * problem reports or change requests be submitted to it directly
  *****************************************************************************/
 
-#define GLEW_STATIC
+//#define GLEW_STATIC
 #define _USE_MATH_DEFINES
 
 #include <malloc.h>
@@ -34,14 +34,27 @@
 #include "CL_nvidia\cl.h"
 #include "utils.h"
 
-#include <GL/glew.h>
 #include <glm/glm.hpp>
-
+//From main projekt
+#include <GL/glew.h>
 #include <iostream>
 #include <GLFW/glfw3.h>
+
+//SUPER VBO INCLUDES
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/transform.hpp>
+
+#include "common/shader.hpp"
+#include "common/texture.hpp"
+#include "common/controls.hpp"
+
+
 //for perf. counters
 #include <Windows.h>
 #include "Sphere.cpp"
+
 
 
 // Macros for OpenCL versions
@@ -54,14 +67,12 @@
  * (E.g. "CL_DEVICE_NOT_FOUND" instead of just -1.)
  */
 
-//From main projekt
-#include <GL/glew.h>
+
 
 #include <iostream>
 #include "Particle.h"
 #include "Box.h"
 //#include "Cell.h"
-#include <GLFW/glfw3.h>
 #include <thread>
 #include <sstream>
 
@@ -81,7 +92,7 @@ int frameCounterSpecialName = 0;
 const int W = 32, H = 32, L = 32;
 const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 3000;
+const cl_uint BEGIN_PARTICLES = 500;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -100,9 +111,7 @@ cl_float* particle_pressure;
 
 Cell *cells;
 
-
-
-
+static GLfloat* g_particle_position_size_data = new GLfloat[BEGIN_PARTICLES * 4];
 
 //BETA BALLS
 const int TEMPSIZE = 32;
@@ -116,7 +125,7 @@ cl_float model[16];
 double newTime, currTime = 0, deltaTime = 0, phi = 0, theta = 0;
 
 //3D Cubes
-const float particleSize = 3.0f;
+const float particleSize = 3.5f;
 
 
 
@@ -218,6 +227,9 @@ void handleInputs(){
 	}
 
 }
+
+
+
 void drawParticlesContainer(){
 	
 	//For transparency
@@ -298,7 +310,7 @@ void drawParticlesContainer(){
 	
 	glDisable(GL_BLEND);
 	// Bottom face (y = -1.0f*containerSize)
-	glColor4f(1.0f, 0.0f, 0.f,1.f);
+	glColor4f(.3f, 0.3f, 0.3f,1.f);
 	glVertex3f(1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, -1.0f*containerSize, 1.0f*containerSize);
 	glVertex3f(-1.0f*containerSize, -1.0f*containerSize, -1.0f*containerSize);
@@ -488,7 +500,7 @@ void drawBetaBalls(){
 		for (int i = 0; i < NUM_PARTICLES; i++) {
 			// calculate height map, sum
 
-			squares[k] += (4.f*4.0f) / ((x - particle_pos[i].x) * (x - particle_pos[i].x) + (y - particle_pos[i].y) * (y - particle_pos[i].y));
+			squares[k] += (6.f*6.0f) / ((x - particle_pos[i].x) * (x - particle_pos[i].x) + (y - particle_pos[i].y) * (y - particle_pos[i].y));
 		}
 	}
 
@@ -2731,8 +2743,62 @@ int _tmain(int argc, TCHAR* argv[])
 	//From main projekt
 	glfwInit();
 
+
+	// Initialise GLFW
+	if (!glfwInit())
+	{
+		fprintf(stderr, "Failed to initialize GLFW\n");
+		return -1;
+	}
+
+	//glfwWindowHint(GLFW_SAMPLES, 4); // anti aliasing
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // openGL major version to be 3
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); // minor set to 3, which makes the version 3.3
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // for MAC OS only
+	//glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(700, 700, "OpenGL", nullptr, nullptr); // Windowed
+	if (window == NULL){
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+		glfwTerminate();
+		return -1;
+	}
 	glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		return -1;
+	}
+
+	
+	GLuint VertexArrayID;
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
+
+	// Create and compile our GLSL program from the shaders
+	GLuint programID = LoadShaders("Particle.vertexshader", "ColorFragmentShader.fragmentshader");
+
+	//// Get a handle for our "MVP" uniform
+	//GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+
+
+	//// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	//glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+	//// Camera matrix
+	//glm::mat4 View = glm::lookAt(
+	//	glm::vec3(4, 3, -3), // Camera is at (4,3,-3), in World Space
+	//	glm::vec3(0, 0, 0), // and looks at the origin
+	//	glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+	//	);
+	//// Model matrix : an identity matrix (model will be at the origin)
+	//glm::mat4 Model = glm::mat4(1.0f);
+	//// Our ModelViewProjection : multiplication of our 3 matrices
+	//glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+	
 	glfwSetWindowPos(window, 100, 20);
 	glfwSwapInterval(1);
 
@@ -2784,12 +2850,70 @@ int _tmain(int argc, TCHAR* argv[])
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 
+	glClearColor(1.0, 1.0, 1.0, 0);
+
+
+	// The VBO containing the 4 vertices of the particles.
+	// Thanks to instancing, they will be shared by all particles.
+	static const GLfloat g_vertex_buffer_data[] = {
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f
+	};
+
+	//Buffers for particles 
+	GLuint billboard_vertex_buffer;
+	glGenBuffers(1, &billboard_vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, billboard_vertex_buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+	// The VBO containing the positions and sizes of the particles
+	GLuint particles_position_buffer;
+	glGenBuffers(1, &particles_position_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
+	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glBufferData(GL_ARRAY_BUFFER, BEGIN_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
 
 
 
 	while (!glfwWindowShouldClose(window)){
 
 		
+		
+
 
 		float ratio;
 		int width, height;
@@ -2800,16 +2924,14 @@ int _tmain(int argc, TCHAR* argv[])
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		
-
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		
+
 
 
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 600, 0.0, 600, -1024.0, 1024);
+		glOrtho(0.0, 430, 0.0, 430, -1024.0, 1024);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
@@ -2821,26 +2943,76 @@ int _tmain(int argc, TCHAR* argv[])
 		//GPU STUFF
 		executeOnGPU(&ocl);
 
-		//for (int i = 0; i < NUM_CELLS; i++){
-		//	printf("NUMBEROF PARTICLE %i \n " , cells[i].nrOfParticles);
-		//	//Fill array of particle IDS with unvalid default value -1
-		//	//std::fill(cells[i].particleIDs, cells[i].particleIDs + 1000, -1);
-		//}
-		/*if (frameCounterSpecialName++ % 10 != 0) {
-			continue;
-		}*/
-
 		//END GPU STUFF
 		//drawParticles();
-		drawParticlesContainer();
-		drawCubeParticles();
-		
-		
-		
-			
-			
+		glColor3f(1.0f, 0, 0);
 		//drawSphereParticles();
 		//drawBetaBalls();
+		drawParticlesContainer();
+		//drawCubeParticles();
+		
+		
+		for (int i = 0; i < NUM_PARTICLES - MAX_ADDED_PARTICLES; i++){
+
+			// Fill the GPU buffer
+			g_particle_position_size_data[4 * i + 0] = particle_pos[i].x;
+			g_particle_position_size_data[4 * i + 1] = particle_pos[i].y;
+			g_particle_position_size_data[4 * i + 2] = particle_pos[i].z;
+			g_particle_position_size_data[4 * i + 3] = particleSize;
+
+
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
+		glBufferData(GL_ARRAY_BUFFER, BEGIN_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
+		glBufferSubData(GL_ARRAY_BUFFER, 0, BEGIN_PARTICLES * sizeof(GLfloat) * 4, g_particle_position_size_data);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Clear the screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Use our shader
+		glUseProgram(programID);
+
+		//// 1rst attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, billboard_vertex_buffer);
+		glVertexAttribPointer(
+			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+			);
+
+		// 2nd attribute buffer : positions of particles' centers
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
+		glVertexAttribPointer(
+			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+			4,                                // size : x + y + z + size => 4
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+			);
+
+		//// These functions are specific to glDrawArrays*Instanced*.
+		//// The first parameter is the attribute buffer we're talking about.
+		//// The second parameter is the "rate at which generic vertex attributes advance when rendering multiple instances"
+		//// http://www.opengl.org/sdk/docs/man/xhtml/glVertexAttribDivisor.xml
+		glVertexAttribDivisor(0, 0); // particles vertices : always reuse the same 4 vertices -> 0
+		glVertexAttribDivisor(1, 1); // positions : one per quad (its center)                 -> 1
+
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 12, BEGIN_PARTICLES);
+
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+			
+		
 
 		//Swap front and back buffers
 		glfwSetWindowSizeCallback(window, reshape_window);
@@ -2854,6 +3026,16 @@ int _tmain(int argc, TCHAR* argv[])
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+
+	delete[] g_particle_position_size_data;
+
+	// Cleanup VBO and shader
+	glDeleteBuffers(1, &particles_position_buffer);
+	glDeleteBuffers(1, &billboard_vertex_buffer);
+	glDeleteProgram(programID);
+	//glDeleteTextures(1, &Texture);
+	glDeleteVertexArrays(1, &VertexArrayID);
 
 
     _aligned_free(particle_pos);
