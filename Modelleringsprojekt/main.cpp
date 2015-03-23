@@ -10,14 +10,17 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 95;
-const int KERNEL_LIMIT = 35;
+const int NUM_PARTICLES = 800;
+const int KERNEL_LIMIT = 75;
 
 const float VISCOUSITY = 500*5.f;
 const float PARTICLE_MASS = 500*.13f;
 const double h = 16.f;
 const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
+
+bool pressed = false;
+bool show_betaballs = true;
 
 const int TEMPSIZE = 64;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
@@ -130,6 +133,8 @@ void calculateDensityAndPressure(){
         vector<int> current_cells = cells[cellIndex].getNeighbours();
         
         //std::cout << current_cells.size() << std::endl;
+        
+        //std::cout << "cellindex in density and pressure: " << cellIndex << std::endl;
     
         for(int j = 0; j < current_cells.size(); j++){
 			
@@ -163,6 +168,7 @@ void calculateDensityAndPressure(){
 
         particles[i].setDensity(density_sum);
         particles[i].setPressure(STIFFNESS*(density_sum - 998.f));
+        particles[i].applyOtherForce(glm::vec3(0, 0, 0));
         
         
     }
@@ -180,6 +186,7 @@ void calculateForces(){
         int cellIndex = particles[i].getCellIndex();
         
         vector<int> current_cells = cells[cellIndex].getNeighbours();
+        
         
         //Loop through all cells
         for(int j = 0; j < current_cells.size(); j++){
@@ -253,9 +260,7 @@ void calculateAcceleration(){
 
 void drawBetaBalls(){
     
-    
     // Beta balls begins
-    
     // Marching cubes algorithm -
     // bitwise tiling (Jonsson, 2015)
     // Using ..
@@ -270,13 +275,59 @@ void drawBetaBalls(){
         int x = kSize * (k % TEMPSIZE);
         int y = (k / (TEMPSIZE)) * kSize;
         
-        // Brute force
-        // for each cell, check
-        for(int i = 0; i < NUM_PARTICLES; i++) {
-            // calculate height map, sum
+        int a,b;
+        
+        //int cellIndex = (x + y*32) / kSize;
+    
+        //a = (k/2) % TEMPSIZE;
+        //b = ((k/TEMPSIZE)*Cell::GRID_HEIGHT)/2;
+        
+        
+        a = (k % TEMPSIZE) / (TEMPSIZE/Cell::GRID_HEIGHT);
+        b = k / (TEMPSIZE * (TEMPSIZE/Cell::GRID_HEIGHT));
+        
+        
+       // if(k == 4)
+            //std::cout << "CELLINDEX: " << cellIndex << std::endl;
+        //std::cout << "a : " << a << std::endl << "b: " << b << std::endl << "a + b: " << a+b << std::endl;
+
+        //std::cout << "cellindex: " << cellIndex << std::endl;
+        int cellIndex = a + b * Cell::GRID_HEIGHT;
+        
+        //std::cout << "cellindex: " << cellIndex << std::endl;
+        
+        vector<int> current_cells = cells[cellIndex].getNeighbours();
+        
+        //std::cout << "curent cells " << current_cells.size() << std::endl;
+        //std::cout << "cellindex " << cellIndex << std::endl;
+        
+        for(int j = 0; j < current_cells.size(); j++){
             
-            squares[k] += (particles[i].getRadius()*particles[i].getRadius()) / ((x - particles[i].getPos().x) * (x - particles[i].getPos().x) + (y - particles[i].getPos().y) * (y - particles[i].getPos().y));
+            //Loop through all neighbouring particles
+            vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
+            
+             //Too many neighbours...
+           // if(neighbours.size() > KERNEL_LIMIT)
+             //   reduceNeighbours(neighbours);
+            
+            for(int m = 0; m < neighbours.size(); m++){
+                
+               // std::cout << "squares " << squares[k] << std::endl;
+                squares[k] += (neighbours.at(m)->getRadius()*neighbours.at(m)->getRadius()) / ((x - neighbours.at(m)->getPos().x) * (x - neighbours.at(m)->getPos().x) + (y - neighbours.at(m)->getPos().y) * (y - neighbours.at(m)->getPos().y));
+        
+                
+            }
+            
+            
         }
+        
+        // Brute force
+         //for each cell, check
+//        for(int i = 0; i < NUM_PARTICLES; i++) {
+//            // calculate height map, sum
+//            
+//            squares[k] += (particles[i].getRadius()*particles[i].getRadius()) / ((x - particles[i].getPos().x) * (x - particles[i].getPos().x) + (y - particles[i].getPos().y) * (y - particles[i].getPos().y));
+//        }
     }
     
     // draw stuff
@@ -593,10 +644,24 @@ void drawBetaBalls(){
 
 }
 
+void drawParticles(){
+    
+    for(int i = 0; i < NUM_PARTICLES; i++){
+     
+    	particles[i].DrawObjects();
+     
+     }
+
+}
+
 void display()
 {
     handleFps();
-    drawBetaBalls();
+    
+    if(show_betaballs)
+    	drawBetaBalls();
+    else
+        drawParticles();
     
 }
 
@@ -613,6 +678,62 @@ void idle()
         
     }
     
+}
+
+void handleInputs(){
+
+     // Apply magic spells from mouse input.
+    if(glfwGetMouseButton(window, 0)) {
+    
+	    double xMouse,yMouse;
+    
+   	 	glfwGetCursorPos(window, &xMouse, &yMouse);
+    
+        xMouse = xMouse / 512.f;
+        yMouse = (512.f - yMouse)  / 512.f;
+    
+    	if (xMouse < 0 || xMouse > 1)
+        	xMouse = xMouse > 0.5 ? 1 : 0;
+    
+    	if (yMouse < 0 || yMouse > 1)
+        	yMouse = yMouse > 0.5 ? 1 : 0;
+    
+    	int x = (int) (xMouse * Cell::GRID_WIDTH);
+    	int y = (int) (yMouse * Cell::GRID_HEIGHT);
+    
+    	int cellIndex = x + y * Cell::GRID_WIDTH;
+    
+        vector<int> current_cells = cells[cellIndex].getNeighbours();
+    
+    	for(int j = 0; j < current_cells.size(); j++){
+        
+        	vector<Particle*> neighbours = cells[current_cells.at(j)].getParticles();
+     	
+        	for (int i = 0; i < neighbours.size(); i++) {
+            
+            	float vec_x = 0;
+                float vec_y = 300000;
+            
+            	neighbours.at(i)->applyOtherForce(glm::vec3(vec_x, vec_y, 0));
+            
+        	}
+		}
+    }
+	
+    // Toggle Betaballs
+    if (glfwGetKey(window, GLFW_KEY_G) ) {
+        
+        if (!pressed){
+            pressed = true;
+            show_betaballs = !show_betaballs;
+        }
+        
+    } else {
+        if (pressed) {
+            pressed = false;
+        }
+    }
+
 }
 
 
@@ -643,12 +764,12 @@ int main(int argc, char *argv[])
         glLoadIdentity();
         glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
         
-        box.DrawBox();
-        display();
-        calculateAcceleration();
-        idle();
         
-    	
+        box.DrawBox();
+        calculateAcceleration();
+        handleInputs();
+        display();
+        idle();
         
         //Swap front and back buffers
         glfwSetWindowSizeCallback(window, reshape_window);

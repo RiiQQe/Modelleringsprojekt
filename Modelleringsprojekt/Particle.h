@@ -6,7 +6,7 @@
 class Particle
 {
     private:
-		glm::vec3 pos, vel, pressure_force, viscousity_force, gravity_force;
+		glm::vec3 pos, vel, pressure_force, viscousity_force, gravity_force, other_force;
 		float mass, gravity, pressure, density, radius;
 		int cellIndex;
 
@@ -26,7 +26,7 @@ class Particle
     	float getDensity();
     	float getPressure();
 	    float getRadius();
-    
+	    void applyOtherForce(glm::vec3 v);
 };
 
 #endif

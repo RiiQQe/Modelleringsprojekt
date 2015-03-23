@@ -46,7 +46,7 @@ void Box::DrawBox()
     // Defines each line
 
 	// Define grid by doing fancy iterations.
-	glColor3f(0.2f, 0.2f, 0.2f);
+	glColor3f(0.9f, 0.9f, 0.9f);
 
 	for (int i = 1; i < 512 / 16; i++) {
 		glVertex2f(16.f * i, 0);

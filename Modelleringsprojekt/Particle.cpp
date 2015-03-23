@@ -22,6 +22,7 @@ void Particle::CreateParticle()
     viscousity_force = glm::vec3(0);
     pressure_force = glm::vec3(0);
     gravity_force = glm::vec3(0);
+    other_force = glm::vec3(0);
 }
 
 //Evolves the particle parameters over time.
@@ -29,7 +30,9 @@ void Particle::CreateParticle()
 void Particle::EvolveParticle()
 {
     
-    glm::vec3 newPos = pos + dt*vel + dt*dt*((gravity_force + pressure_force + viscousity_force)/density)/2.f;
+   // std::cout << "other force : " << viscousity_force.y << std::endl;
+    
+    glm::vec3 newPos = pos + dt*vel + dt*dt*((gravity_force + pressure_force + viscousity_force + other_force)/density)/2.f;
     glm::vec3 newVel = (newPos - pos) / dt;
 
     pos = newPos;
@@ -74,16 +77,16 @@ void Particle::DrawObjects() {
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]+2, pos[1]-2,0.5);     // bottom right
     glTexCoord2f(0.0,1.0); glVertex3f(pos[0]-2, pos[1]-2,0.5);     // bottom left*/
     
-    glColor3f(0.2,0.2,1);
+    glColor4f(0.5f, 0.7f, 1.f, 0.0f);
     
     glBegin(GL_TRIANGLE_FAN);
     for(int ii = 0; ii < 15; ii++)
     {
         float theta = 2.0f * 3.1415926f * float(ii) / float(15);//get the current angle
         
-        float x = 16/3 * cosf(theta);//calculate the x component
-        float y = 16/3 * sinf(theta);//calculate the y component
-        
+        float x = radius * cosf(theta);//calculate the x component
+        float y = radius * sinf(theta);//calculate the y component
+    
         glVertex2f(x + pos[0], y + pos[1]);//output vertex
     }
     
@@ -157,4 +160,10 @@ void Particle::setGravityForce(glm::vec3 f){
     
     gravity_force = f;
     
+}
+
+
+void Particle::applyOtherForce(glm::vec3 v) {
+	
+    other_force = v;
 }
