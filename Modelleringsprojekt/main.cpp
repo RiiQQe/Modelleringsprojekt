@@ -41,10 +41,10 @@
 #include <GLFW/glfw3.h>
 
 //SUPER VBO INCLUDES
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/norm.hpp>
-#include <glm/gtx/transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/norm.hpp"
+#include "glm/gtx/transform.hpp"
 
 #include "common/shader.hpp"
 #include "common/texture.hpp"
@@ -92,7 +92,7 @@ int frameCounterSpecialName = 0;
 const int W = 32, H = 32, L = 32;
 const long long int NUM_CELLS = W * H * L;
 const cl_uint MAX_ADDED_PARTICLES = 100;
-const cl_uint BEGIN_PARTICLES = 500;
+const cl_uint BEGIN_PARTICLES = 5000;
 const cl_uint NUM_PARTICLES = BEGIN_PARTICLES + MAX_ADDED_PARTICLES;
 //Global variable for squirting particles
 cl_uint ADDED_PARTICLES = 0;
@@ -2758,7 +2758,7 @@ int _tmain(int argc, TCHAR* argv[])
 	//glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(700, 700, "OpenGL", nullptr, nullptr); // Windowed
+	window = glfwCreateWindow(700, 500, "OpenGL", nullptr, nullptr); // Windowed
 	if (window == NULL){
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		glfwTerminate();
@@ -2774,15 +2774,32 @@ int _tmain(int argc, TCHAR* argv[])
 	}
 
 	
+
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("Particle.vertexshader", "ColorFragmentShader.fragmentshader");
+	GLuint programID = LoadShaders("Particle.vertexshader", "Particle.fragmentshader");
+
+
+	GLuint programID_Cube = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(programID_Cube, "VP");
+
 
 	//// Get a handle for our "MVP" uniform
-	//GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	//// Vertex shader
+	GLuint CameraRight_worldspace_ID = glGetUniformLocation(programID, "CameraRight_worldspace");
+	GLuint CameraUp_worldspace_ID = glGetUniformLocation(programID, "CameraUp_worldspace");
+	GLuint CameraZ_worldspace_ID = glGetUniformLocation(programID, "CameraZ_worldspace");
+	GLuint ViewProjMatrixID = glGetUniformLocation(programID, "VP");
 
 
 	//// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
@@ -2850,18 +2867,17 @@ int _tmain(int argc, TCHAR* argv[])
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 
-	glClearColor(1.0, 1.0, 1.0, 0);
-
+	glClearColor(0.2, 0.2, 0.2, 0);
 
 	// The VBO containing the 4 vertices of the particles.
 	// Thanks to instancing, they will be shared by all particles.
 	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f, // triangle 1 : begin
 		-1.0f, -1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f, // triangle 1 : end
+		1.0f, 1.0f, -1.0f, // triangle 2 : begin
 		-1.0f, -1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f, // triangle 2 : end
 		1.0f, -1.0f, 1.0f,
 		-1.0f, -1.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,
@@ -2893,6 +2909,8 @@ int _tmain(int argc, TCHAR* argv[])
 		-1.0f, 1.0f, 1.0f,
 		1.0f, -1.0f, 1.0f
 	};
+	
+	
 
 	//Buffers for particles 
 	GLuint billboard_vertex_buffer;
@@ -2906,14 +2924,126 @@ int _tmain(int argc, TCHAR* argv[])
 	glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, BEGIN_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
+	
 
 
+	static GLubyte* g_particule_color_data = new GLubyte[BEGIN_PARTICLES * 4];
+	GLfloat g_color_particles_data[BEGIN_PARTICLES * 4];
+	// The VBO containing the colors of the particles
+	GLuint particles_color_buffer;
+	glGenBuffers(1, &particles_color_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, particles_color_buffer);
+	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glBufferData(GL_ARRAY_BUFFER, BEGIN_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
+
+
+	float containerSize = 256.f;
+
+
+	static const GLfloat g_vertex_buffer_data_cube[] = {
+		-1.0f*containerSize*0, -1.0f*containerSize*0, -1.0f*containerSize*0, // triangle 1 : begin
+		-1.0f*containerSize*0, -1.0f*containerSize*0, 1.0f*containerSize,
+		-1.0f*containerSize*0, 1.0f*containerSize, 1.0f*containerSize, // triangle 1 : end
+		1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize*0, // triangle 2 : begin
+		-1.0f*containerSize*0, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		-1.0f*containerSize*0, 1.0f*containerSize, -1.0f*containerSize*0, // triangle 2 : end
+		1.0f*containerSize, -1.0f*containerSize*0, 1.0f*containerSize,
+		-1.0f*containerSize*0, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		1.0f*containerSize, -1.0f*containerSize*0, -1.0f*containerSize,
+		1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize*0,
+		1.0f*containerSize, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		-1.0f*containerSize*0, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		-1.0f*containerSize*0, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		-1.0f*containerSize*0, 1.0f*containerSize, 1.0f*containerSize,
+		-1.0f*containerSize*0, 1.0f*containerSize, -1.0f*containerSize*0,
+		1.0f*containerSize, -1.0f*containerSize*0, 1.0f*containerSize,
+		-1.0f*containerSize*0, -1.0f*containerSize*0, 1.0f*containerSize,
+		-1.0f*containerSize*0, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		-1.0f*containerSize*0, 1.0f*containerSize, 1.0f*containerSize,
+		-1.0f*containerSize*0, -1.0f*containerSize*0, 1.0f*containerSize,
+		1.0f*containerSize, -1.0f*containerSize*0, 1.0f*containerSize,
+		1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize,
+		1.0f*containerSize, -1.0f*containerSize*0, -1.0f*containerSize*0,
+		1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize * 0,
+		1.0f*containerSize, -1.0f*containerSize * 0, -1.0f*containerSize * 0,
+		1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize,
+		1.0f*containerSize, -1.0f*containerSize * 0, 1.0f*containerSize,
+		1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize,
+		1.0f*containerSize, 1.0f*containerSize, -1.0f*containerSize * 0,
+		-1.0f*containerSize * 0, 1.0f*containerSize, -1.0f*containerSize * 0,
+		1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize,
+		-1.0f*containerSize * 0, 1.0f*containerSize, -1.0f*containerSize * 0,
+		-1.0f*containerSize * 0, 1.0f*containerSize, 1.0f*containerSize,
+		1.0f*containerSize, 1.0f*containerSize, 1.0f*containerSize,
+		-1.0f*containerSize * 0, 1.0f*containerSize, 1.0f*containerSize,
+		1.0f*containerSize, -1.0f*containerSize * 0, 1.0f*containerSize
+	};
+	// One color for each vertex. They were generated randomly.
+	static const GLfloat g_color_buffer_data[] = {
+		0.0f, 0.0f, 0.0f, 0.1f
+		/*0.609f, 0.115f, 0.436f, 0.1f,
+		0.327f, 0.483f, 0.844f, 0.1f,
+		0.822f, 0.569f, 0.201f, 0.1f,
+		0.435f, 0.602f, 0.223f, 0.1f,
+		0.310f, 0.747f, 0.185f, 0.1f,
+		0.597f, 0.770f, 0.761f, 0.1f,
+		0.559f, 0.436f, 0.730f, 0.1f,
+		0.359f, 0.583f, 0.152f, 0.1f,
+		0.483f, 0.596f, 0.789f, 0.1f,
+		0.559f, 0.861f, 0.639f, 0.1f,
+		0.195f, 0.548f, 0.859f, 0.1f,
+		0.014f, 0.184f, 0.576f, 0.1f,
+		0.771f, 0.328f, 0.970f, 0.1f,
+		0.406f, 0.615f, 0.116f, 0.1f,
+		0.676f, 0.977f, 0.133f, 0.1f,
+		0.971f, 0.572f, 0.833f, 0.1f,
+		0.140f, 0.616f, 0.489f, 0.1f,
+		0.997f, 0.513f, 0.064f, 0.1f,
+		0.945f, 0.719f, 0.592f, 0.1f,
+		0.543f, 0.021f, 0.978f, 0.1f,
+		0.279f, 0.317f, 0.505f, 0.1f,
+		0.167f, 0.620f, 0.077f, 0.1f,
+		0.347f, 0.857f, 0.137f, 0.1f,
+		0.055f, 0.953f, 0.042f, 0.1f,
+		0.714f, 0.505f, 0.345f, 0.1f,
+		0.783f, 0.290f, 0.734f, 0.1f,
+		0.722f, 0.645f, 0.174f, 0.1f,
+		0.302f, 0.455f, 0.848f, 0.1f,
+		0.225f, 0.587f, 0.040f, 0.1f,
+		0.517f, 0.713f, 0.338f, 0.1f,
+		0.053f, 0.959f, 0.120f, 0.1f,
+		0.393f, 0.621f, 0.362f, 0.1f,
+		0.673f, 0.211f, 0.457f, 0.1f,
+		0.820f, 0.883f, 0.371f, 0.1f,
+		0.982f, 0.099f, 0.879f, 0.1f*/
+	};
+	//TESTING
+	//Buffers for Cube
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data_cube), g_vertex_buffer_data_cube, GL_STATIC_DRAW);
+	////Color Cube
+	GLuint colorbuffer;
+	glGenBuffers(1, &colorbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glFrontFace(GL_CW);
+	//glEnable(GL_CULL_FACE);
+
+	glColorMaterial(GL_FRONT, GL_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
 
 	while (!glfwWindowShouldClose(window)){
 
 		
 		
-
+		// Clear the screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		float ratio;
 		int width, height;
@@ -2922,16 +3052,13 @@ int _tmain(int argc, TCHAR* argv[])
 		ratio = width / (float)height;
 
 		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT);
+		//glClear(GL_COLOR_BUFFER_BIT);
 
-		glMatrixMode(GL_PROJECTION);
+		//glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-
-
-
 		//glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);//2D ORTHO
-		glOrtho(0.0, 430, 0.0, 430, -1024.0, 1024);
+		//glOrtho(0.0, 430, 0.0, 430, -1024.0, 1024);
 		handleInputs();
 		// Get rotation matrix
 		glGetFloatv(GL_MODELVIEW_MATRIX, model);
@@ -2949,32 +3076,64 @@ int _tmain(int argc, TCHAR* argv[])
 		//drawSphereParticles();
 		//drawBetaBalls();
 		drawParticlesContainer();
+		handleFps();
 		//drawCubeParticles();
-		
-		
-		for (int i = 0; i < NUM_PARTICLES - MAX_ADDED_PARTICLES; i++){
 
+		
+
+
+		mat4 ProjectionMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 700.0f);
+		mat4 ViewMatrixFront = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, -400.0f));// getViewMatrix();
+		//Fake camera matrix
+		//glm::mat4 ViewMatrixShader = glm::lookAt(
+		//	vec3(0.f, 0.f, 300.f), // Camera is at (4,3,-3), in World Space
+		//	glm::vec3(128.f, 128.f, 128.f), // and looks at the origin
+		//	glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+		//	);
+		// Camera matrix
+		glm::mat4 ViewMatrix = glm::lookAt(
+			vec3(-200.f, 200.f, 300.f), // Camera is at (4,3,-3), in World Space
+			glm::vec3(128.f, 128.f, 128.f), // and looks at the origin
+			glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+			);
+		glm::mat4 VP = ProjectionMatrix * ViewMatrix;
+
+		mat4 ProjMatrix = ProjectionMatrix * ViewMatrixFront;
+		for (int i = 0; i < BEGIN_PARTICLES; i++){
 			// Fill the GPU buffer
 			g_particle_position_size_data[4 * i + 0] = particle_pos[i].x;
 			g_particle_position_size_data[4 * i + 1] = particle_pos[i].y;
 			g_particle_position_size_data[4 * i + 2] = particle_pos[i].z;
 			g_particle_position_size_data[4 * i + 3] = particleSize;
+			//printf("Particle position X %4.6f \n ", g_particle_position_size_data[4 * i + 0]);
 
-
+			g_color_particles_data[4 * i + 0] = 0.0f;
+			g_color_particles_data[4 * i + 1] = 0.0f;
+			g_color_particles_data[4 * i + 2] = 1.0f;
+			g_color_particles_data[4 * i + 3] = 0.8f;
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
 		glBufferData(GL_ARRAY_BUFFER, BEGIN_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
 		glBufferSubData(GL_ARRAY_BUFFER, 0, BEGIN_PARTICLES * sizeof(GLfloat) * 4, g_particle_position_size_data);
 
+		glBindBuffer(GL_ARRAY_BUFFER, particles_color_buffer);
+		glBufferData(GL_ARRAY_BUFFER, BEGIN_PARTICLES * 4 * sizeof(GLfloat), g_color_particles_data, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
+		glBufferSubData(GL_ARRAY_BUFFER, 0, BEGIN_PARTICLES * 4 * sizeof(GLfloat), g_color_particles_data);
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 
 		// Use our shader
 		glUseProgram(programID);
+		
+		glUniform3f(CameraRight_worldspace_ID, ViewMatrixFront[0][0], ViewMatrixFront[1][0], ViewMatrixFront[2][0]);
+		glUniform3f(CameraUp_worldspace_ID, ViewMatrixFront[0][1], ViewMatrixFront[1][1], ViewMatrixFront[2][1]);
+		glUniform3f(CameraZ_worldspace_ID, ViewMatrixFront[0][2], ViewMatrixFront[1][2], ViewMatrixFront[2][2]);
+
+		glUniformMatrix4fv(ViewProjMatrixID, 1, GL_FALSE, &VP[0][0]);
 
 		//// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -2986,7 +3145,7 @@ int _tmain(int argc, TCHAR* argv[])
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
-			);
+		);
 
 		// 2nd attribute buffer : positions of particles' centers
 		glEnableVertexAttribArray(1);
@@ -2998,21 +3157,72 @@ int _tmain(int argc, TCHAR* argv[])
 			GL_FALSE,                         // normalized?
 			0,                                // stride
 			(void*)0                          // array buffer offset
+		);
+		// 3rd attribute buffer : particles' colors
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, particles_color_buffer);
+		glVertexAttribPointer(
+			2,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+			4,                                // size : r + g + b + a => 4
+			GL_FLOAT,                 // type
+			GL_TRUE,                          // normalized?    *** YES, this means that the unsigned char[4] will be accessible with a vec4 (floats) in the shader ***
+			0,                                // stride
+			(void*)0                          // array buffer offset
 			);
 
+	
 		//// These functions are specific to glDrawArrays*Instanced*.
 		//// The first parameter is the attribute buffer we're talking about.
 		//// The second parameter is the "rate at which generic vertex attributes advance when rendering multiple instances"
 		//// http://www.opengl.org/sdk/docs/man/xhtml/glVertexAttribDivisor.xml
 		glVertexAttribDivisor(0, 0); // particles vertices : always reuse the same 4 vertices -> 0
 		glVertexAttribDivisor(1, 1); // positions : one per quad (its center)                 -> 1
+		glVertexAttribDivisor(2, 1); // color : one per quad     
 
-		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 12, BEGIN_PARTICLES);
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 36, BEGIN_PARTICLES);
+	
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
-			
+		glDisableVertexAttribArray(2);
 		
+
+		// Use our shader
+		glUseProgram(programID_Cube);
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &VP[0][0]);
+		// 1rst attribute buffer : vertices
+		//glClearColor(0.0f, 0.4f, 0.3f, 0.3f);
+		glEnableVertexAttribArray(3);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(
+			3,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+
+
+
+		// 2nd attribute buffer : colors
+		glEnableVertexAttribArray(4);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glVertexAttribPointer(
+			4,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+			3,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+			);
+		// Draw the CUBE !
+		glDrawArrays(GL_TRIANGLES, 0, 12 * 3); //CUBE
+
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4);
 
 		//Swap front and back buffers
 		glfwSetWindowSizeCallback(window, reshape_window);
@@ -3033,9 +3243,14 @@ int _tmain(int argc, TCHAR* argv[])
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &particles_position_buffer);
 	glDeleteBuffers(1, &billboard_vertex_buffer);
+	glDeleteBuffers(1, &particles_color_buffer);
 	glDeleteProgram(programID);
+
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &colorbuffer);
 	//glDeleteTextures(1, &Texture);
 	glDeleteVertexArrays(1, &VertexArrayID);
+	glDeleteProgram(programID_Cube);
 
 
     _aligned_free(particle_pos);
