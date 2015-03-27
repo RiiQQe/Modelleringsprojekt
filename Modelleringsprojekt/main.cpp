@@ -10,7 +10,7 @@
 #include <thread>
 #include <sstream>
 
-const int NUM_PARTICLES = 800;
+const int NUM_PARTICLES = 300;
 const int KERNEL_LIMIT = 75;
 
 const float VISCOUSITY = 500*5.f;
@@ -22,7 +22,7 @@ const float GRAVITY_CONST = 80000*9.82f;
 bool pressed = false;
 bool show_betaballs = true;
 
-const int TEMPSIZE = 64;
+const int TEMPSIZE = 128;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
 
 Particle particles[NUM_PARTICLES];
@@ -222,12 +222,15 @@ void calculateForces(){
                     pressure +=  -PARTICLE_MASS * ((particles[i].getPressure() + n->getPressure()) / (2 * n->getDensity())) * W_pressure_gradient;
                     
                     viscousity += VISCOUSITY * PARTICLE_MASS * ((n->getVelocity() - particles[i].getVelocity()) / (n->getDensity())) * visc_gradient;
-                
+                    
                 }
                 
             }
             
         }
+        
+       // if(i == 10)
+        //	std::cout << "pressure x " << pressure.x << "pressure y " << pressure.y << std::endl;
         
         particles[i].setViscousityForce(viscousity);
         particles[i].setPressureForce(pressure);
@@ -675,6 +678,9 @@ void idle()
     for (int i = 0; i < NUM_PARTICLES; i++)
     {
         particles[i].EvolveParticle();
+        
+        //if(i == 10)
+           // std::cout << " x " << particles[i].getPos().x << " y " << particles[i].getPos().y << std::endl;
         
     }
     

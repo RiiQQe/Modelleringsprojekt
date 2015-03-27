@@ -32,7 +32,7 @@ void Box::DrawBox()
 	//glRotatef(rotAngle, 0, 0, 1);
 	
     glBegin(GL_TRIANGLE_STRIP);
-	    glColor3f(1.f, 1.f, 1.f);
+	    glColor3f(0.2f, 0.2f, 0.2f);
         glTexCoord2f(0.0,1.0); glVertex3f(0, 0,0.5);
 		glTexCoord2f(0.0,1.0); glVertex3f(0, 512,0.5);
 	    glTexCoord2f(0.0,1.0); glVertex3f(512, 0,0.5);
@@ -46,15 +46,15 @@ void Box::DrawBox()
     // Defines each line
 
 	// Define grid by doing fancy iterations.
-	glColor3f(0.9f, 0.9f, 0.9f);
-
-	for (int i = 1; i < 512 / 16; i++) {
-		glVertex2f(16.f * i, 0);
-		glVertex2f(16.f * i, 512);
-
-		glVertex2f(0, 16.f * i);
-		glVertex2f(512, 16.f * i);
-	}
+//	glColor3f(0.9f, 0.9f, 0.9f);
+//
+//	for (int i = 1; i < 512 / 16; i++) {
+//		glVertex2f(16.f * i, 0);
+//		glVertex2f(16.f * i, 512);
+//
+//		glVertex2f(0, 16.f * i);
+//		glVertex2f(512, 16.f * i);
+//	}
 /*
     glVertex2f(0.0f, 64.0f);
     glVertex2f(512.0f, 64.0f);
