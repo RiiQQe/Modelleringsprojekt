@@ -779,6 +779,7 @@ void drawText(){
 			//renderString(font, string, posx, posy)
 			renderString(font, "Press G(spot) to get balls", 230, 480);
 			renderString(font, "Carl Bildt this city", 230, 460);
+			renderString(font, "Play with water using mouse", 230, 440);
 			glMatrixMode(GL_MODELVIEW);
 
 		glPopMatrix();
