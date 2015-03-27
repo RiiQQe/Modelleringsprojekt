@@ -754,7 +754,7 @@ void handleInputs(){
 
 }
 
-void renderString(void * font, std::string k, int posx, int posy){
+void renderString(std::string k, int posx, int posy){
 
 	glRasterPos2i(posx, posy);
 
@@ -776,10 +776,10 @@ void drawText(){
 
 			glLoadIdentity();
 			glColor3f(1.0, 0.0, 0.0);
-			//renderString(font, string, posx, posy)
-			renderString(font, "Press G(spot) to get balls", 230, 480);
-			renderString(font, "Carl Bildt this city", 230, 460);
-			renderString(font, "Play with water using mouse", 230, 440);
+			//renderString(string, posx, posy)
+			renderString("Press G(spot) to get balls", 230, 480);
+			renderString("Carl Bildt this city", 230, 460);
+			renderString("Play with water using mouse", 230, 440);
 			glMatrixMode(GL_MODELVIEW);
 
 		glPopMatrix();
