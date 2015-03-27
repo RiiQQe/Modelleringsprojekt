@@ -41,6 +41,23 @@ void Box::DrawBox()
     
     
 	glBegin(GL_LINES);
+	glColor3f(0.9f, 0.9f, 0.9f);
+
+
+	glVertex2f(0.0f, 0.0f);
+	glVertex2f(0.0f, 512.0f);
+
+	glVertex2f(0.0f, 0.0f);
+	glVertex2f(512.0f, 0.0f);
+
+	glVertex2f(512.f, 0.0f);	//bottom right
+	glVertex2f(512.0f, 512.0f); //top right
+
+	glVertex2f(512.0f, 512.0f);
+	glVertex2f(0.0f, 512.0f);
+	
+
+	//glEnd();
     
 		
     // Defines each line

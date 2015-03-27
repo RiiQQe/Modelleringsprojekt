@@ -38,30 +38,30 @@ void Particle::EvolveParticle()
     pos = newPos;
     vel = newVel;
     
-    if(pos.x < 1){
+    if(pos.x < (1+radius)){
         
         vel.x = -0.8*vel.x;
-        pos.x = 1;
+        pos.x = 1 + radius;
     }
     
-    else if(pos.x > 511){
+    else if(pos.x > (511-radius)){
         
         vel.x = -0.8*vel.x;
-        pos.x = 511;
+        pos.x = 511 - radius;
     }
     
-    if(pos.y < 1){
+    if(pos.y < (1+radius)){
         
         vel.y = -0.8*vel.y;
-        pos.y = 1;
+		pos.y = 1 + radius;
         
     }
     
     
-    else if(pos.y > 511){
+    else if(pos.y > (511-radius)){
         
         vel.y = -0.8*vel.y;
-        pos.y = 511;
+		pos.y = 511 - radius;
         
     }
     
@@ -94,15 +94,11 @@ void Particle::DrawObjects() {
 }
 
 const glm::vec3 Particle::getPos() const {
-    
 	return pos;
-    
 }
 
 const glm::vec3 Particle::getVelocity(){
-    
     return vel;
-    
 }
 
 int Particle::getCellIndex() {

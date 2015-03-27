@@ -40,6 +40,9 @@ void * font = GLUT_BITMAP_9_BY_15;
 Particle particles[NUM_PARTICLES];
 Box box = Box();
 
+// Rotating vars
+double newTime, currTime = 0, deltaTime = 0, phi = 0, theta = 0;
+
 Cell cells[Cell::GRID_WIDTH * Cell::GRID_HEIGHT];
 
 // FPS specific vars
@@ -48,6 +51,12 @@ int frames = 0;
 
 // References and pointer needed globally
 GLFWwindow* window;
+
+
+GLfloat newDown[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+GLfloat down[4] = { 0.0f, -1.0f, 0.0f, 1.0f };
+GLfloat model[16];
+
 
 // Neat way of displaying FPS
 void handleFps() {
@@ -186,12 +195,22 @@ void calculateDensityAndPressure(){
     }
 
 }
+//Calculates the gravity vector based on the current position of the box
+void calculateNewGravityVec(){
+	// Get rotation matrix
+	glGetFloatv(GL_MODELVIEW_MATRIX, model);
+
+	newDown[0] = model[0] * down[0] + model[1] * down[1] + model[2] * down[2] + model[3] * down[3];
+	newDown[1] = model[4] * down[0] + model[5] * down[1] + model[6] * down[2] + model[7] * down[3];
+	newDown[2] = model[8] * down[0] + model[9] * down[1] + model[10] * down[2] + model[11] * down[3];
+
+}
 
 void calculateForces(){
     
     for(int i = 0; i < NUM_PARTICLES; i++){
         
-        glm::vec3 gravity = glm::vec3(0, -GRAVITY_CONST*particles[i].getDensity(), 0);
+		glm::vec3 gravity = glm::vec3(newDown[0], newDown[1], newDown[2])*GRAVITY_CONST*particles[i].getDensity();
         glm::vec3 pressure = glm::vec3(0);
         glm::vec3 viscousity = glm::vec3(0);
         
@@ -253,7 +272,7 @@ void calculateForces(){
 }
 
 void calculateAcceleration(){
-    
+	calculateNewGravityVec();
     // Clear all particles in cells
     for (int j = 0; j < Cell::GRID_WIDTH * Cell::GRID_HEIGHT; j++) {
         
@@ -752,6 +771,33 @@ void handleInputs(){
         }
     }
 
+
+	glMatrixMode(GL_MODELVIEW);
+	newTime = glfwGetTime();
+	deltaTime = newTime - currTime;
+	currTime = newTime;
+
+	//CAMERA CONTROLS
+	if (glfwGetKey(window, GLFW_KEY_D)) {
+		phi -= deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
+		phi = fmod(phi, M_PI*2.0); // Wrap around at 360 degrees (2*pi)
+		if (phi < 0.0) phi += M_PI*2.0; // If phi<0, then fmod(phi,2*pi)<0
+		glTranslatef(256.f, 256.f, 0);
+		glRotatef(phi, 0, 0, 1);
+		glTranslatef(-256.f, -256.f, 0);
+	
+	}
+	if (glfwGetKey(window, GLFW_KEY_A))
+	{
+		phi += deltaTime*M_PI / 2.0; // Rotate 90 degrees per second (pi/2)
+		phi = fmod(phi, M_PI*2.0);
+		glTranslatef(256.f, 256.f, 0);
+		glRotatef(-phi, 0, 0, 1);
+		glTranslatef(-256.f, -256.f, 0);
+	}
+
+	
+
 }
 
 void renderString(void * font, std::string k, int posx, int posy){
@@ -779,6 +825,7 @@ void drawText(){
 			//renderString(font, string, posx, posy)
 			renderString(font, "Press G(spot) to get balls", 230, 480);
 			renderString(font, "Carl Bildt this city", 230, 460);
+			renderString(font, "Rotate container A and D", 230, 440);
 			glMatrixMode(GL_MODELVIEW);
 
 		glPopMatrix();
@@ -799,7 +846,7 @@ int main(int argc, char *argv[])
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-    
+	glClearColor(1.0f, 0.5f, .5f, 1.0f);
     while(!glfwWindowShouldClose(window)){
         
         float ratio;
@@ -814,7 +861,7 @@ int main(int argc, char *argv[])
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
 
-        glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
+        glOrtho(-50.0, 562.0, -50.0, 562.0, -1, 1);
         
         box.DrawBox();
 		drawText();
