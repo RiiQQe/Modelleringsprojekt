@@ -7,6 +7,15 @@
 #include "Box.h"
 #include "Cell.h"
 #include <GLFW/glfw3.h>
+
+#ifdef __APPLE__
+//#include "TargetConditionals.h"
+#include <GLUT/glut.h>
+//#include <OpenGL/OpenGL.h>
+#elif defined _WIN32 || defined _WIN64
+#include <GL\glut.h>
+#endif 
+
 #include <thread>
 #include <sstream>
 
@@ -24,6 +33,9 @@ bool show_betaballs = true;
 
 const int TEMPSIZE = 128;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
+
+//GLUT font 
+void * font = GLUT_BITMAP_9_BY_15;
 
 Particle particles[NUM_PARTICLES];
 Box box = Box();
@@ -742,6 +754,40 @@ void handleInputs(){
 
 }
 
+void renderString(void * font, std::string k, int posx, int posy){
+
+	glRasterPos2i(posx, posy);
+
+	for (std::string::iterator i = k.begin(); i != k.end(); i++){
+		char c = *i;
+		glutBitmapCharacter(font, c);
+	}
+}
+
+//Show the text
+void drawText(){
+	glPushMatrix();
+
+		glLoadIdentity();
+		gluOrtho2D(0.0, 512.0, 0.0, 512.0);
+		glMatrixMode(GL_MODELVIEW);
+
+		glPushMatrix();
+
+			glLoadIdentity();
+			glColor3f(1.0, 0.0, 0.0);
+			//renderString(font, string, posx, posy)
+			renderString(font, "Press G(spot) to get balls", 230, 480);
+			renderString(font, "Carl Bildt this city", 230, 460);
+			glMatrixMode(GL_MODELVIEW);
+
+		glPopMatrix();
+
+		glMatrixMode(GL_PROJECTION);
+
+	glPopMatrix();
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -753,7 +799,6 @@ int main(int argc, char *argv[])
     window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-    
     
     while(!glfwWindowShouldClose(window)){
         
@@ -768,10 +813,11 @@ int main(int argc, char *argv[])
         
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
+
         glOrtho(0.0, 512.0, 0.0, 512.0, -1, 1);
         
-        
         box.DrawBox();
+		drawText();
         calculateAcceleration();
         handleInputs();
         display();
