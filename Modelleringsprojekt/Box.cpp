@@ -36,7 +36,6 @@ void Box::DrawBox(int size, int colwidth)
         glVertex3f(0, colwidth * i, size);
         
         // Side3
-        
         glVertex3f(colwidth * i, 0, size);
         glVertex3f(colwidth * i, size, size);
         
@@ -51,14 +50,6 @@ void Box::DrawBox(int size, int colwidth)
         glVertex3f(size, colwidth * i, 0);
         glVertex3f(size, colwidth * i, size);
         
-        // Bottom
-        
-        glVertex3f(0, 0, colwidth * i);
-        glVertex3f(size, 0, colwidth * i);
-        
-        glVertex3f(colwidth * i, 0, 0);
-        glVertex3f(colwidth * i, 0, size);
-        
         // Top
         
     /*    glVertex3f(0, size, colwidth * i);
@@ -68,8 +59,18 @@ void Box::DrawBox(int size, int colwidth)
         glVertex3f(colwidth * i, size, size);*/
         
     }
+	glEnd();
 
-    glEnd();
+	glColor3f(1.0,0.0,0.0);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_TRIANGLE_STRIP);
+	glNormal3f(0,1,0);
+	glVertex3f(0,0,0);
+	glVertex3f(0,0,256);
+	glVertex3f(256,0,256);
+	glVertex3f(256, 0, 0);
+	glVertex3f(0,0,0);
+	glEnd();
 	
 	glPopMatrix();
 	
