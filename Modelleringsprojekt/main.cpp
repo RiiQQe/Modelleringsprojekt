@@ -28,8 +28,7 @@ const double h = 16.f;
 const float STIFFNESS = 500*5.f;
 const float GRAVITY_CONST = 80000*9.82f;
 
-bool pressed = false;
-bool show_betaballs = true;
+bool show_betaballs = true, show_grid = false, pressed = false, pressed2 = false;
 
 const int TEMPSIZE = 128;
 float squares[TEMPSIZE * TEMPSIZE]; // hard coded values for now, with marching squares
@@ -726,8 +725,8 @@ void handleInputs(){
     
    	 	glfwGetCursorPos(window, &xMouse, &yMouse);
     
-        xMouse = xMouse / 512.f;
-        yMouse = (512.f - yMouse)  / 512.f;
+        xMouse = xMouse / 1024.f;
+        yMouse = (1024.f - yMouse)  / 1024.f;
     
     	if (xMouse < 0 || xMouse > 1)
         	xMouse = xMouse > 0.5 ? 1 : 0;
@@ -768,6 +767,20 @@ void handleInputs(){
     } else {
         if (pressed) {
             pressed = false;
+        }
+    }
+    
+    // Toggle Betaballs
+    if (glfwGetKey(window, GLFW_KEY_H) ) {
+        
+        if (!pressed2){
+            pressed2 = true;
+            show_grid = !show_grid;
+        }
+        
+    } else {
+        if (pressed2) {
+            pressed2 = false;
         }
     }
 
@@ -821,13 +834,14 @@ void drawText(){
 		glPushMatrix();
 
 			glLoadIdentity();
-			glColor3f(1.0, 0.0, 0.0);
+			glColor3f(1.0, 1.0, 1.0);
 
 			//renderString(string, posx, posy)
-			renderString("Press G(spot) to get balls", 230, 480);
-			renderString("Carl Bildt this city", 230, 460);
-			renderString("Play with water using mouse", 230, 440);
-			renderString("Rotate container A and D", 230, 420);
+			renderString("Press G to toggle balls", 330, 450);
+    		renderString("Press H to toggle Grid", 330, 430);
+			renderString("Play with water using mouse", 330, 410);
+			renderString("Rotate container with A and D", 330, 390);
+    
 			glMatrixMode(GL_MODELVIEW);
 
 		glPopMatrix();
@@ -845,10 +859,10 @@ int main(int argc, char *argv[])
     
     glfwInit();
     
-    window = glfwCreateWindow(512, 512, "OpenGL", nullptr, nullptr); // Windowed
+    window = glfwCreateWindow(1024, 1024, "OpenGL", nullptr, nullptr); // Windowed
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-	glClearColor(1.0f, 0.5f, .5f, 1.0f);
+	glClearColor(0.8f, 0.8f, 0.8f, 0.8f);
     while(!glfwWindowShouldClose(window)){
         
         float ratio;
@@ -865,7 +879,7 @@ int main(int argc, char *argv[])
 
         glOrtho(-50.0, 562.0, -50.0, 562.0, -1, 1);
         
-        box.DrawBox();
+        box.DrawBox(show_grid);
 		drawText();
         calculateAcceleration();
         handleInputs();

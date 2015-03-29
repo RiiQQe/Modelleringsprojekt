@@ -21,7 +21,7 @@ Box::Box()
 	lastFrameTime = 0;
 }
 
-void Box::DrawBox()
+void Box::DrawBox(bool show_grid)
 {
 	glPushMatrix();
 	//glTranslatef(64, 64, 0);
@@ -63,16 +63,21 @@ void Box::DrawBox()
     // Defines each line
 
 	// Define grid by doing fancy iterations.
-//	glColor3f(0.9f, 0.9f, 0.9f);
-//
-//	for (int i = 1; i < 512 / 16; i++) {
-//		glVertex2f(16.f * i, 0);
-//		glVertex2f(16.f * i, 512);
-//
-//		glVertex2f(0, 16.f * i);
-//		glVertex2f(512, 16.f * i);
-//	}
-/*
+    
+    if(show_grid){
+		glColor3f(0.9f, 0.9f, 0.9f);
+
+		for (int i = 1; i < 512 / 16; i++) {
+			glVertex2f(16.f * i, 0);
+			glVertex2f(16.f * i, 512);
+
+			glVertex2f(0, 16.f * i);
+			glVertex2f(512, 16.f * i);
+		}
+        
+    }
+
+    /*
     glVertex2f(0.0f, 64.0f);
     glVertex2f(512.0f, 64.0f);
     
